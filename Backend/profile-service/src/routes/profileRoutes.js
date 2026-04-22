@@ -1,15 +1,18 @@
 const express = require('express');
-const ProfileController = require('../controllers/ProfileController');
-const { authMiddleware } = require('../../../shared/middleware/auth');
-
 const router = express.Router();
+const controller = require('../controllers/profileController');
+const upload = require('../middleware/upload');
 
-// All profile routes require authentication
-router.use(authMiddleware);
+router.post('/', controller.createProfile);
+router.get('/:userId', controller.getProfile);
+router.put('/:userId', controller.updateProfile);
 
-router.post('/', ProfileController.create);
-router.get('/:userId', ProfileController.get);
-router.put('/:userId', ProfileController.update);
-router.delete('/:userId', ProfileController.delete);
+// upload foto
+router.post('/upload/:userId', upload.single('photo'), (req, res) => {
+    res.json({
+        message: 'Foto berhasil diupload',
+        file: req.file.filename
+    });
+});
 
 module.exports = router;

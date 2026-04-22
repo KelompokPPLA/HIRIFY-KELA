@@ -1,6 +1,5 @@
 const cvModel = require('../models/cvModel');
-const fs = require('fs');
-
+const fs = require('fs')
 exports.uploadCV = async (req, res) => {
     try {
         const userId = req.body.user_id;

@@ -1,105 +1,39 @@
-const ProfileService = require('../services/ProfileService');
+const profileModel = require('../models/profileModel');
 
-class ProfileController {
-  /**
-   * Create user profile
-   * POST /api/profiles
-   */
-  static async create(req, res) {
+exports.createProfile = async (req, res) => {
     try {
-      const userId = req.user.id;
-      const profileData = req.body;
-
-      if (!profileData.firstName || !profileData.lastName) {
-        return res.status(400).json({
-          success: false,
-          message: 'First name and last name are required',
+        const [result] = await profileModel.createProfile(req.body);
+        res.status(201).json({
+            message: 'Profile berhasil dibuat',
+            data: result
         });
-      }
-
-      const result = await ProfileService.createProfile(userId, profileData);
-
-      res.status(201).json({
-        success: true,
-        message: 'Profile created successfully',
-        data: result,
-      });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
+        res.status(500).json({ error: error.message });
     }
-  }
+};
 
-  /**
-   * Get user profile
-   * GET /api/profiles/:userId
-   */
-  static async get(req, res) {
+exports.getProfile = async (req, res) => {
     try {
-      const { userId } = req.params;
+        const userId = req.params.userId;
+        const [rows] = await profileModel.getProfileByUserId(userId);
 
-      const profile = await ProfileService.getProfile(userId);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Profile tidak ditemukan' });
+        }
 
-      res.status(200).json({
-        success: true,
-        data: profile,
-      });
+        res.json(rows[0]);
     } catch (error) {
-      const statusCode = error.message.includes('not found') ? 404 : 500;
-      res.status(statusCode).json({
-        success: false,
-        message: error.message,
-      });
+        res.status(500).json({ error: error.message });
     }
-  }
+};
 
-  /**
-   * Update user profile
-   * PUT /api/profiles/:userId
-   */
-  static async update(req, res) {
+exports.updateProfile = async (req, res) => {
     try {
-      const { userId } = req.params;
-      const profileData = req.body;
+        const userId = req.params.userId;
+        await profileModel.updateProfile(userId, req.body);
 
-      const profile = await ProfileService.updateProfile(userId, profileData);
-
-      res.status(200).json({
-        success: true,
-        message: 'Profile updated successfully',
-        data: profile,
-      });
+        res.json({ message: 'Profile berhasil diupdate' });
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
+        res.status(500).json({ error: error.message });
     }
-  }
-
-  /**
-   * Delete user profile
-   * DELETE /api/profiles/:userId
-   */
-  static async delete(req, res) {
-    try {
-      const { userId } = req.params;
-
-      await ProfileService.deleteProfile(userId);
-
-      res.status(200).json({
-        success: true,
-        message: 'Profile deleted successfully',
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-}
-
-module.exports = ProfileController;
+};
