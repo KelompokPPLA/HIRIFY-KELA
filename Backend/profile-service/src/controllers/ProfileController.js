@@ -2,7 +2,14 @@ const profileModel = require('../models/profileModel');
 
 exports.createProfile = async (req, res) => {
     try {
+        const { user_id, first_name } = req.body;
+
+        if (!user_id || !first_name) {
+            return res.status(400).json({ message: 'user_id dan first_name wajib diisi' });
+        }
+
         const [result] = await profileModel.createProfile(req.body);
+
         res.status(201).json({
             message: 'Profile berhasil dibuat',
             data: result
@@ -15,6 +22,7 @@ exports.createProfile = async (req, res) => {
 exports.getProfile = async (req, res) => {
     try {
         const userId = req.params.userId;
+
         const [rows] = await profileModel.getProfileByUserId(userId);
 
         if (rows.length === 0) {
@@ -30,6 +38,11 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     try {
         const userId = req.params.userId;
+
+        if (!userId) {
+            return res.status(400).json({ message: 'userId wajib ada' });
+        }
+
         await profileModel.updateProfile(userId, req.body);
 
         res.json({ message: 'Profile berhasil diupdate' });
