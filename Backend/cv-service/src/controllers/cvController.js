@@ -1,8 +1,16 @@
 const cvModel = require('../models/cvModel');
-const fs = require('fs')
 exports.uploadCV = async (req, res) => {
     try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'File CV wajib diupload' });
+        }
+
         const userId = req.body.user_id;
+
+        if (!userId) {
+            return res.status(400).json({ message: 'user_id wajib diisi' });
+        }
+
         const fileName = req.file.filename;
 
         await cvModel.uploadCV(userId, fileName);
@@ -16,6 +24,7 @@ exports.uploadCV = async (req, res) => {
 exports.getCV = async (req, res) => {
     try {
         const userId = req.params.userId;
+
         const [rows] = await cvModel.getCVByUser(userId);
 
         res.json(rows);
@@ -26,6 +35,10 @@ exports.getCV = async (req, res) => {
 
 exports.updateCV = async (req, res) => {
     try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'File CV wajib diupload' });
+        }
+
         const id = req.params.id;
         const fileName = req.file.filename;
 
