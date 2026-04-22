@@ -1,11 +1,24 @@
-<script setup></script>
+<script setup>
+  import { ref, onMounted } from 'vue'
+  import { supabase } from '../utils/supabase'
+  
+  const todos = ref([])
+
+  async function getTodos() {
+    const { data } = await supabase.from('todos').select()
+    todos.value = data
+  }
+
+  onMounted(() => {
+    getTodos()
+  })
+
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <ul>
+    <li v-for="todo in todos" :key="todo.id">{{ todo.name }}</li>
+  </ul>
 </template>
 
 <style scoped></style>
