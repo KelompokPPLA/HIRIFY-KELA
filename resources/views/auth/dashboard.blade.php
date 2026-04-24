@@ -145,6 +145,7 @@
                 <p id="welcome">Memuat data user...</p>
             </div>
             <div style="display:flex; gap:10px;">
+                <a id="mentorSettingsBtn" href="/mentor/settings" class="btn btn-primary" style="display:none; text-decoration:none;">Pengaturan Mentor</a>
                 <button id="reloadBtn" class="btn btn-primary">Refresh</button>
                 <button id="logoutBtn" class="btn btn-danger">Logout</button>
             </div>
@@ -180,6 +181,7 @@
         const usersTable = document.getElementById('usersTable');
         const usersBody = document.getElementById('usersBody');
         const adminHint = document.getElementById('adminHint');
+        const mentorSettingsBtn = document.getElementById('mentorSettingsBtn');
         const showToast = window.hirifyShowToast;
 
         if (!token) {
@@ -283,6 +285,12 @@
                 const user = me.data;
 
                 printProfile(user);
+
+                if (user.role === 'mentor') {
+                    mentorSettingsBtn.style.display = 'inline-flex';
+                } else {
+                    mentorSettingsBtn.style.display = 'none';
+                }
 
                 if (user.role === 'admin') {
                     const users = await api('/api/user');

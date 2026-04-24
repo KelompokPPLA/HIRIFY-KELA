@@ -11,3 +11,4 @@ Route::view('/register', 'auth.register')->name('register');
 Route::view('/forgot-password', 'auth.forgot-password')->name('password.request');
 Route::view('/reset-password', 'auth.reset-password')->name('password.reset');
 Route::view('/dashboard', 'auth.dashboard')->name('dashboard');
+Route::view('/mentor/settings', 'mentor.settings')->name('mentor.settings');

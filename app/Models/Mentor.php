@@ -21,20 +21,14 @@ class Mentor extends Model
         'education',
         'skills',
         'availability',
-        'price_per_session'
+        'price_per_session',
     ];
 
-    /**
-     * Casting untuk JSON & tipe data
-     */
     protected $casts = [
         'skills' => 'array',
         'price_per_session' => 'decimal:2',
     ];
 
-    /**
-     * Relasi ke User
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -45,9 +39,6 @@ class Mentor extends Model
         return $this->hasMany(MentorCertification::class);
     }
 
-    /**
-     * Scope Search (berdasarkan nama user)
-     */
     public function scopeSearch($query, $search)
     {
         return $query->whereHas('user', function ($q) use ($search) {

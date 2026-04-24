@@ -21,8 +21,9 @@ return new class extends Migration
                   ->on('mentors')
                   ->onDelete('cascade');
 
-            $table->string('title');
-            $table->string('file_path');
+            // Informasi sertifikat
+            $table->string('title'); // contoh: AWS Certified Developer
+            $table->string('file_path'); // path file di storage
 
             $table->timestamps();
         });
