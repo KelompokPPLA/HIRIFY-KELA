@@ -174,7 +174,7 @@
     </main>
 
     <script>
-        const token = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
+        let token = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
         const welcome = document.getElementById('welcome');
         const profile = document.getElementById('profile');
         const usersTable = document.getElementById('usersTable');
@@ -186,7 +186,54 @@
             window.location.href = '/login';
         }
 
-        async function api(path, options = {}) {
+        function clearAuthStorage() {
+            localStorage.removeItem('hirify_token');
+            localStorage.removeItem('hirify_user');
+            localStorage.removeItem('hirify_remember');
+            sessionStorage.removeItem('hirify_token');
+            sessionStorage.removeItem('hirify_user');
+        }
+
+        function getActiveStorage() {
+            return localStorage.getItem('hirify_token') ? localStorage : sessionStorage;
+        }
+
+        async function refreshToken() {
+            if (!token) {
+                return false;
+            }
+
+            try {
+                const response = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || result.success === false || !result?.data?.token) {
+                    return false;
+                }
+
+                token = result.data.token;
+
+                const storage = getActiveStorage();
+                storage.setItem('hirify_token', result.data.token);
+
+                if (result.data.user) {
+                    storage.setItem('hirify_user', JSON.stringify(result.data.user));
+                }
+
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function api(path, options = {}, canRetry = true) {
             const response = await fetch(path, {
                 ...options,
                 headers: {
@@ -197,7 +244,22 @@
                 },
             });
 
-            const data = await response.json();
+            let data = {};
+
+            try {
+                data = await response.json();
+            } catch (_) {
+                data = {};
+            }
+
+            if (response.status === 401 && canRetry) {
+                const refreshed = await refreshToken();
+
+                if (refreshed) {
+                    return api(path, options, false);
+                }
+            }
+
             if (!response.ok || data.success === false) {
                 throw new Error(data.message || 'Terjadi kesalahan request.');
             }
@@ -243,10 +305,7 @@
                 }
             } catch (error) {
                 if (error.message.toLowerCase().includes('unauthenticated')) {
-                    localStorage.removeItem('hirify_token');
-                    localStorage.removeItem('hirify_user');
-                    sessionStorage.removeItem('hirify_token');
-                    sessionStorage.removeItem('hirify_user');
+                    clearAuthStorage();
                     window.location.href = '/login';
                     return;
                 }
@@ -266,10 +325,7 @@
                 showToast('Sesi lokal dibersihkan. Silakan login kembali.', 'info', 900);
             } finally {
                 setTimeout(() => {
-                    localStorage.removeItem('hirify_token');
-                    localStorage.removeItem('hirify_user');
-                    sessionStorage.removeItem('hirify_token');
-                    sessionStorage.removeItem('hirify_user');
+                    clearAuthStorage();
                     window.location.href = '/login';
                 }, 850);
             }

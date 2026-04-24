@@ -354,6 +354,39 @@
         const rememberCheckbox = document.getElementById('remember');
         const passwordInput = document.getElementById('password');
         const toggleBtn = document.getElementById('togglePassword');
+        const rememberPrefKey = 'hirify_remember';
+
+        if (localStorage.getItem(rememberPrefKey) === '1') {
+            rememberCheckbox.checked = true;
+        }
+
+        (async () => {
+            const rememberedToken = localStorage.getItem('hirify_token');
+
+            if (!rememberedToken) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${rememberedToken}`,
+                    },
+                });
+
+                if (response.ok) {
+                    window.location.href = '/dashboard';
+                    return;
+                }
+
+                localStorage.removeItem('hirify_token');
+                localStorage.removeItem('hirify_user');
+                localStorage.removeItem(rememberPrefKey);
+            } catch (_) {
+                // Abaikan error network sementara, user tetap bisa login manual.
+            }
+        })();
 
         toggleBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -399,6 +432,12 @@
 
                 targetStorage.setItem('hirify_token', result.data.token);
                 targetStorage.setItem('hirify_user', JSON.stringify(result.data.user));
+
+                if (rememberCheckbox.checked) {
+                    localStorage.setItem(rememberPrefKey, '1');
+                } else {
+                    localStorage.removeItem(rememberPrefKey);
+                }
 
                 showToast('Login berhasil. Anda akan diarahkan ke dashboard.', 'success');
                 setTimeout(() => {
