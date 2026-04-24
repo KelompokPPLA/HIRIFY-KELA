@@ -1,240 +1,86 @@
-# HIRIFY-KELA
+## 📌 Overview
+
+**Hirify** adalah platform pengembangan karier berbasis web yang membantu mahasiswa dan pencari kerja meningkatkan kesiapan kerja melalui fitur terintegrasi seperti:
+
+* Manajemen profil & CV
+* Generate CV berbasis ATS
+* Career roadmap & self-assessment
+* Pelatihan skill & komunitas
+* Mentorship profesional
+* Job matching & success score
+* Notifikasi real-time
+
+Sistem dirancang berbasis **microservices architecture** untuk skalabilitas dan maintainability tinggi.
+
+> Sistem ini dikembangkan untuk menjawab permasalahan kesiapan kerja dan kesenjangan antara skill individu dengan kebutuhan industri 
+
+---
 
 ## 🏗️ Architecture
 
-### Microservices
-- **Auth Service** (Port 4001) - Authentication & JWT management
-- **Profile Service** (Port 4002) - User profile management
-- **CV Service** (Port 4003) - CV/Resume building
-- **Roadmap Service** (Port 4004) - Career roadmap planning
-- **Training Service** (Port 4005) - Training resources
-- **Mentorship Service** (Port 4006) - Mentor connections
-- **Job Matching Service** (Port 4007) - Job recommendations
-- **Notification Service** (Port 4008) - User notifications
-- **Realtime Service** (Port 4010) - WebSocket via Socket.IO
+### 🔹 High-Level Architecture
+
+* **Frontend**: Vue 3 + Vite + Tailwind
+* **Backend**: Laravel (Microservices)
+* **Database**: MySQL (schema per service)
+* **Realtime**: Socket.IO
+* **Communication**: REST API
+
+---
+
+## ⚙️ Microservices Structure
+
+| Service              | Port | Description          |
+| -------------------- | ---- | -------------------- |
+| Auth Service         | 4001 | Authentication & JWT |
+| Profile Service      | 4002 | User profile         |
+| CV Service           | 4003 | CV & ATS generator   |
+| Roadmap Service      | 4004 | Career roadmap       |
+| Training Service     | 4005 | Skill training       |
+| Mentorship Service   | 4006 | Mentor system        |
+| Job Matching Service | 4007 | Job recommendation   |
+| Notification Service | 4008 | Notification system  |
+| Realtime Service     | 4010 | WebSocket            |
+
+---
+
+## 🧱 Tech Stack
+
+### Backend (Laravel Microservices)
+
+* Laravel 10+
+* Laravel Sanctum / JWT
+* Eloquent ORM
+* MySQL
+* Redis (optional - caching)
 
 ### Frontend
-- **Vue 3** with Vite
-- **Tailwind CSS** for styling
-- **Pinia** for state management
-- **Vue Router** with auth guards
-- **Socket.IO Client** for realtime
 
-### Database
-- **MySQL 8.0** with connection pooling
-- Separate schemas per service pattern
-- Pre-seeded admin and mentor accounts
+* Vue 3 + Vite
+* Tailwind CSS
+* Pinia
+* Vue Router
+* Axios
+* Socket.IO Client
 
-## 🚀 Quick Start
+---
 
-### Prerequisites
-- Node.js 18+
-- MySQL 8.0+
-
-### Local Development Setup
-
-1. **Clone and install dependencies:**
-```bash
-cd d:\TUBES\ PPL
-
-# Install root dependencies
-npm install
-
-# Install backend services
-for dir in backend/*/; do cd "$dir" && npm install && cd ../../; done
-
-# Install frontend dependencies
-cd frontend && npm install && cd ..
-```
-
-2. **Configure environment:**
-```bash
-cp .env .env.local
-# Edit .env.local with your database credentials
-```
-
-3. **Initialize database:**
-```bash
-npm run db:init
-npm run seed
-```
-
-4. **Start all services:**
-```bash
-npm run dev
-```
-
-Services will be available at:
-- Frontend: http://localhost:3000
-- Auth: http://localhost:4001
-- Profile: http://localhost:4002
-- CV: http://localhost:4003
-- Roadmap: http://localhost:4004
-- Training: http://localhost:4005
-- Mentorship: http://localhost:4006
-- Job Matching: http://localhost:4007
-- Notification: http://localhost:4008
-- Realtime: http://localhost:4010
-
-## 📋 Database Schema
-
-### Users Table
-```sql
-- id (INT, PK)
-- email (VARCHAR, UNIQUE)
-- password (VARCHAR, hashed)
-- role (ENUM: admin, mentor, user)
-- created_at, updated_at
-```
-
-### Related Tables
-- **profiles** - User profile information
-- **cvs** - CV/Resume data
-- **roadmaps** - Career roadmaps
-- **trainings** - Training resources
-- **mentorship_requests** - Mentor connections
-- **jobs** - Job listings
-- **notifications** - User notifications
-
-## 🔐 Authentication
-
-### JWT Implementation
-- Token generated on login
-- Stored in localStorage (frontend)
-- Attached to all API requests via Authorization header
-- Validated by auth middleware on protected routes
-
-### Roles & Access Control
-```javascript
-// Roles
-- admin: Full system access
-- mentor: Can provide mentorship
-- user: Regular user (default on registration)
-
-// RBAC Middleware
-authorize('admin', 'mentor') // Restricts to specific roles
-```
-
-### Default Accounts
-- Admin: `admin@career-platform.com` / `admin123`
-- Mentor: `mentor@career-platform.com` / `mentor123`
-
-## 🔌 API Examples
-
-### Authentication Service
-
-#### Register (Public)
-```bash
-POST /api/auth/register
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-#### Login (Public)
-```bash
-POST /api/auth/login
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-
-Response:
-{
-  "success": true,
-  "data": {
-    "user": { "id": 1, "email": "user@example.com", "role": "user" },
-    "token": "eyJhbGc..."
-  }
-}
-```
-
-#### Validate Token (Protected)
-```bash
-GET /api/auth/validate
-Authorization: Bearer {token}
-```
-
-### Profile Service
-
-#### Create Profile (Protected)
-```bash
-POST /api/profiles
-Authorization: Bearer {token}
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "bio": "Software Developer",
-  "location": "New York, NY",
-  "phone": "555-1234"
-}
-```
-
-#### Get Profile
-```bash
-GET /api/profiles/{userId}
-Authorization: Bearer {token}
-```
-
-## 🔄 Service-to-Service Communication
-
-Services can communicate via HTTP to shared URLs defined in `.env`:
-
-```javascript
-// Example: From Job Matching to Notification Service
-const response = await axios.post(
-  `${config.services.notification}/api/notifications`,
-  notificationData
-);
-```
-
-## 🔌 Socket.IO Events
-
-### Connection & Room Management
-```javascript
-// Join a room
-socket.emit('join', { userId: 1, room: 'user-1' })
-
-// Send notification
-socket.emit('send-notification', { 
-  room: 'user-1', 
-  message: 'New message!' 
-})
-```
-
-### Available Events
-- `notification` - Receive notifications
-- `new-message` - Mentorship messages
-- `user-progress` - Training progress
-- `new-job-match` - Job recommendations
-- `user-left` - User disconnected
-
-## 📁 Project Structure
+## 📂 Project Structure
 
 ```
 career-platform/
-├── frontend/                    # Vue 3 + Vite
+│
+├── frontend/
 │   ├── src/
-│   │   ├── modules/            # Feature modules
-│   │   ├── services/           # API services
-│   │   ├── stores/             # Pinia stores
-│   │   ├── router/             # Vue Router
-│   │   └── socket/             # Socket.IO client
-│   ├── package.json
-│   └── vite.config.js
+│   │   ├── modules/
+│   │   ├── services/
+│   │   ├── stores/
+│   │   ├── router/
+│   │   └── socket/
 │
 ├── backend/
-│   ├── auth-service/
-│   │   ├── src/
-│   │   │   ├── app.js
-│   │   │   ├── routes/
-│   │   │   ├── controllers/
-│   │   │   ├── services/
-│   │   │   ├── models/
-│   │   │   └── config/
-│   │   └── package.json
-│   ├── profile-service/       # Similar structure
+│   ├── auth-service/         # Laravel
+│   ├── profile-service/
 │   ├── cv-service/
 │   ├── roadmap-service/
 │   ├── training-service/
@@ -244,150 +90,268 @@ career-platform/
 │   └── realtime-service/
 │
 ├── shared/
-│   ├── database/              # MySQL connection pool
-│   ├── middleware/            # Auth & RBAC
-│   ├── utils/                 # Logger & utilities
-│   └── config/                # Shared configuration
+│   ├── middleware/
+│   ├── config/
+│   └── utils/
 │
 ├── scripts/
-│   ├── init.sql               # Database schema
-│   ├── initDatabase.js        # DB initialization
-│   └── seedDatabase.js        # Seed default users
+│   ├── init.sql
+│   └── seed.sql
 │
-├── .env                        # Environment variables
-├── .env.production            # Production env
-├── package.json               # Root scripts
 └── README.md
 ```
 
-## 🛠️ Development Workflow
+---
 
-### Add a New Microservice
+## 🚀 Quick Start
 
-1. Create service directory:
+### 🔧 Prerequisites
+
+* PHP 8.2+
+* Composer
+* Node.js 18+
+* MySQL 8+
+
+---
+
+### 📥 Installation
+
+#### 1. Clone Repository
+
 ```bash
-mkdir -p backend/my-service/src/{routes,controllers,services,models,config}
+git clone <repo-url>
+cd career-platform
 ```
 
-2. Create `app.js` following the template pattern
-3. Create `package.json` with dependencies
-4. Create routes, controllers, and models
-6. Update root package.json scripts
+---
 
-### Frontend Module Structure
+#### 2. Setup Backend (Laravel Microservices)
 
-Each module follows this pattern:
-```
-modules/module-name/
-├── components/
-├── pages/
-├── store/          (optional Pinia store)
-└── types/          (TypeScript types if using TS)
+```bash
+cd backend/auth-service
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan serve --port=4001
 ```
 
-## 🚦 Production Considerations
+Lakukan hal yang sama untuk semua service (4002–4008).
 
-### Security
-- ✓ Password hashing with bcryptjs
-- ✓ JWT token validation
-- ✓ CORS configured
-- ⚠️ Change JWT_SECRET in production
-- ⚠️ Use HTTPS in production
-- ⚠️ Implement rate limiting
-- ⚠️ Add request validation & sanitization
+---
 
-### Performance
-- ✓ MySQL connection pooling
-- ✓ Separate services for scaling
-- ⚠️ Implement caching (Redis)
-- ⚠️ Add API gateway (nginx/Kong)
-- ⚠️ Enable compression
+#### 3. Setup Frontend
 
-### Monitoring
-- ⚠️ Add centralized logging
-- ⚠️ Health check endpoints
-- ⚠️ Performance metrics
-- ⚠️ Error tracking (Sentry)
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-### Database
-- ✓ Indexed common queries
-- ⚠️ Regular backups
-- ⚠️ Replication setup
-- ⚠️ Query optimization
+---
 
-## 📦 Dependencies
+## 🌐 Service Endpoints
 
-### Backend Services
-- express: Web framework
-- mysql2: Database client
-- jsonwebtoken: JWT auth
-- bcryptjs: Password hashing
-- cors: CORS middleware
-- socket.io: WebSocket library
+| Service      | URL                                            |
+| ------------ | ---------------------------------------------- |
+| Frontend     | [http://localhost:3000](http://localhost:3000) |
+| Auth         | [http://localhost:4001](http://localhost:4001) |
+| Profile      | [http://localhost:4002](http://localhost:4002) |
+| CV           | [http://localhost:4003](http://localhost:4003) |
+| Roadmap      | [http://localhost:4004](http://localhost:4004) |
+| Training     | [http://localhost:4005](http://localhost:4005) |
+| Mentorship   | [http://localhost:4006](http://localhost:4006) |
+| Job Matching | [http://localhost:4007](http://localhost:4007) |
+| Notification | [http://localhost:4008](http://localhost:4008) |
+| Realtime     | [http://localhost:4010](http://localhost:4010) |
 
-### Frontend
-- vue: UI framework
-- vue-router: Routing
-- pinia: State management
-- axios: HTTP client
-- tailwindcss: CSS framework
+---
+
+## 🗄️ Database Schema
+
+### Users Table
+
+* id
+* email
+* password
+* role (admin, mentor, user)
+* timestamps
+
+### Core Tables
+
+* profiles
+* cvs
+* roadmaps
+* trainings
+* mentorship_requests
+* jobs
+* notifications
+
+> Struktur database dirancang terpusat pada entitas user dengan relasi ke berbagai modul seperti CV, training, dan mentorship 
+
+---
+
+## 🔐 Authentication
+
+### JWT Flow
+
+1. User login → token dibuat
+2. Token disimpan di frontend
+3. Token dikirim via header:
+
+```
+Authorization: Bearer {token}
+```
+
+### Roles
+
+* Admin → full access
+* Mentor → mentorship access
+* User → default user
+
+---
+
+## 🔌 API Example
+
+### Auth Service
+
+#### Register
+
+```http
+POST /api/auth/register
+```
+
+#### Login
+
+```http
+POST /api/auth/login
+```
+
+#### Validate Token
+
+```http
+GET /api/auth/validate
+```
+
+---
+
+### Profile Service
+
+#### Create Profile
+
+```http
+POST /api/profiles
+```
+
+#### Get Profile
+
+```http
+GET /api/profiles/{id}
+```
+
+---
+
+## 🔄 Service Communication
+
+```php
+Http::post(
+  config('services.notification') . '/api/notifications',
+  $data
+);
+```
+
+---
+
+## 🔌 Realtime (Socket.IO)
+
+### Events
+
+* notification
+* new-message
+* user-progress
+* new-job-match
+
+---
+
+## 📊 Features Mapping (Proposal → System)
+
+| Feature          | Microservice         |
+| ---------------- | -------------------- |
+| Manajemen Profil | Profile Service      |
+| CV ATS Generator | CV Service           |
+| Career Roadmap   | Roadmap Service      |
+| Self Assessment  | Roadmap Service      |
+| Pelatihan Skill  | Training Service     |
+| Mentorship       | Mentorship Service   |
+| Job Matching     | Job Matching Service |
+| Notifikasi       | Notification Service |
+
+---
 
 ## 🧪 Testing
 
 ```bash
-# Run unit tests (to be implemented)
-npm run test
-
-# Run integration tests
-npm run test:integration
-
-# Run e2e tests
-npm run test:e2e
+php artisan test
 ```
 
-## 🤝 Contributing
+---
 
-1. Create a feature branch
-2. Make changes
-3. Test thoroughly
-4. Create pull request
-5. Code review and merge
+## 🚦 Production Considerations
 
-## 📄 License
+### Security
 
-MIT License - See LICENSE file
+* JWT secret harus diganti
+* HTTPS wajib
+* Rate limiting
 
-## 📚 Documentation
+### Performance
 
-- [API Documentation](./docs/API.md)
-- [Architecture Overview](./docs/ARCHITECTURE.md)
-- [Deployment Guide](./docs/DEPLOYMENT.md)
+* Redis caching
+* Load balancing
+* API Gateway (Nginx/Kong)
 
-## 🆘 Troubleshooting
+### Monitoring
 
-### Database Connection Issues
-```bash
-# Check MySQL is running
-mysql -u root -p -e "SELECT 1"
+* Logging centralized
+* Health check endpoint
+* Error tracking (Sentry)
 
-# Verify credentials in .env
-# Make sure DATABASE is created
-npm run db:init
-```
+---
 
-### Port Already in Use
-```bash
-# Kill process on port
-npx kill-port 4001 4002 ... 3000
-```
+## 👨‍💻 Development Workflow
 
-### Module Not Found
-```bash
-# Reinstall dependencies
-rm -rf node_modules package-lock.json
-npm install
-```
+1. Create branch
+2. Develop feature
+3. Testing
+4. Pull request
+5. Code review
 
-## 📞 Support
+---
 
-For issues and questions, please create an issue in the repository.
+## 📦 Key Dependencies
+
+### Backend
+
+* Laravel
+* Sanctum / JWT
+* MySQL
+
+### Frontend
+
+* Vue
+* Pinia
+* Axios
+* Tailwind
+
+---
+
+## 📌 Methodology
+
+Project menggunakan **Scrum (Agile)**:
+
+* Sprint 1 → Core features
+* Sprint 2 → Testing & deployment
+
+> Setiap sprint menghasilkan increment fitur yang dapat diuji dan dievaluasi 
+* Generate **API endpoint lengkap per service**
+* Atau langsung **scaffold project Laravel microservices siap jalan** 🚀
