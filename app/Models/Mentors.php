@@ -21,7 +21,7 @@ class Mentor extends Model
         'education',
         'skills',
         'availability',
-        'price_per_session',
+        'price_per_session'
     ];
 
     /**
