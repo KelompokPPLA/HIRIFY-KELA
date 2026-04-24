@@ -15,7 +15,8 @@ class UserUpdateRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'password' => 'nullable|min:8'
+            'password' => 'nullable|string|min:8',
+            'role' => 'nullable|string|in:admin,mentor,jobseeker',
         ];
     }
 
@@ -23,7 +24,8 @@ class UserUpdateRequest extends FormRequest
     {
         return[
             'name' => 'Nama',
-            'password' => 'Kata Sandi'
+            'password' => 'Kata Sandi',
+            'role' => 'Role',
         ];
     }
 }
