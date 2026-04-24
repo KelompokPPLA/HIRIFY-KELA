@@ -11,9 +11,10 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -39,8 +40,6 @@ class AuthController extends Controller
                     'remember_token' => Str::random(60),
                 ])->save();
 
-                $user->tokens()->delete();
-
                 event(new PasswordReset($user));
             }
         );
@@ -64,13 +63,13 @@ class AuthController extends Controller
                 'role' => $validated['role'] ?? 'jobseeker',
             ]);
 
-            $token = $user->createToken($request->input('device_name', 'web-app'))->plainTextToken;
+            $token = JWTAuth::fromUser($user);
 
-            return ResponseHelper::jsonResponse(true, 'Register berhasil.', [
-                'token' => $token,
-                'token_type' => 'Bearer',
-                'user' => new UserResource($user),
-            ], 201);
+            if (! $token) {
+                return ResponseHelper::jsonResponse(false, 'Gagal membuat token JWT.', null, 500);
+            }
+
+            return $this->respondWithToken($token, $user, 201, 'Register berhasil.');
         } catch (\Exception $e) {
             return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
         }
@@ -81,19 +80,18 @@ class AuthController extends Controller
         $validated = $request->validated();
 
         try {
-            $user = User::where('email', $validated['email'])->first();
+            $credentials = [
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+            ];
 
-            if (! $user || ! Hash::check($validated['password'], $user->password)) {
+            if (! $token = Auth::guard('api')->attempt($credentials)) {
                 return ResponseHelper::jsonResponse(false, 'Email atau password salah.', null, 422);
             }
 
-            $token = $user->createToken($validated['device_name'] ?? 'web-app')->plainTextToken;
+            $user = Auth::guard('api')->user();
 
-            return ResponseHelper::jsonResponse(true, 'Login berhasil.', [
-                'token' => $token,
-                'token_type' => 'Bearer',
-                'user' => new UserResource($user),
-            ], 200);
+            return $this->respondWithToken($token, $user, 200, 'Login berhasil.');
         } catch (\Exception $e) {
             return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
         }
@@ -101,13 +99,27 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return ResponseHelper::jsonResponse(true, 'Profil user berhasil diambil.', new UserResource($request->user()), 200);
+        $user = JWTAuth::parseToken()->authenticate();
+
+        return ResponseHelper::jsonResponse(true, 'Profil user berhasil diambil.', new UserResource($user), 200);
+    }
+
+    public function refresh()
+    {
+        try {
+            $token = JWTAuth::parseToken()->refresh();
+            $user = JWTAuth::setToken($token)->toUser();
+
+            return $this->respondWithToken($token, $user, 200, 'Token berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return ResponseHelper::jsonResponse(false, 'Token tidak valid atau sudah kadaluarsa.', null, 401);
+        }
     }
 
     public function logout(Request $request)
     {
         try {
-            $request->user()?->currentAccessToken()?->delete();
+            JWTAuth::parseToken()->invalidate();
 
             return ResponseHelper::jsonResponse(true, 'Logout berhasil.', null, 200);
         } catch (\Exception $e) {
@@ -118,11 +130,21 @@ class AuthController extends Controller
     public function logoutAll(Request $request)
     {
         try {
-            $request->user()?->tokens()->delete();
+            JWTAuth::parseToken()->invalidate();
 
-            return ResponseHelper::jsonResponse(true, 'Semua sesi berhasil di-logout.', null, 200);
+            return ResponseHelper::jsonResponse(true, 'Token aktif berhasil di-logout. Untuk JWT, logout-all lintas perangkat memerlukan strategi blacklist tambahan.', null, 200);
         } catch (\Exception $e) {
             return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
         }
+    }
+
+    private function respondWithToken(string $token, User $user, int $statusCode = 200, string $message = 'Berhasil')
+    {
+        return ResponseHelper::jsonResponse(true, $message, [
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'expires_in' => (int) config('jwt.ttl', 60) * 60,
+            'user' => new UserResource($user),
+        ], $statusCode);
     }
 }
