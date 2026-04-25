@@ -70,25 +70,6 @@ class MentorProfileController extends Controller
                 'skills' => $skills,
             ]);
 
-            if (array_key_exists('certifications', $validated)) {
-                $certifications = collect($validated['certifications'] ?? [])
-                    ->map(fn ($item) => trim($item))
-                    ->filter()
-                    ->unique()
-                    ->values();
-
-                $mentor->certifications()->delete();
-
-                if ($certifications->isNotEmpty()) {
-                    $mentor->certifications()->createMany(
-                        $certifications->map(fn ($title) => [
-                            'title' => $title,
-                            'file_path' => 'manual-entry',
-                        ])->all()
-                    );
-                }
-            }
-
             DB::commit();
 
             $mentor->load(['user', 'certifications']);

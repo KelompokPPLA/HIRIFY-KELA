@@ -290,6 +290,65 @@
             gap: 8px;
         }
 
+        .cert-panel {
+            display: grid;
+            gap: 12px;
+        }
+
+        .cert-upload {
+            display: grid;
+            gap: 10px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px dashed rgba(38, 198, 218, 0.35);
+            background: #f7feff;
+        }
+
+        .cert-upload-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+        }
+
+        .cert-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .cert-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid #dbe5f0;
+            background: #fbfdff;
+        }
+
+        .cert-item strong {
+            display: block;
+            font-size: .95rem;
+            margin-bottom: 3px;
+        }
+
+        .cert-item small {
+            color: var(--muted);
+        }
+
+        .cert-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .cert-actions .btn {
+            padding: 9px 12px;
+            border-radius: 10px;
+            font-size: .86rem;
+        }
+
         .btn {
             border: 0;
             border-radius: 11px;
@@ -568,20 +627,36 @@
                         </article>
 
                         <article class="card">
-                            <h2>Pendidikan & Sertifikasi</h2>
+                            <h2>Pendidikan</h2>
                             <div class="grid">
                                 <div>
                                     <label for="education">Pendidikan</label>
                                     <input id="education" name="education" placeholder="S1 Teknik Informatika - Universitas Indonesia">
                                 </div>
-                                <div>
-                                    <label>Sertifikasi</label>
-                                    <div id="certList" class="chip-list"></div>
-                                    <div class="chip-input-row">
-                                        <input id="certInput" placeholder="Contoh: Certified UX Designer">
-                                        <button class="btn btn-primary" type="button" id="addCertBtn">+ Tambah</button>
+                            </div>
+                        </article>
+
+                        <article class="card">
+                            <h2>Riwayat Sertifikasi</h2>
+                            <div class="cert-panel">
+                                <div class="cert-upload">
+                                    <div class="cert-upload-row">
+                                        <div>
+                                            <label for="certTitleInput">Judul Sertifikat</label>
+                                            <input id="certTitleInput" placeholder="Contoh: Certified UX Designer">
+                                        </div>
+                                        <div style="align-self:end;">
+                                            <button class="btn btn-primary" type="button" id="addCertBtn">Upload Sertifikat</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="certFileInput">File Sertifikat</label>
+                                        <input id="certFileInput" type="file" accept="application/pdf,image/png,image/jpeg,image/webp">
+                                        <small style="color:var(--muted); display:block; margin-top:6px;">Format yang didukung: PDF, JPG, JPEG, PNG, WEBP. Maks 5 MB.</small>
                                     </div>
                                 </div>
+
+                                <div id="certList" class="cert-list"></div>
                             </div>
                         </article>
 
@@ -649,6 +724,11 @@
                     </div>
 
                     <div class="preview-item">
+                        <label>Sertifikasi</label>
+                        <div id="previewCerts" class="preview-chips"></div>
+                    </div>
+
+                    <div class="preview-item">
                         <label>Tarif</label>
                         <p id="previewPrice">Rp 0 / sesi</p>
                     </div>
@@ -669,7 +749,7 @@
         }
 
         const skillsState = [];
-        const certificationsState = [];
+        let certificationsState = [];
 
         const profileForm = document.getElementById('profileForm');
         const saveBtn = document.getElementById('saveBtn');
@@ -677,7 +757,8 @@
         const addSkillBtn = document.getElementById('addSkillBtn');
         const addCertBtn = document.getElementById('addCertBtn');
         const skillInput = document.getElementById('skillInput');
-        const certInput = document.getElementById('certInput');
+        const certTitleInput = document.getElementById('certTitleInput');
+        const certFileInput = document.getElementById('certFileInput');
         const skillList = document.getElementById('skillList');
         const certList = document.getElementById('certList');
         const avatarBtn = document.getElementById('avatarBtn');
@@ -703,6 +784,7 @@
             expertise: document.getElementById('previewExpertise'),
             experience: document.getElementById('previewExperience'),
             skills: document.getElementById('previewSkills'),
+            certs: document.getElementById('previewCerts'),
             price: document.getElementById('previewPrice'),
             miniName: document.getElementById('miniName'),
             miniEmail: document.getElementById('miniEmail'),
@@ -770,10 +852,60 @@
         }
 
         function syncCertViews() {
-            renderChips(certificationsState, certList, 'chip', (index) => {
-                removeItem(certificationsState, index);
-                syncCertViews();
+            certList.innerHTML = '';
+            preview.certs.innerHTML = '';
+
+            certificationsState.forEach((item, index) => {
+                const cert = document.createElement('div');
+                cert.className = 'cert-item';
+                cert.innerHTML = `
+                    <div>
+                        <strong>${item.title}</strong>
+                        <small>${item.file_name || 'Sertifikat'}</small>
+                    </div>
+                    <div class="cert-actions">
+                        ${item.file_url ? `<a class="btn btn-ghost" href="${item.file_url}" target="_blank" rel="noopener noreferrer">Lihat File</a>` : ''}
+                        <button class="btn btn-ghost" type="button">Hapus</button>
+                    </div>
+                `;
+
+                cert.querySelector('button').addEventListener('click', () => {
+                    removeCertification(index);
+                });
+
+                certList.appendChild(cert);
+
+                const chip = document.createElement('span');
+                chip.className = 'preview-chip';
+                chip.textContent = item.title;
+                preview.certs.appendChild(chip);
             });
+        }
+
+        async function removeCertification(index) {
+            const item = certificationsState[index];
+
+            if (!item) {
+                return;
+            }
+
+            if (!item.id) {
+                certificationsState.splice(index, 1);
+                syncCertViews();
+                return;
+            }
+
+            try {
+                await api(`/api/mentor/certifications/${item.id}`, {
+                    method: 'DELETE',
+                });
+
+                certificationsState.splice(index, 1);
+                syncCertViews();
+                showToast('Sertifikat berhasil dihapus.', 'success');
+            } catch (error) {
+                showToast(error.message || 'Gagal menghapus sertifikat.', 'error');
+            }
         }
 
         function syncPreviewFromInputs() {
@@ -810,7 +942,7 @@
             fields.price_per_session.value = data.price_per_session ?? '';
 
             skillsState.splice(0, skillsState.length, ...(data.skills || []));
-            certificationsState.splice(0, certificationsState.length, ...(data.certifications || []));
+            certificationsState = [];
 
             syncSkillViews();
             syncCertViews();
@@ -823,6 +955,16 @@
             }
 
             syncPreviewFromInputs();
+        }
+
+        async function loadCertifications() {
+            try {
+                const response = await api('/api/mentor/certifications');
+                certificationsState = Array.isArray(response.data) ? [...response.data] : [];
+                syncCertViews();
+            } catch (error) {
+                showToast(error.message || 'Gagal memuat riwayat sertifikasi.', 'error');
+            }
         }
 
         async function refreshToken() {
@@ -921,6 +1063,7 @@
                 const response = await api('/api/mentor/profile');
                 profileCache = response.data;
                 fillForm(response.data);
+                await loadCertifications();
             } catch (error) {
                 showToast(error.message || 'Gagal memuat profil mentor.', 'error');
             }
@@ -941,7 +1084,6 @@
                 availability: fields.availability.value.trim(),
                 price_per_session: fields.price_per_session.value ? Number(fields.price_per_session.value) : null,
                 skills: [...skillsState],
-                certifications: [...certificationsState],
             };
 
             try {
@@ -989,12 +1131,6 @@
             syncPreviewFromInputs();
         });
 
-        addCertBtn.addEventListener('click', () => {
-            addUniqueItem(certificationsState, certInput.value);
-            certInput.value = '';
-            syncCertViews();
-        });
-
         skillInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -1002,10 +1138,32 @@
             }
         });
 
-        certInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                addCertBtn.click();
+        addCertBtn.addEventListener('click', async () => {
+            const title = certTitleInput.value.trim();
+            const file = certFileInput.files?.[0];
+
+            if (!title || !file) {
+                showToast('Judul sertifikat dan file wajib diisi.', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('certificate_file', file);
+
+            try {
+                const response = await api('/api/mentor/certifications', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                certificationsState.unshift(response.data);
+                certTitleInput.value = '';
+                certFileInput.value = '';
+                syncCertViews();
+                showToast('Sertifikasi berhasil diunggah.', 'success');
+            } catch (error) {
+                showToast(error.message || 'Upload sertifikasi gagal.', 'error');
             }
         });
 

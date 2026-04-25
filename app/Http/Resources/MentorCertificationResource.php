@@ -14,6 +14,7 @@ class MentorCertificationResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'file_path' => $this->file_path,
+            'file_name' => basename($this->file_path ?? ''),
             'file_url' => $this->file_path ? Storage::url($this->file_path) : null,
             'uploaded_at' => $this->created_at?->toDateTimeString(),
         ];

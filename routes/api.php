@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MentorCertificationController;
 use App\Http\Controllers\MentorProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -29,4 +30,7 @@ Route::middleware(['auth:api', 'role:mentor'])->prefix('mentor')->group(function
 	Route::get('profile', [MentorProfileController::class, 'show']);
 	Route::put('profile', [MentorProfileController::class, 'update']);
 	Route::post('profile/avatar', [MentorProfileController::class, 'updateAvatar']);
+	Route::get('certifications', [MentorCertificationController::class, 'index']);
+	Route::post('certifications', [MentorCertificationController::class, 'store']);
+	Route::delete('certifications/{id}', [MentorCertificationController::class, 'destroy']);
 });
