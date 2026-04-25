@@ -55,4 +55,9 @@ class User extends Authenticatable
         return $query->where('name', 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', '%' . $search . '%');
     }
+    
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
 }
