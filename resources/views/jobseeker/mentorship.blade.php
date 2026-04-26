@@ -505,6 +505,123 @@
             gap: 14px;
         }
 
+        .booking-modal {
+            width: min(660px, 100%);
+            max-height: calc(100vh - 60px);
+            padding: 0;
+            display: block;
+            overflow: hidden;
+        }
+
+        .booking-scroll {
+            max-height: calc(100vh - 60px);
+            overflow: auto;
+        }
+
+        .booking-head {
+            padding: 20px 22px 14px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .booking-head h3 {
+            margin: 0;
+            font-size: 2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .booking-head p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .booking-body {
+            padding: 16px 22px 18px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .booking-label {
+            margin: 0 0 8px;
+            font-size: .98rem;
+            font-weight: 800;
+            color: #172c52;
+        }
+
+        .topic-input {
+            min-height: 110px;
+            resize: vertical;
+            background: #f8fbff;
+        }
+
+        .slot {
+            border: 1px solid #d5e5f4;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: border-color .2s ease, background .2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 74px;
+        }
+
+        .slot-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            background: #ecfbff;
+            color: #0ab9d1;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+
+        .slot-time {
+            color: #476186;
+            font-size: .88rem;
+        }
+
+        .summary-box {
+            border: 1px solid #e0eaf5;
+            border-radius: 14px;
+            background: #f7fbff;
+            padding: 12px;
+            display: grid;
+            gap: 9px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            color: #28446d;
+            font-weight: 600;
+        }
+
+        .summary-total {
+            border-top: 1px solid #d7e4f2;
+            padding-top: 10px;
+            color: #112a54;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .booking-footer {
+            border-top: 1px solid var(--line);
+            padding: 12px 22px 18px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: #fff;
+        }
+
+        .btn-solid {
+            background: #07193d;
+            color: #fff;
+        }
+
         .modal-head {
             display: flex;
             justify-content: space-between;
@@ -516,14 +633,6 @@
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 10px;
-        }
-
-        .slot {
-            border: 1px solid #d5e5f4;
-            border-radius: 12px;
-            padding: 10px;
-            cursor: pointer;
-            transition: border-color .2s ease, background .2s ease;
         }
 
         .slot input {
@@ -619,6 +728,10 @@
             }
 
             .modal-grid, .meta-row {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-footer {
                 grid-template-columns: 1fr;
             }
         }
@@ -730,63 +843,59 @@
     </div>
 
     <section id="mentorModal" class="modal">
-        <div class="modal-card">
-            <div class="modal-head">
-                <div>
-                    <h3 id="modalName" style="margin:0; font-size:1.45rem;">Profil Mentor</h3>
-                    <p id="modalSubtitle" class="muted" style="margin:4px 0 0;"></p>
+        <div class="modal-card booking-modal">
+            <div class="booking-scroll">
+                <div class="booking-head">
+                    <h3>Booking Sesi Mentorship</h3>
+                    <p id="modalSubtitle">dengan Mentor</p>
                 </div>
-                <button id="closeModalBtn" class="btn btn-ghost" type="button">Tutup</button>
-            </div>
 
-            <div class="meta-row">
-                <div class="meta-box">
-                    <small>Rating</small>
-                    <strong id="modalRating">-</strong>
+                <div class="booking-body">
+                    <div>
+                        <p class="booking-label">Pilih Jadwal</p>
+                        <div id="slotGrid" class="slot-grid"></div>
+                    </div>
+
+                    <div class="modal-grid">
+                        <div>
+                            <label class="muted" for="manualDate">Atur manual (opsional)</label>
+                            <input id="manualDate" class="input" type="datetime-local">
+                        </div>
+                        <div>
+                            <label class="muted" for="durationInput">Durasi (menit)</label>
+                            <select id="durationInput" class="select">
+                                <option value="60">60 menit</option>
+                                <option value="90">90 menit</option>
+                                <option value="120">120 menit</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="booking-label">Topik yang Ingin Dibahas</p>
+                        <textarea id="bookingNotes" class="textarea topic-input" placeholder="Jelaskan topik yang ingin Anda diskusikan dengan mentor..."></textarea>
+                    </div>
+
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span>Harga sesi</span>
+                            <strong id="summaryPrice">Rp 0/sesi</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Platform fee</span>
+                            <strong>Gratis</strong>
+                        </div>
+                        <div class="summary-row summary-total">
+                            <span>Total</span>
+                            <strong id="summaryTotal">Rp 0/sesi</strong>
+                        </div>
+                    </div>
                 </div>
-                <div class="meta-box">
-                    <small>Jumlah sesi</small>
-                    <strong id="modalSessions">-</strong>
+
+                <div class="booking-footer">
+                    <button id="closeModalBtn" class="btn btn-ghost" type="button">Batal</button>
+                    <button id="bookBtn" class="btn btn-solid" type="button">Konfirmasi Booking</button>
                 </div>
-                <div class="meta-box">
-                    <small>Tarif</small>
-                    <strong id="modalPrice">-</strong>
-                </div>
-            </div>
-
-            <div>
-                <h4 style="margin:0 0 8px;">Tentang Mentor</h4>
-                <p id="modalBio" class="muted" style="margin:0;"></p>
-                <div id="modalSkills" class="tag-list" style="margin-top:10px;"></div>
-            </div>
-
-            <div>
-                <h4 style="margin:0 0 8px;">Pilih Jadwal Ketersediaan</h4>
-                <div id="slotGrid" class="slot-grid"></div>
-            </div>
-
-            <div class="modal-grid">
-                <div>
-                    <label class="muted" for="manualDate">Atur manual (opsional)</label>
-                    <input id="manualDate" class="input" type="datetime-local">
-                </div>
-                <div>
-                    <label class="muted" for="durationInput">Durasi (menit)</label>
-                    <select id="durationInput" class="select">
-                        <option value="60">60 menit</option>
-                        <option value="90">90 menit</option>
-                        <option value="120">120 menit</option>
-                    </select>
-                </div>
-            </div>
-
-            <div>
-                <label class="muted" for="bookingNotes">Catatan untuk mentor (opsional)</label>
-                <textarea id="bookingNotes" class="textarea" rows="3" placeholder="Contoh: ingin bahas transisi karier dari fresh graduate ke UI/UX."></textarea>
-            </div>
-
-            <div class="actions">
-                <button id="bookBtn" class="btn btn-brand" type="button">Booking Sesi</button>
             </div>
         </div>
     </section>
@@ -824,13 +933,9 @@
         const upcomingList = document.getElementById('upcomingList');
 
         const mentorModal = document.getElementById('mentorModal');
-        const modalName = document.getElementById('modalName');
         const modalSubtitle = document.getElementById('modalSubtitle');
-        const modalRating = document.getElementById('modalRating');
-        const modalSessions = document.getElementById('modalSessions');
-        const modalPrice = document.getElementById('modalPrice');
-        const modalBio = document.getElementById('modalBio');
-        const modalSkills = document.getElementById('modalSkills');
+        const summaryPrice = document.getElementById('summaryPrice');
+        const summaryTotal = document.getElementById('summaryTotal');
         const slotGrid = document.getElementById('slotGrid');
 
         const manualDate = document.getElementById('manualDate');
@@ -1162,16 +1267,10 @@
                     return;
                 }
 
-                modalName.textContent = activeMentor.name || 'Mentor';
-                modalSubtitle.textContent = `${activeMentor.expertise || '-'} • ${activeMentor.experience_years || 0} tahun pengalaman`;
-                modalRating.textContent = `⭐ ${activeMentor.rating || 4.8}`;
-                modalSessions.textContent = `${activeMentor.session_count || 0} sesi`; 
-                modalPrice.textContent = `Rp ${formatRupiah(activeMentor.price_per_session || 0)} / sesi`;
-                modalBio.textContent = activeMentor.bio || 'Mentor profesional siap membantu percepatan karier Anda.';
-
-                modalSkills.innerHTML = (activeMentor.skills || []).length
-                    ? activeMentor.skills.map((skill) => `<span class="tag">${escapeHtml(skill)}</span>`).join('')
-                    : '<span class="tag">Mentorship</span>';
+                modalSubtitle.textContent = `dengan ${activeMentor.name || 'Mentor'}`;
+                summaryPrice.textContent = `Rp ${formatRupiah(activeMentor.price_per_session || 0)}/sesi`;
+                summaryTotal.textContent = `Rp ${formatRupiah(activeMentor.price_per_session || 0)}/sesi`;
+                bookingNotes.value = '';
 
                 if (!slots.length) {
                     slotGrid.innerHTML = '<div class="empty" style="grid-column:1/-1;">Belum ada slot yang dibuka mentor. Anda tetap bisa mengajukan jadwal manual.</div>';
@@ -1179,8 +1278,11 @@
                     slotGrid.innerHTML = slots.map((slot) => `
                         <label class="slot" data-slot-id="${escapeHtml(slot.id)}">
                             <input type="radio" name="slotChoice" value="${escapeHtml(slot.id)}">
-                            <strong>${escapeHtml(slot.display_date || '-')}</strong>
-                            <span>${escapeHtml(slot.display_time || '-')}</span>
+                            <span class="slot-icon">🗓</span>
+                            <div>
+                                <strong>${escapeHtml(slot.display_date || '-')}</strong>
+                                <span class="slot-time">${escapeHtml(slot.display_time || '-')}</span>
+                            </div>
                         </label>
                     `).join('');
 
@@ -1216,6 +1318,9 @@
                 payload.mentor_availability_id = selectedSlotId;
             } else if (manualDate.value) {
                 payload.scheduled_start = new Date(manualDate.value).toISOString();
+            } else {
+                showToast('Pilih salah satu jadwal atau isi jadwal manual terlebih dahulu.', 'error');
+                return;
             }
 
             try {
