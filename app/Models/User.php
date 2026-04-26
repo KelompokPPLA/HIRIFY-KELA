@@ -66,4 +66,14 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    public function mentorProfile()
+    {
+        return $this->hasOne(Mentor::class);
+    }
+
+    public function mentorshipBookings()
+    {
+        return $this->hasMany(MentorBooking::class, 'jobseeker_user_id');
+    }
 }

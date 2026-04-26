@@ -39,6 +39,16 @@ class Mentor extends Model
         return $this->hasMany(MentorCertification::class);
     }
 
+    public function availabilities()
+    {
+        return $this->hasMany(MentorAvailability::class);
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(MentorBooking::class);
+    }
+
     public function scopeSearch($query, $search)
     {
         return $query->whereHas('user', function ($q) use ($search) {
