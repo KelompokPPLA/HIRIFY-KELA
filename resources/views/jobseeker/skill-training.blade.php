@@ -41,14 +41,14 @@
         }
         .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 28px; letter-spacing: -0.02em; }
         .brand-mark { width: 34px; height: 34px; border-radius: 12px; background: linear-gradient(145deg,#0399b7,#06d8ee); display: grid; place-items: center; color: #fff; font-size: 17px; font-weight: 800; flex-shrink: 0; }
-        .menu { display: grid; gap: 4px; }
-        .menu-item { border: 0; background: transparent; color: #1a2a4c; font: inherit; font-size: .93rem; text-align: left; border-radius: 12px; padding: 11px 13px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; transition: background .15s; width: 100%; }
-        .menu-item:hover { background: #f2f8ff; }
-        .menu-item.active { background: linear-gradient(145deg,#0a1632,#111f45); color: #f2fbff; box-shadow: 0 8px 20px rgba(11,24,54,.2); }
+        .menu { display: grid; gap: 8px; }
+        .menu button { border: 0; background: transparent; color: #1a2a4c; font: inherit; font-size: .93rem; text-align: left; border-radius: 12px; padding: 11px 13px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; transition: background .15s; width: 100%; }
+        .menu button:hover { background: #f2f8ff; }
+        .menu button.active { background: linear-gradient(145deg,#0a1632,#111f45); color: #f2fbff; box-shadow: 0 8px 20px rgba(11,24,54,.2); }
         .profile-mini { margin-top: auto; background: #f8fbff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 10px; }
         .avatar-mini { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(140deg,#0499b3,#05d5ef); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: .9rem; flex-shrink: 0; }
-        .profile-info strong { display: block; font-size: .88rem; }
-        .profile-info span { color: var(--muted); font-size: .78rem; }
+        .profile-mini strong { display: block; font-size: .88rem; }
+        .profile-mini span { color: var(--muted); font-size: .78rem; }
 
         /* Content */
         .content { padding: 28px 28px 40px; display: flex; flex-direction: column; gap: 20px; }
@@ -186,16 +186,20 @@
             <span class="brand-mark">H</span>
             <span>Hirify!</span>
         </div>
-        <nav class="menu">
-            <button class="menu-item" type="button" data-goto="/dashboard">🏠 Dashboard</button>
-            <button class="menu-item" type="button" data-goto="/mentorship">🎓 Mentorship</button>
-            <button class="menu-item active" type="button">📚 Pelatihan Skill</button>
-            <button class="menu-item" type="button" data-goto="/forum">💬 Forum Diskusi</button>
-            <button class="menu-item" type="button" id="logoutBtn">🚪 Logout</button>
-        </nav>
+        <div class="menu">
+            <button type="button" data-goto="/dashboard">Dashboard</button>
+            <button type="button">Profil</button>
+            <button type="button">Manajemen CV</button>
+            <button type="button">Roadmap Karier</button>
+            <button type="button" data-goto="/mentorship">Mentorship</button>
+            <button type="button" class="active">Pelatihan Skill</button>
+            <button type="button" data-goto="/forum">Forum Diskusi</button>
+            <button type="button">Notifikasi</button>
+            <button type="button" id="logoutBtn">Logout</button>
+        </div>
         <div class="profile-mini">
             <div class="avatar-mini" id="miniAvatar">U</div>
-            <div class="profile-info">
+            <div>
                 <strong id="miniName">Loading…</strong>
                 <span id="miniEmail">-</span>
             </div>
