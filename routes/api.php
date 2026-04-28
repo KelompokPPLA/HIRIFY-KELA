@@ -5,6 +5,7 @@ use App\Http\Controllers\ForumController;
 use App\Http\Controllers\MentorCertificationController;
 use App\Http\Controllers\MentorshipController;
 use App\Http\Controllers\MentorProfileController;
+use App\Http\Controllers\SkillTrainingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +45,14 @@ Route::middleware('auth:api')->prefix('forum')->group(function () {
     Route::delete('threads/{id}', [ForumController::class, 'destroyThread']);
     Route::post('threads/{id}/comments', [ForumController::class, 'addComment']);
     Route::delete('threads/{id}/comments/{commentId}', [ForumController::class, 'destroyComment']);
+});
+
+Route::middleware(['auth:api', 'role:jobseeker'])->prefix('skill-training')->group(function () {
+    Route::get('courses', [SkillTrainingController::class, 'catalog']);
+    Route::get('courses/{id}', [SkillTrainingController::class, 'courseDetail']);
+    Route::post('courses/{id}/enroll', [SkillTrainingController::class, 'enroll']);
+    Route::post('courses/{courseId}/lessons/{lessonId}/complete', [SkillTrainingController::class, 'completeLesson']);
+    Route::get('my-courses', [SkillTrainingController::class, 'myEnrollments']);
 });
 
 Route::middleware(['auth:api', 'role:jobseeker'])->prefix('mentorship')->group(function () {
