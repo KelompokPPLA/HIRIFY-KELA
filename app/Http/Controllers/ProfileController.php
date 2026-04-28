@@ -9,8 +9,7 @@ class ProfileController extends Controller
 {
     public function index()
     {
-        $profile = Auth::user()->profile;
-        return view('profile.index', compact('profile'));
+        return view('profile.index');
     }
 
     public function store(Request $request)

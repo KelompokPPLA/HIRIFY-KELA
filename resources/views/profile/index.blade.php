@@ -1,111 +1,109 @@
 @extends('layouts.app')
 
+@section('title', 'Profil Saya')
+
 @section('content')
-<div class="flex min-h-screen bg-gray-100">
+<div class="space-y-8">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Profil</p>
+            <h1 class="text-3xl font-semibold text-slate-950">Profil Saya</h1>
+            <p class="mt-2 text-sm text-slate-600 max-w-2xl">Perbarui data pribadi, pendidikan, dan pengalaman Anda untuk memperkuat profil karier.</p>
+        </div>
+        <button class="inline-flex items-center rounded-2xl bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary-foreground)] transition hover:bg-[var(--color-primary)]/90">Simpan Perubahan</button>
+    </div>
 
-    <div class="flex-1 p-8">
-        <div class="max-w-6xl mx-auto">
-
-            <h1 class="text-3xl font-bold mb-6">Profil Saya</h1>
-
-            <div class="grid lg:grid-cols-3 gap-8">
-
-                <!-- FORM -->
-                <div class="lg:col-span-2 space-y-6">
-
-                    <!-- DATA DIRI -->
-                    <form method="POST" action="{{ route('profile.store') }}" enctype="multipart/form-data">
-                        @csrf
-
-                        <div class="bg-white p-6 rounded-xl shadow">
-                            <h2 class="text-xl font-semibold mb-4">Data Diri</h2>
-
-                            <input type="text" name="first_name"
-                                placeholder="Nama Depan"
-                                value="{{ $profile->first_name ?? '' }}"
-                                class="w-full border p-2 mb-3 rounded">
-
-                            <input type="text" name="last_name"
-                                placeholder="Nama Belakang"
-                                value="{{ $profile->last_name ?? '' }}"
-                                class="w-full border p-2 mb-3 rounded">
-
-                            <input type="text" name="phone"
-                                placeholder="Nomor Telepon"
-                                value="{{ $profile->phone ?? '' }}"
-                                class="w-full border p-2 mb-3 rounded">
-
-                            <textarea name="bio"
-                                placeholder="Bio"
-                                class="w-full border p-2 rounded">{{ $profile->bio ?? '' }}</textarea>
-                        </div>
-
-                        <!-- SKILLS -->
-                        <div class="bg-white p-6 rounded-xl shadow">
-                            <h2 class="text-xl font-semibold mb-4">Skills</h2>
-
-                            <div class="flex gap-2">
-                                <input type="text" name="skill"
-                                    placeholder="Tambah skill"
-                                    class="flex-1 border p-2 rounded">
-
-                                <button class="bg-blue-500 text-white px-4 rounded">
-                                    Tambah
-                                </button>
-                            </div>
-
-                            @if($profile && $profile->skills)
-                                <div class="mt-4 flex flex-wrap gap-2">
-                                    @foreach($profile->skills as $skill)
-                                        <span class="px-3 py-1 bg-blue-100 rounded">
-                                            {{ $skill->name }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- FOTO -->
-                        <div class="bg-white p-6 rounded-xl shadow">
-                            <h2 class="text-xl font-semibold mb-4">Foto Profil</h2>
-
-                            <input type="file" name="photo">
-                        </div>
-
-                        <button class="w-full bg-blue-600 text-white py-3 rounded mt-4">
-                            Simpan Perubahan
-                        </button>
-                    </form>
+    <div class="grid gap-6 xl:grid-cols-[0.72fr_0.28fr]">
+        <div class="space-y-6">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.24em] text-slate-500">Akun</p>
+                        <h2 class="mt-2 text-xl font-semibold text-slate-950">Informasi Diri</h2>
+                    </div>
+                    <span class="rounded-2xl bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">Profil Lengkap 75%</span>
                 </div>
 
-                <!-- PREVIEW -->
-                <div>
-                    <div class="bg-white p-6 rounded-xl shadow sticky top-8">
+                <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                    <label class="space-y-2 text-sm">
+                        <span class="text-slate-600">Nama Lengkap</span>
+                        <input type="text" value="John Doe" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/10" />
+                    </label>
+                    <label class="space-y-2 text-sm">
+                        <span class="text-slate-600">Email</span>
+                        <input type="email" value="john@mail.com" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/10" />
+                    </label>
+                    <label class="space-y-2 text-sm">
+                        <span class="text-slate-600">Telepon</span>
+                        <input type="text" value="+62 812 0000" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/10" />
+                    </label>
+                    <label class="space-y-2 text-sm">
+                        <span class="text-slate-600">Lokasi</span>
+                        <input type="text" value="Jakarta, Indonesia" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/10" />
+                    </label>
+                </div>
+            </div>
 
-                        <h2 class="text-xl font-semibold mb-4">Preview</h2>
-
-                        <div class="text-center mb-4">
-                            @if($profile && $profile->photo)
-                                <img src="{{ asset('storage/'.$profile->photo) }}"
-                                    class="w-24 h-24 rounded-full mx-auto">
-                            @else
-                                <div class="w-24 h-24 bg-gray-300 rounded-full mx-auto"></div>
-                            @endif
-
-                            <p class="mt-2 font-bold">
-                                {{ $profile->first_name ?? 'Nama' }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p><strong>Bio:</strong> {{ $profile->bio ?? '-' }}</p>
-                        </div>
-
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="text-lg font-semibold text-slate-950">Pendidikan</h2>
+                <div class="mt-5 grid gap-4 sm:grid-cols-3">
+                    <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm font-medium text-slate-600">Institusi</p>
+                        <p class="mt-2 text-base font-semibold text-slate-950">Universitas Indonesia</p>
+                    </div>
+                    <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm font-medium text-slate-600">Program Studi</p>
+                        <p class="mt-2 text-base font-semibold text-slate-950">Informatika</p>
+                    </div>
+                    <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm font-medium text-slate-600">IPK</p>
+                        <p class="mt-2 text-base font-semibold text-slate-950">3.8</p>
                     </div>
                 </div>
+            </div>
 
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="text-lg font-semibold text-slate-950">Pengalaman Kerja</h2>
+                <div class="mt-5 space-y-4">
+                    <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm text-slate-500">Frontend Developer</p>
+                        <p class="mt-2 text-sm text-slate-600">Startup XYZ • 2023 - Sekarang</p>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <aside class="space-y-6">
+            <div class="rounded-3xl bg-gradient-to-br from-slate-950 to-slate-800 p-6 text-white shadow-lg">
+                <div class="flex items-center gap-4">
+                    <div class="grid h-16 w-16 place-items-center rounded-3xl bg-white/10 text-2xl font-semibold">JD</div>
+                    <div>
+                        <p class="text-sm uppercase tracking-[0.24em] text-slate-300">Akun</p>
+                        <h3 class="mt-2 text-xl font-semibold">John Doe</h3>
+                        <p class="mt-1 text-sm text-slate-300">Frontend Developer</p>
+                    </div>
+                </div>
+                <div class="mt-6 space-y-3">
+                    <div class="rounded-3xl bg-white/10 p-4">
+                        <p class="text-xs text-slate-300">Email</p>
+                        <p class="mt-1 font-medium">john@mail.com</p>
+                    </div>
+                    <div class="rounded-3xl bg-white/10 p-4">
+                        <p class="text-xs text-slate-300">Status</p>
+                        <p class="mt-1 font-medium">Aktif</p>
+                    </div>
+                </div>
+            </div>
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 class="text-lg font-semibold text-slate-950">Skill Populer</h3>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="rounded-2xl bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">Vue</span>
+                    <span class="rounded-2xl bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">Laravel</span>
+                    <span class="rounded-2xl bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">MySQL</span>
+                    <span class="rounded-2xl bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">Figma</span>
+                </div>
+            </div>
+        </aside>
     </div>
 </div>
 @endsection
