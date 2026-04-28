@@ -13,3 +13,15 @@ Route::get('/self-assessment', fn() => view('self-assessment.index'))->name('sel
 Route::get('/pelatihan', fn() => view('pelatihan.index'))->name('pelatihan');
 Route::get('/mentorship', fn() => view('mentorship.index'))->name('mentorship');
 Route::get('/notifikasi', fn() => view('notifikasi.index'))->name('notifikasi');
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::view('/login', 'auth.login')->name('login');
+Route::view('/register', 'auth.register')->name('register');
+Route::view('/forgot-password', 'auth.forgot-password')->name('password.request');
+Route::view('/reset-password', 'auth.reset-password')->name('password.reset');
+Route::view('/dashboard', 'auth.dashboard')->name('dashboard');
+Route::view('/mentor/settings', 'mentor.settings')->name('mentor.settings');
+Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
+Route::view('/forum', 'forum.index')->name('forum.index');

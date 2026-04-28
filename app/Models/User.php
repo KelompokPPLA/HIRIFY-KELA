@@ -9,8 +9,9 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, UUID;
@@ -24,7 +25,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'role',
     ];
 
     /**
@@ -59,5 +60,24 @@ class User extends Authenticatable
     public function profile()
     {
         return $this->hasOne(Profile::class);
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims(): array
+    {
+        return [];
+    }
+
+    public function mentorProfile()
+    {
+        return $this->hasOne(Mentor::class);
+    }
+
+    public function mentorshipBookings()
+    {
+        return $this->hasMany(MentorBooking::class, 'jobseeker_user_id');
     }
 }
