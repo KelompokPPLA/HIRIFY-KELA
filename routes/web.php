@@ -14,3 +14,4 @@ Route::view('/dashboard', 'auth.dashboard')->name('dashboard');
 Route::view('/mentor/settings', 'mentor.settings')->name('mentor.settings');
 Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
 Route::view('/forum', 'forum.index')->name('forum.index');
+Route::view('/skill-training', 'jobseeker.skill-training')->name('skill.training');
