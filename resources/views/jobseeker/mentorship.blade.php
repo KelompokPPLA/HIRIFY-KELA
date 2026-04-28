@@ -766,12 +766,10 @@
             </div>
 
             <div class="menu">
-                <button type="button" data-nav="dashboard">Dashboard</button>
-                <button type="button" data-nav="profile">Profil</button>
-                <button type="button">Manajemen CV</button>
-                <button type="button">Roadmap Karier</button>
-                <button type="button" class="active">Mentorship</button>
-                <button type="button">Notifikasi</button>
+                <button type="button" data-nav="dashboard">🏠 Dashboard</button>
+                <button type="button" data-nav="profile">👤 Profil</button>
+                <button type="button" class="active">🎓 Mentorship</button>
+                <button type="button" data-nav="forum">💬 Forum Diskusi</button>
             </div>
 
             <div class="profile-mini">
@@ -1395,6 +1393,10 @@
 
             document.querySelector('[data-nav="profile"]').addEventListener('click', () => {
                 window.location.href = '/dashboard';
+            });
+
+            document.querySelector('[data-nav="forum"]').addEventListener('click', () => {
+                window.location.href = '/forum';
             });
         }
 

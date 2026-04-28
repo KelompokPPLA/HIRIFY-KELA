@@ -13,3 +13,4 @@ Route::view('/reset-password', 'auth.reset-password')->name('password.reset');
 Route::view('/dashboard', 'auth.dashboard')->name('dashboard');
 Route::view('/mentor/settings', 'mentor.settings')->name('mentor.settings');
 Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
+Route::view('/forum', 'forum.index')->name('forum.index');
