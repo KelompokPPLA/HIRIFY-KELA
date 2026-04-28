@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminStatisticsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\MentorCertificationController;
@@ -27,6 +28,7 @@ Route::prefix('auth')->group(function () {
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
 	Route::apiResource('user', UserController::class);
 	Route::get('user/all/paginated', [UserController::class, 'getAllPaginated']);
+    Route::get('admin/statistics', [AdminStatisticsController::class, 'index']);
 });
 
 Route::middleware(['auth:api', 'role:mentor'])->prefix('mentor')->group(function () {
