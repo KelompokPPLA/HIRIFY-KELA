@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ForumController;
 use App\Http\Controllers\MentorCertificationController;
 use App\Http\Controllers\MentorshipController;
 use App\Http\Controllers\MentorProfileController;
@@ -34,6 +35,15 @@ Route::middleware(['auth:api', 'role:mentor'])->prefix('mentor')->group(function
 	Route::get('certifications', [MentorCertificationController::class, 'index']);
 	Route::post('certifications', [MentorCertificationController::class, 'store']);
 	Route::delete('certifications/{id}', [MentorCertificationController::class, 'destroy']);
+});
+
+Route::middleware('auth:api')->prefix('forum')->group(function () {
+    Route::get('threads', [ForumController::class, 'index']);
+    Route::post('threads', [ForumController::class, 'store']);
+    Route::get('threads/{id}', [ForumController::class, 'show']);
+    Route::delete('threads/{id}', [ForumController::class, 'destroyThread']);
+    Route::post('threads/{id}/comments', [ForumController::class, 'addComment']);
+    Route::delete('threads/{id}/comments/{commentId}', [ForumController::class, 'destroyComment']);
 });
 
 Route::middleware(['auth:api', 'role:jobseeker'])->prefix('mentorship')->group(function () {

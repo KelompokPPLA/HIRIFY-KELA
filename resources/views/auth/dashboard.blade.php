@@ -147,6 +147,7 @@
             <div style="display:flex; gap:10px;">
                 <a id="mentorSettingsBtn" href="/mentor/settings" class="btn btn-primary" style="display:none; text-decoration:none;">Pengaturan Mentor</a>
                 <a id="mentorshipBtn" href="/mentorship" class="btn btn-primary" style="display:none; text-decoration:none;">Cari Mentor</a>
+                <a href="/forum" class="btn btn-primary" style="text-decoration:none;">💬 Forum Diskusi</a>
                 <button id="reloadBtn" class="btn btn-primary">Refresh</button>
                 <button id="logoutBtn" class="btn btn-danger">Logout</button>
             </div>
