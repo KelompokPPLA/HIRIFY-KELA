@@ -771,7 +771,7 @@
                 <button type="button">Manajemen CV</button>
                 <button type="button">Roadmap Karier</button>
                 <button type="button" class="active">Mentorship</button>
-                <button type="button" data-nav="skill-training">📚 Pelatihan Skill</button>
+                <button type="button" data-nav="skill-training">Pelatihan Skill</button>
                 <button type="button" data-nav="forum">Forum Diskusi</button>
                 <button type="button">Notifikasi</button>
             </div>
