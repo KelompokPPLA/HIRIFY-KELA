@@ -803,9 +803,10 @@ function renderComments(comments) {
     }
 
     container.innerHTML = comments.map(c => {
-        const canDel = currentUser && (currentUser.id === c.user_id || currentUser.role === 'admin');
+        const canEdit = currentUser && currentUser.id === c.user_id;
+        const canDel  = currentUser && (currentUser.id === c.user_id || currentUser.role === 'admin');
         return `
-            <div class="comment-card">
+            <div class="comment-card" data-comment-id="${esc(c.id)}">
                 <div class="comment-header">
                     <div class="comment-author-wrap">
                         <div class="comment-avatar">${esc(initial(c.author))}</div>
@@ -814,14 +815,21 @@ function renderComments(comments) {
                             <div class="comment-time">${esc(c.created_at)}</div>
                         </div>
                     </div>
-                    ${canDel ? `<button class="btn btn-danger btn-sm" data-del-comment="${esc(c.id)}">Hapus</button>` : ''}
+                    <div style="display:flex; gap:6px;">
+                        ${canEdit ? `<button class="btn btn-ghost btn-sm" data-edit-comment="${esc(c.id)}">Edit</button>` : ''}
+                        ${canDel  ? `<button class="btn btn-danger btn-sm" data-del-comment="${esc(c.id)}">Hapus</button>` : ''}
+                    </div>
                 </div>
-                <div class="comment-body">${esc(c.body)}</div>
+                <div class="comment-body" data-body-for="${esc(c.id)}">${esc(c.body)}</div>
             </div>`;
     }).join('');
 
     container.querySelectorAll('[data-del-comment]').forEach(btn => {
         btn.addEventListener('click', () => deleteComment(btn.dataset.delComment));
+    });
+
+    container.querySelectorAll('[data-edit-comment]').forEach(btn => {
+        btn.addEventListener('click', () => startEditComment(btn.dataset.editComment));
     });
 }
 
@@ -948,6 +956,44 @@ async function deleteComment(commentId) {
         await openThread(activeThreadId);
     } catch (err) {
         showToast(err.message || 'Gagal menghapus komentar.', 'error');
+    }
+}
+
+function startEditComment(commentId) {
+    const bodyEl = document.querySelector(`[data-body-for="${commentId}"]`);
+    if (!bodyEl || bodyEl.dataset.editing === 'true') return;
+    const original = bodyEl.textContent;
+    bodyEl.dataset.editing = 'true';
+    bodyEl.innerHTML = `
+        <textarea class="textarea" style="min-height:70px; margin-bottom:8px;">${esc(original)}</textarea>
+        <div style="display:flex; gap:6px; justify-content:flex-end;">
+            <button class="btn btn-ghost btn-sm" data-cancel-edit="${commentId}">Batal</button>
+            <button class="btn btn-brand btn-sm" data-save-edit="${commentId}">Simpan</button>
+        </div>`;
+
+    bodyEl.querySelector(`[data-cancel-edit]`).addEventListener('click', () => {
+        bodyEl.dataset.editing = '';
+        bodyEl.textContent = original;
+    });
+    bodyEl.querySelector(`[data-save-edit]`).addEventListener('click', () => submitEditComment(commentId, bodyEl));
+}
+
+async function submitEditComment(commentId, bodyEl) {
+    const newBody = bodyEl.querySelector('textarea')?.value?.trim();
+    if (!newBody) { showToast('Komentar tidak boleh kosong.', 'error'); return; }
+    const saveBtn = bodyEl.querySelector(`[data-save-edit]`);
+    if (saveBtn) saveBtn.disabled = true;
+    try {
+        await api(`/api/forum/threads/${activeThreadId}/comments/${commentId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ body: newBody }),
+        });
+        showToast('Komentar berhasil diperbarui.', 'success');
+        bodyEl.dataset.editing = '';
+        bodyEl.textContent = newBody;
+    } catch (err) {
+        showToast(err.message || 'Gagal memperbarui komentar.', 'error');
+        if (saveBtn) saveBtn.disabled = false;
     }
 }
 
