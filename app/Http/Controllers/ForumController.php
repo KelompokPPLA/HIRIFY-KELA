@@ -48,6 +48,7 @@ class ForumController extends Controller
             'comments_count' => $t->comments_count,
             'views_count'    => $t->views_count,
             'created_at'     => $t->created_at->diffForHumans(),
+            'is_edited'      => $t->updated_at->gt($t->created_at->addSeconds(10)),
         ]);
 
         return ResponseHelper::jsonResponse(true, 'Thread berhasil dimuat.', [
@@ -103,6 +104,7 @@ class ForumController extends Controller
             'author_role' => $c->user?->role ?? '-',
             'user_id'     => $c->user_id,
             'created_at'  => $c->created_at->diffForHumans(),
+            'is_edited'   => $c->updated_at->gt($c->created_at->addSeconds(10)),
         ]);
 
         return ResponseHelper::jsonResponse(true, 'Detail thread berhasil dimuat.', [
@@ -114,6 +116,7 @@ class ForumController extends Controller
             'user_id'        => $thread->user_id,
             'views_count'    => $thread->views_count,
             'created_at'     => $thread->created_at->diffForHumans(),
+            'is_edited'      => $thread->updated_at->gt($thread->created_at->addSeconds(10)),
             'comments'       => $comments,
         ], 200);
     }
