@@ -377,6 +377,17 @@
 
         .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
+        /* ── Character counter ── */
+        .char-counter {
+            font-size: .75rem;
+            color: var(--muted);
+            text-align: right;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+        .char-counter.warn  { color: #c97b10; }
+        .char-counter.limit { color: var(--danger); }
+
         /* ── Animations ── */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(10px); }
@@ -520,7 +531,8 @@
                 <h3>💬 Tambahkan Komentar</h3>
                 <div class="form-grid">
                     <textarea id="commentBody" class="textarea" style="min-height:90px;"
-                        placeholder="Tulis komentar Anda…"></textarea>
+                        placeholder="Tulis komentar Anda…" maxlength="5000"></textarea>
+                    <div class="char-counter" id="commentBodyCounter">0 / 5000</div>
                     <div style="display:flex; justify-content:flex-end;">
                         <button class="btn btn-brand" type="button" id="submitCommentBtn">Kirim Komentar</button>
                     </div>
@@ -547,7 +559,8 @@
             <div>
                 <label class="field-label" for="threadBody">Isi Diskusi</label>
                 <textarea id="threadBody" class="textarea" style="min-height:150px;"
-                    placeholder="Jelaskan topik yang ingin kamu diskusikan dengan komunitas…"></textarea>
+                    placeholder="Jelaskan topik yang ingin kamu diskusikan dengan komunitas…" maxlength="10000"></textarea>
+                <div class="char-counter" id="threadBodyCounter">0 / 10000</div>
             </div>
         </div>
         <div class="modal-actions">
@@ -572,7 +585,8 @@
             <div>
                 <label class="field-label" for="editThreadBody">Isi Diskusi</label>
                 <textarea id="editThreadBody" class="textarea" style="min-height:150px;"
-                    placeholder="Jelaskan topik yang ingin kamu diskusikan…"></textarea>
+                    placeholder="Jelaskan topik yang ingin kamu diskusikan…" maxlength="10000"></textarea>
+                <div class="char-counter" id="editThreadBodyCounter">0 / 10000</div>
             </div>
         </div>
         <div class="modal-actions">
@@ -1009,6 +1023,20 @@ function closeModal() { document.getElementById('newThreadModal').classList.remo
 
 /* ── Event bindings ── */
 function bindEvents() {
+    function attachCounter(textareaId, counterId, max) {
+        const ta  = document.getElementById(textareaId);
+        const ctr = document.getElementById(counterId);
+        if (!ta || !ctr) return;
+        ta.addEventListener('input', () => {
+            const len = ta.value.length;
+            ctr.textContent = `${len} / ${max}`;
+            ctr.className = 'char-counter' + (len >= max ? ' limit' : len >= max * 0.85 ? ' warn' : '');
+        });
+    }
+    attachCounter('threadBody', 'threadBodyCounter', 10000);
+    attachCounter('editThreadBody', 'editThreadBodyCounter', 10000);
+    attachCounter('commentBody', 'commentBodyCounter', 5000);
+
     document.getElementById('openNewThreadBtn').addEventListener('click', openModal);
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
     document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
