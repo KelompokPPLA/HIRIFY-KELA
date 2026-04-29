@@ -47,6 +47,7 @@ Route::middleware('auth:api')->prefix('forum')->group(function () {
     Route::put('threads/{id}', [ForumController::class, 'updateThread']);
     Route::delete('threads/{id}', [ForumController::class, 'destroyThread']);
     Route::post('threads/{id}/comments', [ForumController::class, 'addComment']);
+    Route::put('threads/{id}/comments/{commentId}', [ForumController::class, 'updateComment']);
     Route::delete('threads/{id}/comments/{commentId}', [ForumController::class, 'destroyComment']);
 });
 

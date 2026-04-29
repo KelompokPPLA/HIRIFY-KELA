@@ -183,6 +183,33 @@ class ForumController extends Controller
         return ResponseHelper::jsonResponse(true, 'Thread berhasil dihapus.', null, 200);
     }
 
+    public function updateComment(Request $request, string $threadId, string $commentId): JsonResponse
+    {
+        $user    = $this->authUser();
+        $comment = ForumComment::where('id', $commentId)
+            ->where('forum_thread_id', $threadId)
+            ->first();
+
+        if (! $comment) {
+            return ResponseHelper::jsonResponse(false, 'Komentar tidak ditemukan.', null, 404);
+        }
+
+        if ($comment->user_id !== $user->id) {
+            return ResponseHelper::jsonResponse(false, 'Tidak memiliki izin untuk mengedit komentar ini.', null, 403);
+        }
+
+        $validated = $request->validate([
+            'body' => 'required|string|max:5000',
+        ]);
+
+        $comment->update(['body' => $validated['body']]);
+
+        return ResponseHelper::jsonResponse(true, 'Komentar berhasil diperbarui.', [
+            'id'   => $comment->id,
+            'body' => $comment->body,
+        ], 200);
+    }
+
     public function destroyComment(string $threadId, string $commentId): JsonResponse
     {
         $user    = $this->authUser();
