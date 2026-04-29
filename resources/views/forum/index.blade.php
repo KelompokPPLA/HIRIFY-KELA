@@ -470,7 +470,14 @@
             <div>
                 <div class="list-header">
                     <h2>Semua Thread</h2>
-                    <button class="btn btn-ghost btn-sm" type="button" id="refreshBtn">↺ Refresh</button>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <select id="sortSelect" class="input" style="width:auto; padding:7px 14px; font-size:.82rem; border-radius:9px; font-weight:600;">
+                            <option value="latest">Terbaru</option>
+                            <option value="popular">Terpopuler</option>
+                            <option value="active">Paling Aktif</option>
+                        </select>
+                        <button class="btn btn-ghost btn-sm" type="button" id="refreshBtn">↺ Refresh</button>
+                    </div>
                 </div>
                 <div id="threadList" class="thread-list"></div>
                 <div id="pagination" class="pagination" style="margin-top:14px;"></div>
@@ -555,6 +562,7 @@ let activeThreadId = null;
 let page        = 1;
 let lastPage    = 1;
 let searchQuery = '';
+let sortBy      = 'latest';
 
 if (!token) { window.location.href = '/login'; }
 
@@ -648,7 +656,7 @@ async function loadThreads(p = 1) {
     const threadList = document.getElementById('threadList');
     threadList.innerHTML = '<div class="loading-row"><span class="spinner"></span></div>';
 
-    const params = new URLSearchParams({ per_page: 12, page });
+    const params = new URLSearchParams({ per_page: 12, page, sort: sortBy });
     if (searchQuery.trim()) params.set('search', searchQuery.trim());
 
     const res  = await api(`/api/forum/threads?${params}`);
@@ -907,6 +915,10 @@ function bindEvents() {
         }
     });
 
+    document.getElementById('sortSelect').addEventListener('change', e => {
+        sortBy = e.target.value;
+        loadThreads(1);
+    });
     document.getElementById('refreshBtn').addEventListener('click', () => loadThreads(page));
     document.getElementById('backBtn').addEventListener('click', () => { showList(); loadThreads(page); });
     document.getElementById('deleteThreadBtn').addEventListener('click', deleteThread);
