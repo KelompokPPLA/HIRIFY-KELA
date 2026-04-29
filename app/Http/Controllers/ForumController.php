@@ -138,6 +138,33 @@ class ForumController extends Controller
         ], 201);
     }
 
+    public function updateThread(Request $request, string $id): JsonResponse
+    {
+        $user   = $this->authUser();
+        $thread = ForumThread::find($id);
+
+        if (! $thread) {
+            return ResponseHelper::jsonResponse(false, 'Thread tidak ditemukan.', null, 404);
+        }
+
+        if ($thread->user_id !== $user->id) {
+            return ResponseHelper::jsonResponse(false, 'Tidak memiliki izin untuk mengedit thread ini.', null, 403);
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'body'  => 'required|string|max:10000',
+        ]);
+
+        $thread->update($validated);
+
+        return ResponseHelper::jsonResponse(true, 'Thread berhasil diperbarui.', [
+            'id'    => $thread->id,
+            'title' => $thread->title,
+            'body'  => $thread->body,
+        ], 200);
+    }
+
     public function destroyThread(string $id): JsonResponse
     {
         $user   = $this->authUser();
