@@ -490,9 +490,14 @@
 
             <div class="detail-topbar">
                 <button class="btn btn-ghost" type="button" id="backBtn">← Kembali ke Forum</button>
-                <button class="btn btn-danger btn-sm" type="button" id="deleteThreadBtn" style="display:none;">
-                    🗑 Hapus Thread
-                </button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-ghost btn-sm" type="button" id="editThreadBtn" style="display:none;">
+                        ✏️ Edit Thread
+                    </button>
+                    <button class="btn btn-danger btn-sm" type="button" id="deleteThreadBtn" style="display:none;">
+                        🗑 Hapus Thread
+                    </button>
+                </div>
             </div>
 
             <div class="detail-hero" id="detailHero">
@@ -552,6 +557,31 @@
     </div>
 </div>
 
+{{-- ── Modal: Edit Thread ── --}}
+<div id="editThreadModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>✏️ Edit Thread</h3>
+            <button class="modal-close" type="button" id="closeEditThreadModalBtn">✕</button>
+        </div>
+        <div class="form-grid">
+            <div>
+                <label class="field-label" for="editThreadTitle">Judul Thread</label>
+                <input id="editThreadTitle" class="input" placeholder="Tuliskan judul yang jelas dan menarik…" maxlength="255">
+            </div>
+            <div>
+                <label class="field-label" for="editThreadBody">Isi Diskusi</label>
+                <textarea id="editThreadBody" class="textarea" style="min-height:150px;"
+                    placeholder="Jelaskan topik yang ingin kamu diskusikan…"></textarea>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" type="button" id="cancelEditThreadModalBtn">Batal</button>
+            <button class="btn btn-dark" type="button" id="submitEditThreadBtn">💾 Simpan Perubahan</button>
+        </div>
+    </div>
+</div>
+
 <script>
 const showToast = window.hirifyShowToast;
 
@@ -559,6 +589,7 @@ const showToast = window.hirifyShowToast;
 let token       = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
 let currentUser = null;
 let activeThreadId = null;
+let activeThread   = null;
 let page        = 1;
 let lastPage    = 1;
 let searchQuery = '';
@@ -726,11 +757,13 @@ async function openThread(id) {
     document.getElementById('detailMeta').innerHTML    = '';
     document.getElementById('commentList').innerHTML   = '<div class="loading-row"><span class="spinner"></span></div>';
     document.getElementById('deleteThreadBtn').style.display = 'none';
+    document.getElementById('editThreadBtn').style.display   = 'none';
     document.getElementById('commentBody').value = '';
 
     try {
         const res    = await api(`/api/forum/threads/${id}`);
         const thread = res.data;
+        activeThread = thread;
 
         document.getElementById('detailTitle').textContent = thread.title;
         document.getElementById('detailBody').textContent  = thread.body;
@@ -742,6 +775,9 @@ async function openThread(id) {
              <span class="dot">·</span>
              <span>👁 ${esc(String(thread.views_count))} views</span>`;
 
+        if (currentUser && currentUser.id === thread.user_id) {
+            document.getElementById('editThreadBtn').style.display   = '';
+        }
         if (currentUser && (currentUser.id === thread.user_id || currentUser.role === 'admin')) {
             document.getElementById('deleteThreadBtn').style.display = '';
         }
@@ -861,6 +897,37 @@ async function postComment() {
     }
 }
 
+function openEditThreadModal() {
+    if (!activeThread) return;
+    document.getElementById('editThreadTitle').value = activeThread.title;
+    document.getElementById('editThreadBody').value  = activeThread.body;
+    document.getElementById('editThreadModal').classList.add('show');
+}
+
+function closeEditThreadModal() {
+    document.getElementById('editThreadModal').classList.remove('show');
+}
+
+async function submitEditThread() {
+    const title = document.getElementById('editThreadTitle').value.trim();
+    const body  = document.getElementById('editThreadBody').value.trim();
+    if (!title) { showToast('Judul thread wajib diisi.', 'error'); return; }
+    if (!body)  { showToast('Isi diskusi wajib diisi.', 'error'); return; }
+
+    const btn = document.getElementById('submitEditThreadBtn');
+    btn.disabled = true;
+    try {
+        await api(`/api/forum/threads/${activeThreadId}`, { method: 'PUT', body: JSON.stringify({ title, body }) });
+        showToast('Thread berhasil diperbarui.', 'success');
+        closeEditThreadModal();
+        await openThread(activeThreadId);
+    } catch (err) {
+        showToast(err.message || 'Gagal memperbarui thread.', 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
 async function deleteThread() {
     if (!activeThreadId || !confirm('Hapus thread ini secara permanen?')) return;
     try {
@@ -921,6 +988,13 @@ function bindEvents() {
     });
     document.getElementById('refreshBtn').addEventListener('click', () => loadThreads(page));
     document.getElementById('backBtn').addEventListener('click', () => { showList(); loadThreads(page); });
+    document.getElementById('editThreadBtn').addEventListener('click', openEditThreadModal);
+    document.getElementById('closeEditThreadModalBtn').addEventListener('click', closeEditThreadModal);
+    document.getElementById('cancelEditThreadModalBtn').addEventListener('click', closeEditThreadModal);
+    document.getElementById('editThreadModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('editThreadModal')) closeEditThreadModal();
+    });
+    document.getElementById('submitEditThreadBtn').addEventListener('click', submitEditThread);
     document.getElementById('deleteThreadBtn').addEventListener('click', deleteThread);
     document.getElementById('submitCommentBtn').addEventListener('click', postComment);
     document.getElementById('logoutBtn').addEventListener('click', doLogout);
