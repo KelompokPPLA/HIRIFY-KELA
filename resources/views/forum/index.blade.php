@@ -1045,6 +1045,16 @@ function bindEvents() {
     });
     document.getElementById('submitThreadBtn').addEventListener('click', createThread);
 
+    document.getElementById('threadBody').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) createThread();
+    });
+    document.getElementById('editThreadBody').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submitEditThread();
+    });
+    document.getElementById('commentBody').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) postComment();
+    });
+
     document.getElementById('searchBtn').addEventListener('click', () => {
         searchQuery = document.getElementById('searchInput').value;
         loadThreads(1);
