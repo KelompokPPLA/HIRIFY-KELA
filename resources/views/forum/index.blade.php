@@ -377,6 +377,17 @@
 
         .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
+        /* ── Character counter ── */
+        .char-counter {
+            font-size: .75rem;
+            color: var(--muted);
+            text-align: right;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+        .char-counter.warn  { color: #c97b10; }
+        .char-counter.limit { color: var(--danger); }
+
         /* ── Animations ── */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(10px); }
@@ -470,7 +481,14 @@
             <div>
                 <div class="list-header">
                     <h2>Semua Thread</h2>
-                    <button class="btn btn-ghost btn-sm" type="button" id="refreshBtn">↺ Refresh</button>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <select id="sortSelect" class="input" style="width:auto; padding:7px 14px; font-size:.82rem; border-radius:9px; font-weight:600;">
+                            <option value="latest">Terbaru</option>
+                            <option value="popular">Terpopuler</option>
+                            <option value="active">Paling Aktif</option>
+                        </select>
+                        <button class="btn btn-ghost btn-sm" type="button" id="refreshBtn">↺ Refresh</button>
+                    </div>
                 </div>
                 <div id="threadList" class="thread-list"></div>
                 <div id="pagination" class="pagination" style="margin-top:14px;"></div>
@@ -483,9 +501,14 @@
 
             <div class="detail-topbar">
                 <button class="btn btn-ghost" type="button" id="backBtn">← Kembali ke Forum</button>
-                <button class="btn btn-danger btn-sm" type="button" id="deleteThreadBtn" style="display:none;">
-                    🗑 Hapus Thread
-                </button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-ghost btn-sm" type="button" id="editThreadBtn" style="display:none;">
+                        ✏️ Edit Thread
+                    </button>
+                    <button class="btn btn-danger btn-sm" type="button" id="deleteThreadBtn" style="display:none;">
+                        🗑 Hapus Thread
+                    </button>
+                </div>
             </div>
 
             <div class="detail-hero" id="detailHero">
@@ -508,7 +531,8 @@
                 <h3>💬 Tambahkan Komentar</h3>
                 <div class="form-grid">
                     <textarea id="commentBody" class="textarea" style="min-height:90px;"
-                        placeholder="Tulis komentar Anda…"></textarea>
+                        placeholder="Tulis komentar Anda…" maxlength="5000"></textarea>
+                    <div class="char-counter" id="commentBodyCounter">0 / 5000</div>
                     <div style="display:flex; justify-content:flex-end;">
                         <button class="btn btn-brand" type="button" id="submitCommentBtn">Kirim Komentar</button>
                     </div>
@@ -535,12 +559,39 @@
             <div>
                 <label class="field-label" for="threadBody">Isi Diskusi</label>
                 <textarea id="threadBody" class="textarea" style="min-height:150px;"
-                    placeholder="Jelaskan topik yang ingin kamu diskusikan dengan komunitas…"></textarea>
+                    placeholder="Jelaskan topik yang ingin kamu diskusikan dengan komunitas…" maxlength="10000"></textarea>
+                <div class="char-counter" id="threadBodyCounter">0 / 10000</div>
             </div>
         </div>
         <div class="modal-actions">
             <button class="btn btn-ghost" type="button" id="cancelModalBtn">Batal</button>
             <button class="btn btn-dark" type="button" id="submitThreadBtn">🚀 Publikasikan</button>
+        </div>
+    </div>
+</div>
+
+{{-- ── Modal: Edit Thread ── --}}
+<div id="editThreadModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>✏️ Edit Thread</h3>
+            <button class="modal-close" type="button" id="closeEditThreadModalBtn">✕</button>
+        </div>
+        <div class="form-grid">
+            <div>
+                <label class="field-label" for="editThreadTitle">Judul Thread</label>
+                <input id="editThreadTitle" class="input" placeholder="Tuliskan judul yang jelas dan menarik…" maxlength="255">
+            </div>
+            <div>
+                <label class="field-label" for="editThreadBody">Isi Diskusi</label>
+                <textarea id="editThreadBody" class="textarea" style="min-height:150px;"
+                    placeholder="Jelaskan topik yang ingin kamu diskusikan…" maxlength="10000"></textarea>
+                <div class="char-counter" id="editThreadBodyCounter">0 / 10000</div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" type="button" id="cancelEditThreadModalBtn">Batal</button>
+            <button class="btn btn-dark" type="button" id="submitEditThreadBtn">💾 Simpan Perubahan</button>
         </div>
     </div>
 </div>
@@ -552,9 +603,11 @@ const showToast = window.hirifyShowToast;
 let token       = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
 let currentUser = null;
 let activeThreadId = null;
+let activeThread   = null;
 let page        = 1;
 let lastPage    = 1;
 let searchQuery = '';
+let sortBy      = 'latest';
 
 if (!token) { window.location.href = '/login'; }
 
@@ -648,7 +701,7 @@ async function loadThreads(p = 1) {
     const threadList = document.getElementById('threadList');
     threadList.innerHTML = '<div class="loading-row"><span class="spinner"></span></div>';
 
-    const params = new URLSearchParams({ per_page: 12, page });
+    const params = new URLSearchParams({ per_page: 12, page, sort: sortBy });
     if (searchQuery.trim()) params.set('search', searchQuery.trim());
 
     const res  = await api(`/api/forum/threads?${params}`);
@@ -718,11 +771,13 @@ async function openThread(id) {
     document.getElementById('detailMeta').innerHTML    = '';
     document.getElementById('commentList').innerHTML   = '<div class="loading-row"><span class="spinner"></span></div>';
     document.getElementById('deleteThreadBtn').style.display = 'none';
+    document.getElementById('editThreadBtn').style.display   = 'none';
     document.getElementById('commentBody').value = '';
 
     try {
         const res    = await api(`/api/forum/threads/${id}`);
         const thread = res.data;
+        activeThread = thread;
 
         document.getElementById('detailTitle').textContent = thread.title;
         document.getElementById('detailBody').textContent  = thread.body;
@@ -734,6 +789,9 @@ async function openThread(id) {
              <span class="dot">·</span>
              <span>👁 ${esc(String(thread.views_count))} views</span>`;
 
+        if (currentUser && currentUser.id === thread.user_id) {
+            document.getElementById('editThreadBtn').style.display   = '';
+        }
         if (currentUser && (currentUser.id === thread.user_id || currentUser.role === 'admin')) {
             document.getElementById('deleteThreadBtn').style.display = '';
         }
@@ -759,9 +817,10 @@ function renderComments(comments) {
     }
 
     container.innerHTML = comments.map(c => {
-        const canDel = currentUser && (currentUser.id === c.user_id || currentUser.role === 'admin');
+        const canEdit = currentUser && currentUser.id === c.user_id;
+        const canDel  = currentUser && (currentUser.id === c.user_id || currentUser.role === 'admin');
         return `
-            <div class="comment-card">
+            <div class="comment-card" data-comment-id="${esc(c.id)}">
                 <div class="comment-header">
                     <div class="comment-author-wrap">
                         <div class="comment-avatar">${esc(initial(c.author))}</div>
@@ -770,14 +829,21 @@ function renderComments(comments) {
                             <div class="comment-time">${esc(c.created_at)}</div>
                         </div>
                     </div>
-                    ${canDel ? `<button class="btn btn-danger btn-sm" data-del-comment="${esc(c.id)}">Hapus</button>` : ''}
+                    <div style="display:flex; gap:6px;">
+                        ${canEdit ? `<button class="btn btn-ghost btn-sm" data-edit-comment="${esc(c.id)}">Edit</button>` : ''}
+                        ${canDel  ? `<button class="btn btn-danger btn-sm" data-del-comment="${esc(c.id)}">Hapus</button>` : ''}
+                    </div>
                 </div>
-                <div class="comment-body">${esc(c.body)}</div>
+                <div class="comment-body" data-body-for="${esc(c.id)}">${esc(c.body)}</div>
             </div>`;
     }).join('');
 
     container.querySelectorAll('[data-del-comment]').forEach(btn => {
         btn.addEventListener('click', () => deleteComment(btn.dataset.delComment));
+    });
+
+    container.querySelectorAll('[data-edit-comment]').forEach(btn => {
+        btn.addEventListener('click', () => startEditComment(btn.dataset.editComment));
     });
 }
 
@@ -853,6 +919,37 @@ async function postComment() {
     }
 }
 
+function openEditThreadModal() {
+    if (!activeThread) return;
+    document.getElementById('editThreadTitle').value = activeThread.title;
+    document.getElementById('editThreadBody').value  = activeThread.body;
+    document.getElementById('editThreadModal').classList.add('show');
+}
+
+function closeEditThreadModal() {
+    document.getElementById('editThreadModal').classList.remove('show');
+}
+
+async function submitEditThread() {
+    const title = document.getElementById('editThreadTitle').value.trim();
+    const body  = document.getElementById('editThreadBody').value.trim();
+    if (!title) { showToast('Judul thread wajib diisi.', 'error'); return; }
+    if (!body)  { showToast('Isi diskusi wajib diisi.', 'error'); return; }
+
+    const btn = document.getElementById('submitEditThreadBtn');
+    btn.disabled = true;
+    try {
+        await api(`/api/forum/threads/${activeThreadId}`, { method: 'PUT', body: JSON.stringify({ title, body }) });
+        showToast('Thread berhasil diperbarui.', 'success');
+        closeEditThreadModal();
+        await openThread(activeThreadId);
+    } catch (err) {
+        showToast(err.message || 'Gagal memperbarui thread.', 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
 async function deleteThread() {
     if (!activeThreadId || !confirm('Hapus thread ini secara permanen?')) return;
     try {
@@ -876,6 +973,44 @@ async function deleteComment(commentId) {
     }
 }
 
+function startEditComment(commentId) {
+    const bodyEl = document.querySelector(`[data-body-for="${commentId}"]`);
+    if (!bodyEl || bodyEl.dataset.editing === 'true') return;
+    const original = bodyEl.textContent;
+    bodyEl.dataset.editing = 'true';
+    bodyEl.innerHTML = `
+        <textarea class="textarea" style="min-height:70px; margin-bottom:8px;">${esc(original)}</textarea>
+        <div style="display:flex; gap:6px; justify-content:flex-end;">
+            <button class="btn btn-ghost btn-sm" data-cancel-edit="${commentId}">Batal</button>
+            <button class="btn btn-brand btn-sm" data-save-edit="${commentId}">Simpan</button>
+        </div>`;
+
+    bodyEl.querySelector(`[data-cancel-edit]`).addEventListener('click', () => {
+        bodyEl.dataset.editing = '';
+        bodyEl.textContent = original;
+    });
+    bodyEl.querySelector(`[data-save-edit]`).addEventListener('click', () => submitEditComment(commentId, bodyEl));
+}
+
+async function submitEditComment(commentId, bodyEl) {
+    const newBody = bodyEl.querySelector('textarea')?.value?.trim();
+    if (!newBody) { showToast('Komentar tidak boleh kosong.', 'error'); return; }
+    const saveBtn = bodyEl.querySelector(`[data-save-edit]`);
+    if (saveBtn) saveBtn.disabled = true;
+    try {
+        await api(`/api/forum/threads/${activeThreadId}/comments/${commentId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ body: newBody }),
+        });
+        showToast('Komentar berhasil diperbarui.', 'success');
+        bodyEl.dataset.editing = '';
+        bodyEl.textContent = newBody;
+    } catch (err) {
+        showToast(err.message || 'Gagal memperbarui komentar.', 'error');
+        if (saveBtn) saveBtn.disabled = false;
+    }
+}
+
 async function doLogout() {
     try { await api('/api/auth/logout', { method: 'POST' }); } catch {}
     showToast('Sampai jumpa! 👋', 'info', 900);
@@ -888,6 +1023,20 @@ function closeModal() { document.getElementById('newThreadModal').classList.remo
 
 /* ── Event bindings ── */
 function bindEvents() {
+    function attachCounter(textareaId, counterId, max) {
+        const ta  = document.getElementById(textareaId);
+        const ctr = document.getElementById(counterId);
+        if (!ta || !ctr) return;
+        ta.addEventListener('input', () => {
+            const len = ta.value.length;
+            ctr.textContent = `${len} / ${max}`;
+            ctr.className = 'char-counter' + (len >= max ? ' limit' : len >= max * 0.85 ? ' warn' : '');
+        });
+    }
+    attachCounter('threadBody', 'threadBodyCounter', 10000);
+    attachCounter('editThreadBody', 'editThreadBodyCounter', 10000);
+    attachCounter('commentBody', 'commentBodyCounter', 5000);
+
     document.getElementById('openNewThreadBtn').addEventListener('click', openModal);
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
     document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
@@ -895,6 +1044,16 @@ function bindEvents() {
         if (e.target === document.getElementById('newThreadModal')) closeModal();
     });
     document.getElementById('submitThreadBtn').addEventListener('click', createThread);
+
+    document.getElementById('threadBody').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) createThread();
+    });
+    document.getElementById('editThreadBody').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submitEditThread();
+    });
+    document.getElementById('commentBody').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) postComment();
+    });
 
     document.getElementById('searchBtn').addEventListener('click', () => {
         searchQuery = document.getElementById('searchInput').value;
@@ -907,8 +1066,19 @@ function bindEvents() {
         }
     });
 
+    document.getElementById('sortSelect').addEventListener('change', e => {
+        sortBy = e.target.value;
+        loadThreads(1);
+    });
     document.getElementById('refreshBtn').addEventListener('click', () => loadThreads(page));
     document.getElementById('backBtn').addEventListener('click', () => { showList(); loadThreads(page); });
+    document.getElementById('editThreadBtn').addEventListener('click', openEditThreadModal);
+    document.getElementById('closeEditThreadModalBtn').addEventListener('click', closeEditThreadModal);
+    document.getElementById('cancelEditThreadModalBtn').addEventListener('click', closeEditThreadModal);
+    document.getElementById('editThreadModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('editThreadModal')) closeEditThreadModal();
+    });
+    document.getElementById('submitEditThreadBtn').addEventListener('click', submitEditThread);
     document.getElementById('deleteThreadBtn').addEventListener('click', deleteThread);
     document.getElementById('submitCommentBtn').addEventListener('click', postComment);
     document.getElementById('logoutBtn').addEventListener('click', doLogout);
