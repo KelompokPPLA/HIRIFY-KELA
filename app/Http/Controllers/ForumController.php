@@ -64,8 +64,11 @@ class ForumController extends Controller
         $user = $this->authUser();
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'body'  => 'required|string|max:10000',
+            'title' => 'required|string|min:5|max:255',
+            'body'  => 'required|string|min:10|max:10000',
+        ], [
+            'title.min' => 'Judul thread minimal 5 karakter.',
+            'body.min'  => 'Isi diskusi minimal 10 karakter.',
         ]);
 
         $thread = ForumThread::create([
@@ -125,7 +128,9 @@ class ForumController extends Controller
         }
 
         $validated = $request->validate([
-            'body' => 'required|string|max:5000',
+            'body' => 'required|string|min:3|max:5000',
+        ], [
+            'body.min' => 'Komentar minimal 3 karakter.',
         ]);
 
         $comment = ForumComment::create([
@@ -158,8 +163,11 @@ class ForumController extends Controller
         }
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'body'  => 'required|string|max:10000',
+            'title' => 'required|string|min:5|max:255',
+            'body'  => 'required|string|min:10|max:10000',
+        ], [
+            'title.min' => 'Judul thread minimal 5 karakter.',
+            'body.min'  => 'Isi diskusi minimal 10 karakter.',
         ]);
 
         $thread->update($validated);
@@ -205,7 +213,9 @@ class ForumController extends Controller
         }
 
         $validated = $request->validate([
-            'body' => 'required|string|max:5000',
+            'body' => 'required|string|min:3|max:5000',
+        ], [
+            'body.min' => 'Komentar minimal 3 karakter.',
         ]);
 
         $comment->update(['body' => $validated['body']]);
