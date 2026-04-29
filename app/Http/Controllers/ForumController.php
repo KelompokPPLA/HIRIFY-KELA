@@ -20,10 +20,15 @@ class ForumController extends Controller
     {
         $search  = trim($request->query('search', ''));
         $perPage = min((int) $request->query('per_page', 12), 50);
+        $sort    = $request->query('sort', 'latest');
 
-        $query = ForumThread::with(['user:id,name,role'])
-            ->withCount('comments')
-            ->orderByDesc('created_at');
+        $query = ForumThread::with(['user:id,name,role'])->withCount('comments');
+
+        match ($sort) {
+            'popular' => $query->orderByDesc('views_count'),
+            'active'  => $query->orderByDesc('comments_count'),
+            default   => $query->orderByDesc('created_at'),
+        };
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -50,6 +55,7 @@ class ForumController extends Controller
             'total'        => $paginated->total(),
             'current_page' => $paginated->currentPage(),
             'last_page'    => $paginated->lastPage(),
+            'sort'         => $sort,
         ], 200);
     }
 
