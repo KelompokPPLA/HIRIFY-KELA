@@ -176,7 +176,6 @@
     </main>
 
     <script>
-        let token = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
         const welcome = document.getElementById('welcome');
         const profile = document.getElementById('profile');
         const usersTable = document.getElementById('usersTable');
@@ -184,170 +183,109 @@
         const adminHint = document.getElementById('adminHint');
         const mentorSettingsBtn = document.getElementById('mentorSettingsBtn');
         const mentorshipBtn = document.getElementById('mentorshipBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
         const showToast = window.hirifyShowToast;
 
-        if (!token) {
-            window.location.href = '/login';
-        }
-
-        function clearAuthStorage() {
-            localStorage.removeItem('hirify_token');
-            localStorage.removeItem('hirify_user');
-            localStorage.removeItem('hirify_remember');
-            sessionStorage.removeItem('hirify_token');
-            sessionStorage.removeItem('hirify_user');
-        }
-
-        function getActiveStorage() {
-            return localStorage.getItem('hirify_token') ? localStorage : sessionStorage;
-        }
-
-        async function refreshToken() {
-            if (!token) {
-                return false;
-            }
-
+        // ============= Check if user is authenticated (session-based) =============
+        (async () => {
             try {
-                const response = await fetch('/api/auth/refresh', {
+                const response = await fetch('/me', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const result = await response.json();
+                const user = result.user;
+
+                // Display welcome message
+                welcome.textContent = `Selamat datang, ${user.name}!`;
+
+                // Display profile info
+                if (profile) {
+                    profile.innerHTML = `
+                        <strong>${user.name}</strong>
+                        <span>${user.email}</span>
+                    `;
+                }
+
+                // Show role-specific buttons
+                if (user.role === 'mentor') {
+                    mentorSettingsBtn.style.display = 'inline-block';
+                }
+
+                if (user.role === 'jobseeker') {
+                    mentorshipBtn.style.display = 'inline-block';
+                }
+
+                // Show admin section if user is admin
+                if (user.role === 'admin') {
+                    if (usersTable) usersTable.style.display = 'block';
+                    if (adminHint) adminHint.style.display = 'block';
+                    await loadUsers();
+                }
+            } catch (error) {
+                console.error('Failed to load user:', error);
+                window.location.href = '/login';
+            }
+        })();
+
+        // ============= Load users (admin only) =============
+        async function loadUsers() {
+            try {
+                // Note: This would need API support for session-based auth
+                // For now, this is a placeholder
+                showToast('Admin users list coming soon', 'info');
+            } catch (error) {
+                showToast('Failed to load users', 'error');
+            }
+        }
+
+        // ============= Logout =============
+        async function logout() {
+            try {
+                const response = await fetch('/logout', {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
                     },
+                    credentials: 'include',
                 });
 
                 const result = await response.json();
 
-                if (!response.ok || result.success === false || !result?.data?.token) {
-                    return false;
-                }
-
-                token = result.data.token;
-
-                const storage = getActiveStorage();
-                storage.setItem('hirify_token', result.data.token);
-
-                if (result.data.user) {
-                    storage.setItem('hirify_user', JSON.stringify(result.data.user));
-                }
-
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
-
-        async function api(path, options = {}, canRetry = true) {
-            const response = await fetch(path, {
-                ...options,
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    ...(options.headers || {}),
-                },
-            });
-
-            let data = {};
-
-            try {
-                data = await response.json();
-            } catch (_) {
-                data = {};
-            }
-
-            if (response.status === 401 && canRetry) {
-                const refreshed = await refreshToken();
-
-                if (refreshed) {
-                    return api(path, options, false);
-                }
-            }
-
-            if (!response.ok || data.success === false) {
-                throw new Error(data.message || 'Terjadi kesalahan request.');
-            }
-
-            return data;
-        }
-
-        function printProfile(user) {
-            welcome.textContent = `Halo ${user.name}, role Anda ${user.role}.`;
-            profile.innerHTML = `
-                <div><b>ID:</b> ${user.id}</div>
-                <div><b>Nama:</b> ${user.name}</div>
-                <div><b>Email:</b> ${user.email}</div>
-                <div><b>Role:</b> ${user.role}</div>
-            `;
-        }
-
-        async function loadDashboard(showSuccessMessage = false) {
-            try {
-                const me = await api('/api/auth/me');
-                const user = me.data;
-
-                printProfile(user);
-
-                if (user.role === 'mentor') {
-                    mentorSettingsBtn.style.display = 'inline-flex';
+                if (response.ok && result.success) {
+                    showToast('Logout berhasil', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 600);
                 } else {
-                    mentorSettingsBtn.style.display = 'none';
-                }
-
-                if (user.role === 'jobseeker') {
-                    mentorshipBtn.style.display = 'inline-flex';
-                } else {
-                    mentorshipBtn.style.display = 'none';
-                }
-
-                if (user.role === 'admin') {
-                    const users = await api('/api/user');
-                    usersBody.innerHTML = users.data.map((item) => `
-                        <tr>
-                            <td>${item.name}</td>
-                            <td>${item.email}</td>
-                            <td>${item.role}</td>
-                        </tr>
-                    `).join('');
-                    usersTable.style.display = 'table';
-                    adminHint.style.display = 'none';
-                } else {
-                    usersTable.style.display = 'none';
-                    adminHint.style.display = 'block';
-                }
-
-                if (showSuccessMessage) {
-                    showToast('Data dashboard berhasil diperbarui.', 'success');
+                    showToast('Logout gagal', 'error');
                 }
             } catch (error) {
-                if (error.message.toLowerCase().includes('unauthenticated')) {
-                    clearAuthStorage();
-                    window.location.href = '/login';
-                    return;
-                }
-                welcome.textContent = error.message;
-                showToast(error.message || 'Gagal memuat data dashboard.', 'error');
+                showToast('Logout error: ' + error.message, 'error');
             }
         }
 
-        document.getElementById('reloadBtn').addEventListener('click', () => loadDashboard(true));
+        // ============= Event listeners =============
+        if (reloadBtn) {
+            reloadBtn.addEventListener('click', () => {
+                window.location.reload();
+            });
+        }
 
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try {
-                await api('/api/auth/logout', { method: 'POST' });
-                showToast('Logout berhasil. Sampai jumpa lagi.', 'success', 900);
-            } catch (_) {
-                // Tetap bersihkan local token meskipun request gagal.
-                showToast('Sesi lokal dibersihkan. Silakan login kembali.', 'info', 900);
-            } finally {
-                setTimeout(() => {
-                    clearAuthStorage();
-                    window.location.href = '/login';
-                }, 850);
-            }
+        // Check for logout button
+        document.querySelectorAll('[data-action="logout"]').forEach(btn => {
+            btn.addEventListener('click', logout);
         });
-
-        loadDashboard();
     </script>
 </body>
 </html>

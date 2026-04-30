@@ -20,7 +20,7 @@ class Cv extends Model
         'alamat',
         'linkedin',
         'ringkasan',
-        'skills',
+        // Kolom 'skills' dihapus — skills kini disimpan di tabel 'skills' (relasi hasMany)
     ];
 
     /**
@@ -48,10 +48,26 @@ class Cv extends Model
     }
 
     /**
-     * Get skills as array.
+     * Get all skills for this CV.
      */
-    public function getSkillsArrayAttribute(): array
+    public function skills()
     {
-        return $this->skills ? array_map('trim', explode(',', $this->skills)) : [];
+        return $this->hasMany(Skill::class);
+    }
+
+    /**
+     * Get only technical skills.
+     */
+    public function technicalSkills()
+    {
+        return $this->hasMany(Skill::class)->where('tipe', 'technical');
+    }
+
+    /**
+     * Get only soft skills.
+     */
+    public function softSkills()
+    {
+        return $this->hasMany(Skill::class)->where('tipe', 'soft');
     }
 }

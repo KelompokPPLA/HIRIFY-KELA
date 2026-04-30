@@ -6,28 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        // ================================================================
+        // TABLE: cvs
+        // ================================================================
         Schema::create('cvs', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('user_id');
             $table->string('nama_lengkap');
             $table->string('email');
             $table->string('telepon');
+            $table->string('alamat')->nullable();
             $table->string('linkedin')->nullable();
             $table->text('ringkasan')->nullable();
-            $table->text('skills')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')
                   ->references('id')
                   ->on('users')
-                  ->onDelete('cascade');
+                  ->cascadeOnDelete();
         });
 
+        // ================================================================
+        // TABLE: educations (menggunakan field bahasa Indonesia agar konsisten dengan model)
+        // ================================================================
         Schema::create('educations', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('cv_id');
@@ -39,9 +42,12 @@ return new class extends Migration
             $table->foreign('cv_id')
                   ->references('id')
                   ->on('cvs')
-                  ->onDelete('cascade');
+                  ->cascadeOnDelete();
         });
 
+        // ================================================================
+        // TABLE: experiences
+        // ================================================================
         Schema::create('experiences', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('cv_id');
@@ -54,15 +60,31 @@ return new class extends Migration
             $table->foreign('cv_id')
                   ->references('id')
                   ->on('cvs')
-                  ->onDelete('cascade');
+                  ->cascadeOnDelete();
+        });
+
+        // ================================================================
+        // TABLE: skills
+        // ================================================================
+        Schema::create('skills', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('cv_id');
+            $table->string('nama_skill');
+            $table->enum('tipe', ['technical', 'soft'])->default('technical');
+            $table->timestamps();
+
+            $table->foreign('cv_id')
+                  ->references('id')
+                  ->on('cvs')
+                  ->cascadeOnDelete();
+
+            $table->index('cv_id');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
+        Schema::dropIfExists('skills');
         Schema::dropIfExists('experiences');
         Schema::dropIfExists('educations');
         Schema::dropIfExists('cvs');

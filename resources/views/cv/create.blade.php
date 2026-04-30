@@ -93,17 +93,19 @@
         <div class="menu">
             <a href="/dashboard">Dashboard</a>
             <a href="#">Profil</a>
-            <a href="/cv">Manajemen CV</a>
-            <a href="/cv/create" class="active">✦ Buat CV ATS</a>
+            <a href="{{ route('cv.index') }}">Manajemen CV</a>
+            <a href="{{ route('cv.create') }}" class="active">Buat CV ATS</a>
             <a href="#">Roadmap Karier</a>
             <a href="#">Self Assessment</a>
             <a href="#">Pelatihan</a>
             <a href="/mentorship">Mentorship</a>
-            <a href="#">Notifikasi</a>
         </div>
         <div class="profile-mini">
-            <div class="avatar-mini">U</div>
-            <div><strong>User Name</strong><span>user@email.com</span></div>
+            <div class="avatar-mini">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
+            <div>
+                <strong>{{ auth()->user()->name ?? 'User' }}</strong>
+                <span>{{ auth()->user()->email ?? '' }}</span>
+            </div>
         </div>
     </aside>
 
@@ -118,7 +120,7 @@
             <form id="cvForm" action="{{ route('cv.store') }}" method="POST" class="form-card">
                 @csrf
 
-                <div class="section-title">📋 Data Diri</div>
+                <div class="section-title">Data Diri</div>
 
                 <div class="form-grid" style="margin-bottom:12px">
                     <div class="field">
@@ -161,17 +163,17 @@
                 </div>
 
                 {{-- PENDIDIKAN --}}
-                <div class="section-title">🎓 Pendidikan</div>
+                <div class="section-title">Pendidikan</div>
                 <div id="eduContainer"></div>
                 <button type="button" class="btn-add" onclick="addEducation()">+ Tambah Pendidikan</button>
 
                 {{-- PENGALAMAN --}}
-                <div class="section-title">💼 Pengalaman</div>
+                <div class="section-title">Pengalaman</div>
                 <div id="expContainer"></div>
                 <button type="button" class="btn-add" onclick="addExperience()">+ Tambah Pengalaman</button>
 
                 {{-- SKILLS --}}
-                <div class="section-title">⚡ Skills</div>
+                <div class="section-title">Skills</div>
                 <div class="form-grid full" style="margin-bottom:12px">
                     <div class="field">
                         <label for="technical_skills">Technical Skills (pisahkan dengan koma)</label>
@@ -187,7 +189,7 @@
                 {{-- Hidden field to combine skills for backend --}}
                 <input type="hidden" id="skills" name="skills" value="{{ old('skills') }}">
 
-                <button type="submit" class="btn btn-submit">💾 Simpan CV ATS</button>
+                <button type="submit" class="btn btn-submit">Simpan CV ATS</button>
             </form>
 
             {{-- RIGHT: Preview --}}

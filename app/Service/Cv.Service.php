@@ -13,7 +13,7 @@ class CvService
     public function getAllByUser(string $userId)
     {
         return Cv::where('user_id', $userId)
-                 ->with(['educations', 'experiences'])
+                 ->with(['educations', 'experiences', 'skills'])
                  ->orderBy('created_at', 'desc')
                  ->get();
     }
@@ -23,7 +23,7 @@ class CvService
      */
     public function findById(string $id): ?Cv
     {
-        return Cv::with(['educations', 'experiences'])->find($id);
+        return Cv::with(['educations', 'experiences', 'skills'])->find($id);
     }
 
     /**
@@ -66,7 +66,33 @@ class CvService
                 }
             }
 
-            return $cv->load(['educations', 'experiences']);
+            // Create technical skills
+            if (!empty($data['technical_skills'])) {
+                $technicalSkills = array_filter(array_map('trim', explode(',', $data['technical_skills'])));
+                foreach ($technicalSkills as $skill) {
+                    if ($skill) {
+                        $cv->skills()->create([
+                            'nama_skill' => $skill,
+                            'tipe'       => 'technical',
+                        ]);
+                    }
+                }
+            }
+
+            // Create soft skills
+            if (!empty($data['soft_skills'])) {
+                $softSkills = array_filter(array_map('trim', explode(',', $data['soft_skills'])));
+                foreach ($softSkills as $skill) {
+                    if ($skill) {
+                        $cv->skills()->create([
+                            'nama_skill' => $skill,
+                            'tipe'       => 'soft',
+                        ]);
+                    }
+                }
+            }
+
+            return $cv->load(['educations', 'experiences', 'skills']);
         });
     }
 

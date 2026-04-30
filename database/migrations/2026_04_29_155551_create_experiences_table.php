@@ -6,27 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('experiences', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('cv_id')->constrained('cvs')->cascadeOnDelete();
-            $table->string('position');
-            $table->string('company');
-            $table->text('description')->nullable();
-            $table->string('period');
-            $table->timestamps();
-        });
+        // Sudah dibuat di 2026_04_29_155548_create_cvs_table.php
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('experiences');
+        // Tidak ada yang perlu di-drop di sini
     }
 };

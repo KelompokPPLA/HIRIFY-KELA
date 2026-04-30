@@ -51,10 +51,7 @@
             letter-spacing: -.04em;
         }
 
-        .lead {
-            margin: 8px 0 20px;
-            color: var(--muted);
-        }
+        .lead { margin: 8px 0 20px; color: var(--muted); }
 
         .grid {
             display: grid;
@@ -63,14 +60,14 @@
         }
 
         .field { display: flex; flex-direction: column; gap: 8px; }
-        .full { grid-column: 1 / -1; }
+        .full  { grid-column: 1 / -1; }
 
-        label {
-            font-size: 13px;
-            font-weight: 700;
-        }
+        label { font-size: 13px; font-weight: 700; }
 
-        input, select {
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select {
             width: 100%;
             border: 1px solid rgba(15, 23, 42, 0.12);
             background: #fbfdff;
@@ -86,6 +83,31 @@
             box-shadow: 0 0 0 4px var(--ring);
         }
 
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-wrapper input { width: 100%; padding-right: 44px; }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 18px;
+            padding: 4px 6px;
+            display: flex;
+            align-items: center;
+            line-height: 1;
+            transition: color .2s;
+        }
+
+        .password-toggle:hover { color: var(--accent); }
+
         .submit-btn {
             margin-top: 18px;
             width: 100%;
@@ -98,29 +120,32 @@
             cursor: pointer;
             background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
             box-shadow: 0 16px 30px rgba(38, 198, 218, 0.24);
+            transition: transform .15s ease;
         }
 
-        .feedback {
-            margin-top: 12px;
-            min-height: 20px;
-            font-size: 14px;
-            display: none;
+        .submit-btn:hover { transform: translateY(-1px); }
+        .submit-btn:disabled { opacity: .7; cursor: not-allowed; }
+
+        /* Error / Success alerts */
+        .alert {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
         }
 
-        .danger { color: var(--danger); }
-        .success { color: #0f7a41; }
-
-        .link {
-            margin-top: 12px;
-            color: var(--muted);
-            font-size: 14px;
+        .alert-error {
+            background: rgba(180, 35, 24, 0.08);
+            color: var(--danger);
+            border: 1px solid rgba(180, 35, 24, 0.2);
         }
 
-        .link a {
-            color: var(--navy);
-            font-weight: 700;
-            text-decoration: none;
-        }
+        .alert-error ul { margin: 4px 0 0 16px; padding: 0; }
+        .alert-error li { margin-bottom: 2px; }
+
+        .link { margin-top: 12px; color: var(--muted); font-size: 14px; }
+        .link a { color: var(--navy); font-weight: 700; text-decoration: none; }
 
         .header-section {
             display: flex;
@@ -133,7 +158,6 @@
         .back-btn {
             display: inline-flex;
             align-items: center;
-                        justify-content: center;
             gap: 6px;
             padding: 10px 16px;
             background: linear-gradient(135deg, rgba(38, 198, 218, 0.12) 0%, rgba(38, 198, 218, 0.08) 100%);
@@ -143,78 +167,27 @@
             font-weight: 600;
             font-size: 13px;
             text-decoration: none;
-            cursor: pointer;
             transition: all .25s ease;
-            box-shadow: 0 4px 12px rgba(38, 198, 218, 0.1);
             white-space: nowrap;
             flex-shrink: 0;
         }
 
-        .back-btn:hover {
-            background: linear-gradient(135deg, rgba(38, 198, 218, 0.18) 0%, rgba(38, 198, 218, 0.12) 100%);
-            border-color: rgba(38, 198, 218, 0.6);
-            transform: translateX(-3px);
-            box-shadow: 0 6px 16px rgba(38, 198, 218, 0.15);
-        }
-
-        .password-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .password-wrapper input {
-            width: 100%;
-            padding-right: 42px;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--muted);
-            font-size: 20px;
-            margin: 0;
-            width: auto;
-            padding: 4px 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all .2s ease;
-            line-height: 1;
-        }
-
-        .password-toggle:hover {
-            transform: translateY(-50%) scale(1.1);
-            color: var(--accent);
-        }
-
-        .password-toggle:active {
-            transform: translateY(-50%) scale(0.95);
-        }
+        .back-btn:hover { border-color: rgba(38, 198, 218, 0.6); transform: translateX(-3px); }
 
         @keyframes pop {
             from { opacity: 0; transform: translateY(8px) scale(.99); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         @media (max-width: 720px) {
             .panel { padding: 24px; }
-            .grid { grid-template-columns: 1fr; }
+            .grid  { grid-template-columns: 1fr; }
         }
 
-        @media (max-width: 540px) {
-            .panel { border-radius: 24px; }
-        }
+        @media (max-width: 540px) { .panel { border-radius: 24px; } }
     </style>
 </head>
 <body>
-    @include('components.auth.toast')
-
     <main class="panel">
         <div class="header-section">
             <div>
@@ -224,118 +197,85 @@
             <a href="/" class="back-btn">← Beranda</a>
         </div>
 
-        <form id="registerForm">
+        {{-- Error validasi --}}
+        @if ($errors->any())
+            <div class="alert alert-error">
+                <strong>Terdapat kesalahan:</strong>
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        {{-- FORM BIASA dengan @csrf — bukan fetch() --}}
+        <form method="POST" action="{{ route('register') }}" id="registerForm">
+            @csrf
+
             <div class="grid">
                 <div class="field full">
                     <label for="name">Nama Lengkap</label>
-                    <input id="name" name="name" required>
+                    <input id="name" name="name" type="text" value="{{ old('name') }}" required autocomplete="name" autofocus>
                 </div>
 
                 <div class="field full">
                     <label for="email">Email</label>
-                    <input id="email" name="email" type="email" required>
+                    <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="email">
                 </div>
 
                 <div class="field">
                     <label for="password">Password</label>
                     <div class="password-wrapper">
-                        <input id="password" name="password" type="password" minlength="8" required>
-                        <button type="button" class="password-toggle" id="togglePassword" title="Tampilkan/Sembunyikan password">👁</button>
+                        <input id="password" name="password" type="password" minlength="8" required autocomplete="new-password">
+                        <button type="button" class="password-toggle" id="togglePassword" title="Tampilkan/Sembunyikan">👁</button>
                     </div>
                 </div>
 
                 <div class="field">
                     <label for="password_confirmation">Konfirmasi Password</label>
                     <div class="password-wrapper">
-                        <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" required>
-                        <button type="button" class="password-toggle" id="toggleConfirm" title="Tampilkan/Sembunyikan password">👁</button>
+                        <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" required autocomplete="new-password">
+                        <button type="button" class="password-toggle" id="toggleConfirm" title="Tampilkan/Sembunyikan">👁</button>
                     </div>
                 </div>
 
                 <div class="field full">
-                    <label for="role">Role</label>
+                    <label for="role">Daftar sebagai</label>
                     <select id="role" name="role" required>
-                        <option value="jobseeker">Job Seeker</option>
-                        <option value="mentor">Mentor</option>
+                        <option value="jobseeker" {{ old('role') == 'jobseeker' ? 'selected' : '' }}>Job Seeker</option>
+                        <option value="mentor"    {{ old('role') == 'mentor'    ? 'selected' : '' }}>Mentor</option>
                     </select>
                 </div>
             </div>
 
             <button type="submit" id="submitBtn" class="submit-btn">Daftar Sekarang</button>
-            <div id="feedback" class="feedback"></div>
         </form>
 
         <p class="link">Sudah punya akun? <a href="/login">Masuk di sini</a></p>
     </main>
 
     <script>
-        const form = document.getElementById('registerForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const feedback = document.getElementById('feedback');
-        const showToast = window.hirifyShowToast;
-        const passwordInput = document.getElementById('password');
-        const confirmInput = document.getElementById('password_confirmation');
-        const toggleBtn = document.getElementById('togglePassword');
-        const toggleConfirm = document.getElementById('toggleConfirm');
-
-        toggleBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            toggleBtn.textContent = isPassword ? '🙈' : '👁';
+        // Toggle password
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const inp = document.getElementById('password');
+            const show = inp.type === 'password';
+            inp.type = show ? 'text' : 'password';
+            this.textContent = show ? '🙈' : '👁';
         });
 
-        toggleConfirm.addEventListener('click', (e) => {
-            e.preventDefault();
-            const isPassword = confirmInput.type === 'password';
-            confirmInput.type = isPassword ? 'text' : 'password';
-            toggleConfirm.textContent = isPassword ? '🙈' : '👁';
+        document.getElementById('toggleConfirm').addEventListener('click', function () {
+            const inp = document.getElementById('password_confirmation');
+            const show = inp.type === 'password';
+            inp.type = show ? 'text' : 'password';
+            this.textContent = show ? '🙈' : '👁';
         });
 
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            feedback.textContent = '';
-            feedback.className = 'feedback';
-            submitBtn.disabled = true;
-
-            const payload = {
-                name: form.name.value,
-                email: form.email.value,
-                password: form.password.value,
-                password_confirmation: form.password_confirmation.value,
-                role: form.role.value,
-                device_name: 'hirify-web',
-            };
-
-            try {
-                const response = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
-                });
-
-                const result = await response.json();
-
-                if (!response.ok || !result.success) {
-                    throw new Error(result.message || 'Register gagal.');
-                }
-
-                localStorage.removeItem('hirify_token');
-                localStorage.removeItem('hirify_user');
-
-                showToast('Registrasi berhasil. Silakan login untuk melanjutkan.', 'success');
-
-                setTimeout(() => {
-                    window.location.href = '/login';
-                }, 1100);
-            } catch (error) {
-                showToast(error.message || 'Registrasi gagal. Periksa kembali data Anda.', 'error');
-            } finally {
-                submitBtn.disabled = false;
-            }
+        // Loading state saat submit
+        document.getElementById('registerForm').addEventListener('submit', function () {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Mendaftarkan...';
         });
     </script>
 </body>

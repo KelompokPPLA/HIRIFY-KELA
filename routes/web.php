@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\CvController;
 use Illuminate\Support\Facades\Route;
 
@@ -7,16 +8,38 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Public routes
-Route::view('/login', 'auth.login')->name('login');
-Route::view('/register', 'auth.register')->name('register');
-Route::view('/forgot-password', 'auth.forgot-password')->name('password.request');
-Route::view('/reset-password', 'auth.reset-password')->name('password.reset');
-Route::view('/dashboard', 'auth.dashboard')->name('dashboard');
-Route::view('/mentor/settings', 'mentor.settings')->name('mentor.settings');
-Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
+// ============= PUBLIC AUTH ROUTES (No Auth Required) =============
+Route::middleware('guest')->group(function () {
+    // Login
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
 
-// CV Routes - WAJIB menggunakan middleware auth
-Route::middleware(['auth'])->group(function () {
+    // Register
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+
+    // Password Reset
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset');
+});
+
+// ============= PROTECTED ROUTES (Auth Required) =============
+Route::middleware('auth')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', function () {
+        return view('auth.dashboard');
+    })->name('dashboard');
+
+    // CV Management
     Route::resource('cv', CvController::class);
+
+    // Mentor
+    Route::view('/mentor/settings', 'mentor.settings')->name('mentor.settings');
+
+    // Mentorship
+    Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
+
+    // Auth Actions
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
 });
