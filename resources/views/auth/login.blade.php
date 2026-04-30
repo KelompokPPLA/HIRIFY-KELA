@@ -376,7 +376,15 @@
                 });
 
                 if (response.ok) {
-                    window.location.href = '/dashboard';
+                    const data = await response.json();
+                    const userRole = data.data?.role || 'jobseeker';
+                    if (userRole === 'mentor') {
+                        window.location.href = '/mentor/dashboard';
+                    } else if (userRole === 'admin') {
+                        window.location.href = '/admin/statistics';
+                    } else {
+                        window.location.href = '/dashboard';
+                    }
                     return;
                 }
 
@@ -439,9 +447,16 @@
                     localStorage.removeItem(rememberPrefKey);
                 }
 
+                let redirectUrl = '/dashboard';
+                if (result.data.user.role === 'mentor') {
+                    redirectUrl = '/mentor/dashboard';
+                } else if (result.data.user.role === 'admin') {
+                    redirectUrl = '/admin/statistics';
+                }
+
                 showToast('Login berhasil. Anda akan diarahkan ke dashboard.', 'success');
                 setTimeout(() => {
-                    window.location.href = '/dashboard';
+                    window.location.href = redirectUrl;
                 }, 800);
             } catch (error) {
                 showToast(error.message || 'Email atau password tidak valid.', 'error');

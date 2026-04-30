@@ -7,22 +7,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('profiles', function (Blueprint $table) {
-            $table->id();
+        if (!Schema::hasTable('profiles')) {
+            Schema::create('profiles', function (Blueprint $table) {
+                $table->uuid('id')->primary();
 
-            $table->foreignId('user_id')
-                ->constrained()
-                ->cascadeOnDelete();
+                // Relasi ke user
+                $table->uuid('user_id');
+                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
-            $table->string('first_name');
-            $table->string('last_name')->nullable();
-            $table->text('bio')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('location')->nullable();
-            $table->string('photo')->nullable();
+                $table->string('first_name');
+                $table->string('last_name')->nullable();
+                $table->text('bio')->nullable();
+                $table->string('phone')->nullable();
+                $table->string('location')->nullable();
+                $table->string('photo')->nullable();
 
-            $table->timestamps();
-        });
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

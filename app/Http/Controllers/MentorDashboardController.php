@@ -12,7 +12,8 @@ class MentorDashboardController extends Controller
     // Show dashboard with availabilities and bookings
     public function index()
     {
-        $mentor = Auth::user()->mentorProfile ?? null;
+        $user = Auth::user();
+        $mentor = $user ? ($user->mentorProfile ?? null) : null;
 
         $availabilities = collect();
         $pendingBookings = collect();

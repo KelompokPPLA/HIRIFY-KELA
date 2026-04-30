@@ -44,7 +44,7 @@ class SesiJadwalController extends Controller
 
         SesiJadwal::create($data);
 
-        return redirect()->route('mentor.sesiJadwal.index')->with('success', 'Sesi berhasil dibuat.');
+        return redirect()->route('mentor.sesi-jadwal.index')->with('success', 'Sesi berhasil dibuat.');
     }
 
     public function show($id)
@@ -77,7 +77,7 @@ class SesiJadwalController extends Controller
 
         $session->update($data);
 
-        return redirect()->route('mentor.sesiJadwal.show', $session->id)->with('success', 'Sesi diperbarui.');
+        return redirect()->route('mentor.sesi-jadwal.show', $session->id)->with('success', 'Sesi diperbarui.');
     }
 
     public function destroy($id)
@@ -85,7 +85,7 @@ class SesiJadwalController extends Controller
         $session = SesiJadwal::findOrFail($id);
         if ($session->mentor_id !== auth()->id()) abort(403);
         $session->delete();
-        return redirect()->route('mentor.sesiJadwal.index')->with('success', 'Sesi dihapus.');
+        return redirect()->route('mentor.sesi-jadwal.index')->with('success', 'Sesi dihapus.');
     }
 
     public function addNotes(Request $request, $id)
@@ -104,6 +104,6 @@ class SesiJadwalController extends Controller
         $session->notes = $data['notes'];
         $session->save();
 
-        return redirect()->route('mentor.sesiJadwal.show', $session->id)->with('success', 'Catatan berhasil disimpan.');
+        return redirect()->route('mentor.sesi-jadwal.show', $session->id)->with('success', 'Catatan berhasil disimpan.');
     }
 }
