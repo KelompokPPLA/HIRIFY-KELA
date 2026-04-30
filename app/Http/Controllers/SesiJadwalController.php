@@ -4,23 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\SesiJadwal;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
 class SesiJadwalController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware(function ($request, $next) {
-            if (auth()->user()->role !== 'mentor') {
-                abort(403);
-            }
-            return $next($request);
-        });
-    }
-
     public function index()
     {
-        $sessions = auth()->user()->sesiJadwal()->orderBy('date', 'desc')->paginate(12);
+        $user = auth()->user();
+        if ($user) {
+            $sessions = $user->sesiJadwal()->orderBy('date', 'desc')->paginate(12);
+        } else {
+            $sessions = collect();
+        }
+        
         return view('sesiJadwal.index', compact('sessions'));
     }
 
