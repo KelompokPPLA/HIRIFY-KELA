@@ -147,6 +147,9 @@
             <div style="display:flex; gap:10px;">
                 <a id="mentorSettingsBtn" href="/mentor/settings" class="btn btn-primary" style="display:none; text-decoration:none;">Pengaturan Mentor</a>
                 <a id="mentorshipBtn" href="/mentorship" class="btn btn-primary" style="display:none; text-decoration:none;">Cari Mentor</a>
+                <a id="skillTrainingBtn" href="/skill-training" class="btn btn-primary" style="display:none; text-decoration:none;">Pelatihan Skill</a>
+                <a id="statisticsBtn" href="/admin/statistics" class="btn btn-primary" style="display:none; text-decoration:none;">📊 Statistik Platform</a>
+                <a href="/forum" class="btn btn-primary" style="text-decoration:none;">Forum Diskusi</a>
                 <button id="reloadBtn" class="btn btn-primary">Refresh</button>
                 <button id="logoutBtn" class="btn btn-danger">Logout</button>
             </div>
@@ -288,17 +291,13 @@
 
                 printProfile(user);
 
-                if (user.role === 'mentor') {
-                    mentorSettingsBtn.style.display = 'inline-flex';
-                } else {
-                    mentorSettingsBtn.style.display = 'none';
-                }
+                const skillTrainingBtn = document.getElementById('skillTrainingBtn');
+                const statisticsBtn    = document.getElementById('statisticsBtn');
 
-                if (user.role === 'jobseeker') {
-                    mentorshipBtn.style.display = 'inline-flex';
-                } else {
-                    mentorshipBtn.style.display = 'none';
-                }
+                mentorSettingsBtn.style.display = user.role === 'mentor'    ? 'inline-flex' : 'none';
+                mentorshipBtn.style.display     = user.role === 'jobseeker' ? 'inline-flex' : 'none';
+                skillTrainingBtn.style.display  = user.role === 'jobseeker' ? 'inline-flex' : 'none';
+                statisticsBtn.style.display     = user.role === 'admin'     ? 'inline-flex' : 'none';
 
                 if (user.role === 'admin') {
                     const users = await api('/api/user');

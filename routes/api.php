@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\AdminStatisticsController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ForumController;
 use App\Http\Controllers\MentorCertificationController;
 use App\Http\Controllers\MentorshipController;
 use App\Http\Controllers\MentorProfileController;
+use App\Http\Controllers\SkillTrainingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +28,7 @@ Route::prefix('auth')->group(function () {
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
 	Route::apiResource('user', UserController::class);
 	Route::get('user/all/paginated', [UserController::class, 'getAllPaginated']);
+    Route::get('admin/statistics', [AdminStatisticsController::class, 'index']);
 });
 
 Route::middleware(['auth:api', 'role:mentor'])->prefix('mentor')->group(function () {
@@ -42,6 +46,25 @@ Route::middleware(['auth:api', 'role:mentor'])->prefix('mentor')->group(function
 	Route::delete('availability/{id}', [MentorDashboardController::class, 'destroyAvailability']);
 	Route::post('bookings/{id}/accept', [MentorDashboardController::class, 'acceptBooking']);
 	Route::post('bookings/{id}/reject', [MentorDashboardController::class, 'rejectBooking']);
+});
+
+Route::middleware('auth:api')->prefix('forum')->group(function () {
+    Route::get('threads', [ForumController::class, 'index']);
+    Route::post('threads', [ForumController::class, 'store']);
+    Route::get('threads/{id}', [ForumController::class, 'show']);
+    Route::put('threads/{id}', [ForumController::class, 'updateThread']);
+    Route::delete('threads/{id}', [ForumController::class, 'destroyThread']);
+    Route::post('threads/{id}/comments', [ForumController::class, 'addComment']);
+    Route::put('threads/{id}/comments/{commentId}', [ForumController::class, 'updateComment']);
+    Route::delete('threads/{id}/comments/{commentId}', [ForumController::class, 'destroyComment']);
+});
+
+Route::middleware(['auth:api', 'role:jobseeker'])->prefix('skill-training')->group(function () {
+    Route::get('courses', [SkillTrainingController::class, 'catalog']);
+    Route::get('courses/{id}', [SkillTrainingController::class, 'courseDetail']);
+    Route::post('courses/{id}/enroll', [SkillTrainingController::class, 'enroll']);
+    Route::post('courses/{courseId}/lessons/{lessonId}/complete', [SkillTrainingController::class, 'completeLesson']);
+    Route::get('my-courses', [SkillTrainingController::class, 'myEnrollments']);
 });
 
 Route::middleware(['auth:api', 'role:jobseeker'])->prefix('mentorship')->group(function () {
