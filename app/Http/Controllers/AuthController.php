@@ -97,6 +97,28 @@ class AuthController extends Controller
         }
     }
 
+    public function loginWeb(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $credentials = [
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+        ];
+
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->route('dashboard');
+        }
+
+        return back()->withErrors([
+            'email' => 'Email atau password tidak valid.',
+        ]);
+    }
+
     public function me(Request $request)
     {
         $user = JWTAuth::parseToken()->authenticate();

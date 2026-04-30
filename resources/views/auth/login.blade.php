@@ -320,9 +320,13 @@
                 <a href="/" class="back-btn">← Beranda</a>
             </div>
 
-            <form id="loginForm">
+            <form id="loginForm" method="POST" action="{{ route('login.post') }}">
+                @csrf
                 <label for="email">Email</label>
-                <input id="email" name="email" type="email" required>
+                <input id="email" name="email" type="email" value="{{ old('email') }}" required>
+                @error('email')
+                    <p class="feedback danger">{{ $message }}</p>
+                @enderror
 
                 <label for="password">Password</label>
                 <div class="password-wrapper">
@@ -349,44 +353,8 @@
     <script>
         const form = document.getElementById('loginForm');
         const submitBtn = document.getElementById('submitBtn');
-        const feedback = document.getElementById('feedback');
-        const showToast = window.hirifyShowToast;
-        const rememberCheckbox = document.getElementById('remember');
         const passwordInput = document.getElementById('password');
         const toggleBtn = document.getElementById('togglePassword');
-        const rememberPrefKey = 'hirify_remember';
-
-        if (localStorage.getItem(rememberPrefKey) === '1') {
-            rememberCheckbox.checked = true;
-        }
-
-        (async () => {
-            const rememberedToken = localStorage.getItem('hirify_token');
-
-            if (!rememberedToken) {
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/auth/me', {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${rememberedToken}`,
-                    },
-                });
-
-                if (response.ok) {
-                    window.location.href = '/dashboard';
-                    return;
-                }
-
-                localStorage.removeItem('hirify_token');
-                localStorage.removeItem('hirify_user');
-                localStorage.removeItem(rememberPrefKey);
-            } catch (_) {
-                // Abaikan error network sementara, user tetap bisa login manual.
-            }
-        })();
 
         toggleBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -395,59 +363,9 @@
             toggleBtn.textContent = isPassword ? '🙈' : '👁';
         });
 
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            feedback.textContent = '';
-            feedback.className = 'feedback';
+        form.addEventListener('submit', (event) => {
             submitBtn.disabled = true;
-
-            const payload = {
-                email: form.email.value,
-                password: form.password.value,
-                device_name: 'hirify-web',
-                remember: rememberCheckbox.checked,
-            };
-
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
-                });
-
-                const result = await response.json();
-
-                if (!response.ok || !result.success) {
-                    throw new Error(result.message || 'Login gagal.');
-                }
-
-                const targetStorage = rememberCheckbox.checked ? localStorage : sessionStorage;
-                const otherStorage = rememberCheckbox.checked ? sessionStorage : localStorage;
-
-                otherStorage.removeItem('hirify_token');
-                otherStorage.removeItem('hirify_user');
-
-                targetStorage.setItem('hirify_token', result.data.token);
-                targetStorage.setItem('hirify_user', JSON.stringify(result.data.user));
-
-                if (rememberCheckbox.checked) {
-                    localStorage.setItem(rememberPrefKey, '1');
-                } else {
-                    localStorage.removeItem(rememberPrefKey);
-                }
-
-                showToast('Login berhasil. Anda akan diarahkan ke dashboard.', 'success');
-                setTimeout(() => {
-                    window.location.href = '/dashboard';
-                }, 800);
-            } catch (error) {
-                showToast(error.message || 'Email atau password tidak valid.', 'error');
-            } finally {
-                submitBtn.disabled = false;
-            }
+            submitBtn.textContent = 'Memproses...';
         });
     </script>
 </body>
