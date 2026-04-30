@@ -3,10 +3,12 @@
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\CvController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MentorDashboardController;
+use App\Http\Controllers\SesiJadwalController;
+use App\Http\Controllers\FeedbackController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn() => redirect()->route('dashboard'));
 
 // ============= PUBLIC AUTH ROUTES (No Auth Required) =============
 Route::middleware('guest')->group(function () {

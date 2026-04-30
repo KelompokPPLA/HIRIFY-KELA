@@ -147,6 +147,9 @@
             <div style="display:flex; gap:10px;">
                 <a id="mentorSettingsBtn" href="/mentor/settings" class="btn btn-primary" style="display:none; text-decoration:none;">Pengaturan Mentor</a>
                 <a id="mentorshipBtn" href="/mentorship" class="btn btn-primary" style="display:none; text-decoration:none;">Cari Mentor</a>
+                <a id="skillTrainingBtn" href="/skill-training" class="btn btn-primary" style="display:none; text-decoration:none;">Pelatihan Skill</a>
+                <a id="statisticsBtn" href="/admin/statistics" class="btn btn-primary" style="display:none; text-decoration:none;">📊 Statistik Platform</a>
+                <a href="/forum" class="btn btn-primary" style="text-decoration:none;">Forum Diskusi</a>
                 <button id="reloadBtn" class="btn btn-primary">Refresh</button>
                 <button id="logoutBtn" class="btn btn-danger">Logout</button>
             </div>
@@ -202,27 +205,82 @@
                     return;
                 }
 
-                const result = await response.json();
-                const user = result.user;
+                token = result.data.token;
 
-                // Display welcome message
-                welcome.textContent = `Selamat datang, ${user.name}!`;
+                const storage = getActiveStorage();
+                storage.setItem('hirify_token', result.data.token);
 
-                // Display profile info
-                if (profile) {
-                    profile.innerHTML = `
-                        <strong>${user.name}</strong>
-                        <span>${user.email}</span>
-                    `;
+                if (result.data.user) {
+                    storage.setItem('hirify_user', JSON.stringify(result.data.user));
                 }
 
-                // Show role-specific buttons
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function api(path, options = {}, canRetry = true) {
+            const response = await fetch(path, {
+                ...options,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...(options.headers || {}),
+                },
+            });
+
+            let data = {};
+
+            try {
+                data = await response.json();
+            } catch (_) {
+                data = {};
+            }
+
+            if (response.status === 401 && canRetry) {
+                const refreshed = await refreshToken();
+
+                if (refreshed) {
+                    return api(path, options, false);
+                }
+            }
+
+            if (!response.ok || data.success === false) {
+                throw new Error(data.message || 'Terjadi kesalahan request.');
+            }
+
+            return data;
+        }
+
+        function printProfile(user) {
+            welcome.textContent = `Halo ${user.name}, role Anda ${user.role}.`;
+            profile.innerHTML = `
+                <div><b>ID:</b> ${user.id}</div>
+                <div><b>Nama:</b> ${user.name}</div>
+                <div><b>Email:</b> ${user.email}</div>
+                <div><b>Role:</b> ${user.role}</div>
+            `;
+        }
+
+        async function loadDashboard(showSuccessMessage = false) {
+            try {
+                const me = await api('/api/auth/me');
+                const user = me.data;
+
+                printProfile(user);
+
                 if (user.role === 'mentor') {
-                    mentorSettingsBtn.style.display = 'inline-block';
+                    mentorSettingsBtn.style.display = 'inline-flex';
+                } else {
+                    mentorSettingsBtn.style.display = 'none';
                 }
 
                 if (user.role === 'jobseeker') {
-                    mentorshipBtn.style.display = 'inline-block';
+                    mentorshipBtn.style.display = 'inline-flex';
+                } else {
+                    mentorshipBtn.style.display = 'none';
                 }
 
                 // Show admin section if user is admin

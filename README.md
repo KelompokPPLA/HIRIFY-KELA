@@ -27,7 +27,7 @@
 * **Frontend**: Blade Template
 * **Styling**: Tailwind CSS
 * **Database**: MySQL
-* **Authentication**: Laravel Breeze
+* **Authentication**: JWT (JSON Web Token)
 
 ---
 
@@ -89,7 +89,6 @@ hirify/
 
 * PHP 8.2+
 * Composer
-* Node.js
 * MySQL 8+
 
 ---
@@ -109,7 +108,6 @@ cd hirify
 
 ```bash
 composer install
-npm install
 ```
 
 ---
@@ -135,7 +133,6 @@ DB_PASSWORD=
 
 ```bash
 php artisan migrate
-php artisan db:seed
 ```
 
 ---
@@ -143,7 +140,6 @@ php artisan db:seed
 #### 5. Run Application
 
 ```bash
-npm run dev
 php artisan serve
 ```
 
@@ -220,10 +216,10 @@ export default {
 
 ### Users
 
-* id
+* uuid
 * email
 * password
-* role (admin, mentor, user)
+* role (admin, mentor, jobseeker)
 
 ### Tables
 
@@ -247,7 +243,7 @@ export default {
 
 Menggunakan:
 
-* Laravel Breeze
+* JWT (JSON Web Token)
 
 Flow:
 

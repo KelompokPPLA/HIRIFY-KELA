@@ -1397,6 +1397,7 @@
                 window.location.href = '/dashboard';
             });
 
+<<<<<<< HEAD
             document.querySelector('[data-nav="cv"]').addEventListener('click', () => {
                 window.location.href = '/cv/create';
             });
@@ -1407,6 +1408,14 @@
 
             document.querySelector('[data-nav="assessment"]').addEventListener('click', () => {
                 window.location.href = '/assessment';
+=======
+            document.querySelector('[data-nav="forum"]').addEventListener('click', () => {
+                window.location.href = '/forum';
+            });
+
+            document.querySelector('[data-nav="skill-training"]').addEventListener('click', () => {
+                window.location.href = '/skill-training';
+>>>>>>> d0fc99372a11b6ab70f8d0b7ccf000fb82e256ab
             });
         }
 
