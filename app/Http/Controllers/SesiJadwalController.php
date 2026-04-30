@@ -4,23 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\SesiJadwal;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
 class SesiJadwalController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware(function ($request, $next) {
-            if (auth()->user()->role !== 'mentor') {
-                abort(403);
-            }
-            return $next($request);
-        });
-    }
-
     public function index()
     {
-        $sessions = auth()->user()->sesiJadwal()->orderBy('date', 'desc')->paginate(12);
+        $user = auth()->user();
+        if ($user) {
+            $sessions = $user->sesiJadwal()->orderBy('date', 'desc')->paginate(12);
+        } else {
+            $sessions = collect();
+        }
+        
         return view('sesiJadwal.index', compact('sessions'));
     }
 
@@ -44,7 +41,7 @@ class SesiJadwalController extends Controller
 
         SesiJadwal::create($data);
 
-        return redirect()->route('mentor.sesiJadwal.index')->with('success', 'Sesi berhasil dibuat.');
+        return redirect()->route('mentor.sesi-jadwal.index')->with('success', 'Sesi berhasil dibuat.');
     }
 
     public function show($id)
@@ -77,7 +74,7 @@ class SesiJadwalController extends Controller
 
         $session->update($data);
 
-        return redirect()->route('mentor.sesiJadwal.show', $session->id)->with('success', 'Sesi diperbarui.');
+        return redirect()->route('mentor.sesi-jadwal.show', $session->id)->with('success', 'Sesi diperbarui.');
     }
 
     public function destroy($id)
@@ -85,7 +82,7 @@ class SesiJadwalController extends Controller
         $session = SesiJadwal::findOrFail($id);
         if ($session->mentor_id !== auth()->id()) abort(403);
         $session->delete();
-        return redirect()->route('mentor.sesiJadwal.index')->with('success', 'Sesi dihapus.');
+        return redirect()->route('mentor.sesi-jadwal.index')->with('success', 'Sesi dihapus.');
     }
 
     public function addNotes(Request $request, $id)
@@ -104,6 +101,6 @@ class SesiJadwalController extends Controller
         $session->notes = $data['notes'];
         $session->save();
 
-        return redirect()->route('mentor.sesiJadwal.show', $session->id)->with('success', 'Catatan berhasil disimpan.');
+        return redirect()->route('mentor.sesi-jadwal.show', $session->id)->with('success', 'Catatan berhasil disimpan.');
     }
 }

@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MentorDashboardController;
+use App\Http\Controllers\SesiJadwalController;
+use App\Http\Controllers\FeedbackController;
 
 Route::get('/', fn() => redirect()->route('dashboard'));
 
@@ -25,7 +28,9 @@ Route::view('/forum', 'forum.index')->name('forum.index');
 Route::view('/skill-training', 'jobseeker.skill-training')->name('skill.training');
 Route::view('/admin/statistics', 'admin.statistics')->name('admin.statistics');
 
-Route::middleware(['auth'])->prefix('mentor')->name('mentor.')->group(function () {
+// Route for mentor session listing handled inside mentor group below
+
+Route::prefix('mentor')->name('mentor.')->group(function () {
 
     Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
 
@@ -38,8 +43,7 @@ Route::middleware(['auth'])->prefix('mentor')->name('mentor.')->group(function (
         Route::post('/bookings/{booking}/reject', 'rejectBooking')->name('bookings.reject');
     });
 
-        Route::prefix('sesiJadwal')->name('sesiJadwal.')->group(function () {
-
+    Route::prefix('sesi-jadwal')->name('sesi-jadwal.')->group(function () {
         Route::get('/', [SesiJadwalController::class, 'index'])->name('index');
         Route::get('/create', [SesiJadwalController::class, 'create'])->name('create');
         Route::post('/', [SesiJadwalController::class, 'store'])->name('store');

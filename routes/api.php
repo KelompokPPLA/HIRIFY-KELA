@@ -8,6 +8,9 @@ use App\Http\Controllers\MentorshipController;
 use App\Http\Controllers\MentorProfileController;
 use App\Http\Controllers\SkillTrainingController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MentorDashboardController;
+use App\Http\Controllers\SesiJadwalController;
+use App\Http\Controllers\FeedbackController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -39,22 +42,7 @@ Route::middleware(['auth:api', 'role:mentor'])->prefix('mentor')->group(function
 	Route::post('certifications', [MentorCertificationController::class, 'store']);
 	Route::delete('certifications/{id}', [MentorCertificationController::class, 'destroy']);
 
-	Route::get('dashboard', [MentorDashboardController::class, 'index']);
-	Route::post('availability', [MentorDashboardController::class, 'storeAvailability']);
-	Route::put('availability/{id}', [MentorDashboardController::class, 'updateAvailability']);
-	Route::delete('availability/{id}', [MentorDashboardController::class, 'destroyAvailability']);
-	Route::post('bookings/{id}/accept', [MentorDashboardController::class, 'acceptBooking']);
-	Route::post('bookings/{id}/reject', [MentorDashboardController::class, 'rejectBooking']);
 
-	Route::get('SesiJadwal', [SesiJadwalController::class, 'show']);
-	Route::get('SesiJadwal', [SesiJadwalController::class, 'index']);
-	Route::post('SesiJadwal', [SesiJadwalController::class, 'store']);
-	Route::get('SesiJadwal/{id}', [SesiJadwalController::class, 'show']);
-	Route::put('SesiJadwal/{id}', [SesiJadwalController::class, 'update']);
-	Route::delete('SesiJadwal/{id}', [SesiJadwalController::class, 'destroy']);
-
-	Route::get('feedback', [FeedbackController::class, 'index']);
-	Route::post('feedback', [FeedbackController::class, 'store']);
 });
 
 Route::middleware('auth:api')->prefix('forum')->group(function () {
