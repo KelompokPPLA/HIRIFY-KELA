@@ -53,4 +53,9 @@ Route::middleware(['auth'])->prefix('mentor')->name('mentor.')->group(function (
         Route::post('/{session}/notes', [SesiJadwalController::class, 'addNotes'])->name('notes');
     });
 
+    Route::prefix('feedback')->name('feedback.')->group(function () {
+        Route::get('/', [FeedbackController::class, 'index'])->name('index');
+        Route::post('/', [FeedbackController::class, 'store'])->name('store');
+    });
+
 });

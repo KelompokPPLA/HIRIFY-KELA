@@ -52,6 +52,9 @@ Route::middleware(['auth:api', 'role:mentor'])->prefix('mentor')->group(function
 	Route::get('SesiJadwal/{id}', [SesiJadwalController::class, 'show']);
 	Route::put('SesiJadwal/{id}', [SesiJadwalController::class, 'update']);
 	Route::delete('SesiJadwal/{id}', [SesiJadwalController::class, 'destroy']);
+
+	Route::get('feedback', [FeedbackController::class, 'index']);
+	Route::post('feedback', [FeedbackController::class, 'store']);
 });
 
 Route::middleware('auth:api')->prefix('forum')->group(function () {
