@@ -38,4 +38,19 @@ Route::middleware(['auth'])->prefix('mentor')->name('mentor.')->group(function (
         Route::post('/bookings/{booking}/reject', 'rejectBooking')->name('bookings.reject');
     });
 
+        Route::prefix('sesiJadwal')->name('sesiJadwal.')->group(function () {
+
+        Route::get('/', [SesiJadwalController::class, 'index'])->name('index');
+        Route::get('/create', [SesiJadwalController::class, 'create'])->name('create');
+        Route::post('/', [SesiJadwalController::class, 'store'])->name('store');
+
+        Route::get('/{session}/edit', [SesiJadwalController::class, 'edit'])->name('edit');
+        Route::get('/{session}', [SesiJadwalController::class, 'show'])->name('show');
+
+        Route::put('/{session}', [SesiJadwalController::class, 'update'])->name('update');
+        Route::delete('/{session}', [SesiJadwalController::class, 'destroy'])->name('destroy');
+
+        Route::post('/{session}/notes', [SesiJadwalController::class, 'addNotes'])->name('notes');
+    });
+
 });

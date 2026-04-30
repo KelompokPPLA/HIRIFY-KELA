@@ -39,13 +39,19 @@ Route::middleware(['auth:api', 'role:mentor'])->prefix('mentor')->group(function
 	Route::post('certifications', [MentorCertificationController::class, 'store']);
 	Route::delete('certifications/{id}', [MentorCertificationController::class, 'destroy']);
 
-	// Mentor Dashboard
 	Route::get('dashboard', [MentorDashboardController::class, 'index']);
 	Route::post('availability', [MentorDashboardController::class, 'storeAvailability']);
 	Route::put('availability/{id}', [MentorDashboardController::class, 'updateAvailability']);
 	Route::delete('availability/{id}', [MentorDashboardController::class, 'destroyAvailability']);
 	Route::post('bookings/{id}/accept', [MentorDashboardController::class, 'acceptBooking']);
 	Route::post('bookings/{id}/reject', [MentorDashboardController::class, 'rejectBooking']);
+
+	Route::get('SesiJadwal', [SesiJadwalController::class, 'show']);
+	Route::get('SesiJadwal', [SesiJadwalController::class, 'index']);
+	Route::post('SesiJadwal', [SesiJadwalController::class, 'store']);
+	Route::get('SesiJadwal/{id}', [SesiJadwalController::class, 'show']);
+	Route::put('SesiJadwal/{id}', [SesiJadwalController::class, 'update']);
+	Route::delete('SesiJadwal/{id}', [SesiJadwalController::class, 'destroy']);
 });
 
 Route::middleware('auth:api')->prefix('forum')->group(function () {
