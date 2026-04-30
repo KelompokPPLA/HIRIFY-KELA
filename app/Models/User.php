@@ -76,4 +76,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(MentorBooking::class, 'jobseeker_user_id');
     }
+
+    public function cvs()
+    {
+        return $this->hasMany(Cv::class);
+    }
 }

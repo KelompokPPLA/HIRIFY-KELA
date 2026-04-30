@@ -5,6 +5,7 @@ use App\Http\Controllers\MentorCertificationController;
 use App\Http\Controllers\MentorshipController;
 use App\Http\Controllers\MentorProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CvController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -43,4 +44,9 @@ Route::middleware(['auth:api', 'role:jobseeker'])->prefix('mentorship')->group(f
 	Route::post('bookings', [MentorshipController::class, 'createBooking']);
 	Route::get('bookings/my', [MentorshipController::class, 'myBookings']);
 	Route::patch('bookings/{id}/cancel', [MentorshipController::class, 'cancelBooking']);
+});
+
+Route::middleware(['auth:api'])->group(function () {
+	Route::get('cv', [CvController::class, 'index']);
+	Route::post('cv', [CvController::class, 'store']);
 });
