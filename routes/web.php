@@ -24,3 +24,18 @@ Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
 Route::view('/forum', 'forum.index')->name('forum.index');
 Route::view('/skill-training', 'jobseeker.skill-training')->name('skill.training');
 Route::view('/admin/statistics', 'admin.statistics')->name('admin.statistics');
+
+Route::middleware(['auth'])->prefix('mentor')->name('mentor.')->group(function () {
+
+    Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
+
+    Route::controller(MentorDashboardController::class)->group(function () {
+        Route::post('/availability', 'storeAvailability')->name('availability.store');
+        Route::put('/availability/{availability}', 'updateAvailability')->name('availability.update');
+        Route::delete('/availability/{availability}', 'destroyAvailability')->name('availability.destroy');
+
+        Route::post('/bookings/{booking}/accept', 'acceptBooking')->name('bookings.accept');
+        Route::post('/bookings/{booking}/reject', 'rejectBooking')->name('bookings.reject');
+    });
+
+});
