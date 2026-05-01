@@ -188,13 +188,14 @@
         </div>
         <div class="menu">
             <button type="button" data-goto="/dashboard">Dashboard</button>
-            <button type="button">Profil</button>
-            <button type="button">Manajemen CV</button>
-            <button type="button">Roadmap Karier</button>
-            <button type="button" data-goto="/mentorship">Mentorship</button>
+            <button type="button" data-goto="/profile">Profil</button>
+            <button type="button" data-goto="/manajemen-cv">Manajemen CV</button>
+            <button type="button" data-goto="/roadmap-karier">Roadmap Karier</button>
+            <button type="button" data-goto="/self-assessment">Self Assessment</button>
             <button type="button" class="active">Pelatihan Skill</button>
             <button type="button" data-goto="/forum">Forum Diskusi</button>
-            <button type="button">Notifikasi</button>
+            <button type="button" data-goto="/mentorship">Mentorship</button>
+            <button type="button" data-goto="/notifikasi">Notifikasi</button>
             <button type="button" id="logoutBtn">Logout</button>
         </div>
         <div class="profile-mini">
@@ -316,7 +317,8 @@
 <script>
 const showToast = window.hirifyShowToast;
 
-let token = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
+let token = '{{ session("jwt_token") }}' || localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
+if (token) { localStorage.setItem('hirify_token', token); }
 let currentUser = null;
 let activeCourse = null;
 let activeLessons = [];
@@ -345,7 +347,7 @@ async function api(path, opts={}, retry=true) {
     const res  = await fetch(path, { ...opts, headers });
     let   data = {};
     try { data = await res.json(); } catch {}
-    if (res.status===401 && retry) { if (await refreshToken()) return api(path,opts,false); clearAuth(); window.location.href='/login'; return; }
+    if (res.status===401 && retry) { if (await refreshToken()) return api(path,opts,false); clearAuth(); window.location.href='/login'; throw new Error('Sesi berakhir. Silakan login kembali.'); }
     if (!res.ok || data.success===false) throw new Error(data.message || 'Terjadi kesalahan.');
     return data;
 }
