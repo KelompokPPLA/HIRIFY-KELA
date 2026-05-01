@@ -7,6 +7,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Migration lama tidak digunakan, lihat 2026_04_30_000000_create_profiles_table.php
         if (!Schema::hasTable('profiles')) {
             Schema::create('profiles', function (Blueprint $table) {
                 $table->uuid('id')->primary();
@@ -29,6 +30,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('profiles');
+        //
     }
 };

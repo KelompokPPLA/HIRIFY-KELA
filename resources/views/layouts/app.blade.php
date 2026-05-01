@@ -132,14 +132,15 @@
             </nav>
 
             <div class="px-4 py-6 border-t border-slate-200">
+                @auth
                 <div class="flex items-center gap-3 rounded-3xl bg-slate-50 p-4">
-                    <div class="w-11 h-11 rounded-2xl bg-[var(--color-primary)] text-[var(--color-primary-foreground)] grid place-items-center font-semibold">U</div>
+                    <div class="w-11 h-11 rounded-2xl bg-[var(--color-primary)] text-[var(--color-primary-foreground)] grid place-items-center font-semibold">{{ substr(auth()->user()->name, 0, 1) }}</div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-slate-900">User Name</p>
-                        <p class="text-xs text-slate-500 truncate">user@email.com</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
                     </div>
                 </div>
-                <a href="/login" class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-[var(--color-primary)]">
+                <a href="/logout" class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-[var(--color-primary)]" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
@@ -147,6 +148,19 @@
                     </svg>
                     Keluar
                 </a>
+                <form id="logout-form" action="/logout" method="POST" style="display: none;">
+                    @csrf
+                </form>
+                @else
+                <a href="/login" class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-[var(--color-primary)]">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Login
+                </a>
+                @endauth
             </div>
         </aside>
 
