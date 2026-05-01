@@ -14,7 +14,7 @@
             --muted: #5b6b82;
             --accent: #26c6da;
             --accent-2: #1aa8c0;
-            --danger: #bf2d5b;
+            --danger: #b42318;
             --ring: rgba(38, 198, 218, .18);
             --navy: #10182d;
         }
@@ -35,7 +35,7 @@
         }
 
         .card {
-            width: min(760px, 100%);
+            width: min(560px, 100%);
             background: var(--paper);
             border-radius: 30px;
             border: 1px solid rgba(15, 23, 42, 0.08);
@@ -44,12 +44,12 @@
         }
 
         h1 {
-            margin: 0;
-            font-size: clamp(28px, 5vw, 40px);
+            margin: 0 0 8px;
+            font-size: clamp(28px, 5vw, 36px);
             letter-spacing: -.04em;
         }
 
-        p { color: var(--muted); }
+        p { color: var(--muted); margin: 0 0 18px; line-height: 1.55; }
 
         label {
             display: block;
@@ -66,6 +66,7 @@
             padding: 12px 14px;
             font: inherit;
             outline: none;
+            transition: border-color .2s, box-shadow .2s;
         }
 
         input:focus {
@@ -85,17 +86,35 @@
             cursor: pointer;
             background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
             box-shadow: 0 16px 30px rgba(38, 198, 218, 0.24);
+            transition: transform .15s ease, box-shadow .2s ease;
         }
 
-        .feedback { margin-top: 12px; min-height: 20px; font-size: 14px; }
-        .danger { color: var(--danger); }
-        .success { color: #118a4a; }
+        button:hover { transform: translateY(-1px); box-shadow: 0 18px 36px rgba(38, 198, 218, 0.3); }
 
-        .feedback { display: none; }
+        .alert {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .alert-error {
+            background: rgba(180, 35, 24, 0.08);
+            color: var(--danger);
+            border: 1px solid rgba(180, 35, 24, 0.2);
+        }
+
+        .alert-success {
+            background: rgba(15, 122, 65, 0.08);
+            color: #0f7a41;
+            border: 1px solid rgba(15, 122, 65, 0.2);
+        }
 
         .link {
-            margin-top: 12px;
+            margin-top: 14px;
             font-size: 14px;
+            color: var(--muted);
         }
 
         .link a {
@@ -104,65 +123,33 @@
             text-decoration: none;
         }
 
-
         @media (max-width: 540px) {
             .card { border-radius: 24px; padding: 24px; }
         }
     </style>
 </head>
 <body>
-    @include('components.auth.toast')
-
     <main class="card">
         <h1>Lupa Password</h1>
-        <p>Masukkan email akun Hirify Anda. Kami akan kirim link reset password jika email terdaftar.</p>
+        <p>Masukkan email akun Hirify Anda. Kami akan kirim kode OTP untuk mereset password.</p>
 
-        <form id="forgotForm">
+        @if ($errors->any())
+            <div class="alert alert-error">{{ $errors->first() }}</div>
+        @endif
+
+        @if (session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        <form method="POST" action="{{ route('password.send-otp') }}">
+            @csrf
             <label for="email">Email</label>
-            <input id="email" name="email" type="email" required>
+            <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus>
 
-            <button type="submit" id="submitBtn">Kirim Link Reset</button>
-            <div id="feedback" class="feedback"></div>
+            <button type="submit">Kirim Kode OTP →</button>
         </form>
 
-        <p class="link"><a href="/login">Kembali ke login</a></p>
+        <p class="link"><a href="/login">← Kembali ke login</a></p>
     </main>
-
-    <script>
-        const form = document.getElementById('forgotForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const feedback = document.getElementById('feedback');
-        const showToast = window.hirifyShowToast;
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            feedback.textContent = '';
-            feedback.className = 'feedback';
-            submitBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/auth/forgot-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({ email: form.email.value }),
-                });
-
-                const result = await response.json();
-
-                if (!response.ok || !result.success) {
-                    throw new Error(result.message || 'Permintaan gagal.');
-                }
-
-                showToast(result.message || 'Jika email terdaftar, link reset akan dikirim.', 'success');
-            } catch (error) {
-                showToast(error.message || 'Permintaan tidak dapat diproses.', 'error');
-            } finally {
-                submitBtn.disabled = false;
-            }
-        });
-    </script>
 </body>
 </html>

@@ -10,11 +10,11 @@
     <div class="flex min-h-screen">
         <aside class="w-[280px] min-h-screen bg-white border-r border-slate-200 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-200">
-                <a href="/mentor/dashboard" class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center text-[var(--color-primary-foreground)] text-xl font-bold">H</div>
-                    <div>
-                        <p class="text-sm font-medium">Hirify!</p>
-                        <p class="text-xs text-slate-400">Mentor Panel</p>
+                <a href="/mentor/dashboard" class="flex items-center gap-2.5">
+                    <div class="w-[34px] h-[34px] rounded-[12px] flex items-center justify-center text-white text-[17px] font-extrabold flex-shrink-0" style="background: linear-gradient(145deg, #0399b7, #06d8ee);">H</div>
+                    <div class="leading-tight">
+                        <p class="text-[20px] font-extrabold tracking-tight text-[#0d1b3d]">Hirify</p>
+                        <p class="text-[11px] text-slate-400">Mentor Panel</p>
                     </div>
                 </a>
             </div>

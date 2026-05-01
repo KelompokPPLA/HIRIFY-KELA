@@ -4,8 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Hirify')</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        :root {
+            --color-background: #ffffff;
+            --color-foreground: #030213;
+            --color-primary: #030213;
+            --color-primary-foreground: #ffffff;
+            --color-secondary: #95a5a6;
+            --color-secondary-foreground: #030213;
+            --color-muted: #ececf0;
+            --color-muted-foreground: #717182;
+            --color-accent: #e9ebef;
+            --color-accent-foreground: #030213;
+            --color-destructive: #d4183d;
+            --color-border: rgba(0, 0, 0, 0.1);
+            --color-radius: 0.625rem;
+            --color-sidebar: #f8fafc;
+            --color-sidebar-foreground: #030213;
+            --color-sidebar-primary: #030213;
+            --color-sidebar-primary-foreground: #f8fafc;
+            --color-sidebar-accent: #f1f5f9;
+            --color-sidebar-accent-foreground: #334155;
+            --color-sidebar-border: #e2e8f0;
+            --color-sidebar-ring: #030213;
+        }
         .welcome-pattern {
             background-image: radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 35%),
                 radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.08), transparent 30%);
@@ -16,11 +39,11 @@
     <div class="flex min-h-screen">
         <aside class="w-[280px] min-h-screen bg-white border-r border-slate-200 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-200">
-                <a href="/dashboard" class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center text-[var(--color-primary-foreground)] text-xl font-bold">H</div>
-                    <div>
-                        <p class="text-sm font-medium text--500">Hirify!</p>
-                        <p class="text-xs text-slate-400">Career companion</p>
+                <a href="/dashboard" class="flex items-center gap-2.5">
+                    <div class="w-[34px] h-[34px] rounded-[12px] flex items-center justify-center text-white text-[17px] font-extrabold flex-shrink-0" style="background: linear-gradient(145deg, #0399b7, #06d8ee);">H</div>
+                    <div class="leading-tight">
+                        <p class="text-[20px] font-extrabold tracking-tight text-[#0d1b3d]">Hirify</p>
+                        <p class="text-[11px] text-slate-400">Career companion</p>
                     </div>
                 </a>
             </div>
@@ -105,6 +128,16 @@
                     </svg>
                     <span class="font-medium">Pelatihan</span>
                 </a>
+                <a href="/forum" @class([
+                    'group relative flex items-center gap-3 rounded-[12px] px-4 py-3 transition',
+                    'text-white shadow-sm' => request()->is('forum'),
+                    'text-slate-700 hover:bg-slate-100 hover:text-slate-900' => !request()->is('forum'),
+                ]) @if(request()->is('forum')) style="background-color: #0F172A;" @endif>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span class="font-medium">Forum</span>
+                </a>
                 <a href="/mentorship" @class([
                     'group relative flex items-center gap-3 rounded-[12px] px-4 py-3 transition',
                     'text-white shadow-sm' => request()->is('mentorship'),
@@ -133,20 +166,25 @@
 
             <div class="px-4 py-6 border-t border-slate-200">
                 <div class="flex items-center gap-3 rounded-3xl bg-slate-50 p-4">
-                    <div class="w-11 h-11 rounded-2xl bg-[var(--color-primary)] text-[var(--color-primary-foreground)] grid place-items-center font-semibold">U</div>
+                    <div class="w-11 h-11 rounded-2xl bg-[var(--color-primary)] text-[var(--color-primary-foreground)] grid place-items-center font-semibold">
+                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                    </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-slate-900">User Name</p>
-                        <p class="text-xs text-slate-500 truncate">user@email.com</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ auth()->user()->name ?? 'User Name' }}</p>
+                        <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email ?? 'user@email.com' }}</p>
                     </div>
                 </div>
-                <a href="/login" class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-[var(--color-primary)]">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    Keluar
-                </a>
+                <form method="POST" action="{{ route('logout') }}" class="mt-4">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-[var(--color-primary)]">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Keluar
+                    </button>
+                </form>
             </div>
         </aside>
 
