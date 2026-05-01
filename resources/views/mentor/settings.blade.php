@@ -70,7 +70,9 @@
             display: grid;
             place-items: center;
             color: #fff;
-            background: linear-gradient(135deg, #1f3057 0%, #1bc2d5 100%);
+            font-size: 17px;
+            font-weight: 800;
+            background: linear-gradient(145deg, #0399b7, #06d8ee);
         }
 
         .panel-pill {

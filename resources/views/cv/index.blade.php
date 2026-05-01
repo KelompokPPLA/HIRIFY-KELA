@@ -57,14 +57,15 @@
             <div class="brand"><span class="brand-mark">H</span><span>Hirify!</span></div>
             <div class="menu">
                 <a href="/dashboard">Dashboard</a>
-                <a href="#">Profil</a>
-                <a href="/cv" class="active">Manajemen CV</a>
+                <a href="/profile">Profil</a>
+                <a href="/manajemen-cv" class="active">Manajemen CV</a>
                 <a href="/cv/create" style="background:linear-gradient(140deg,#08cde6,#00b2cb);color:#fff;box-shadow:0 4px 12px rgba(6,203,229,.3)">✦ Buat CV ATS</a>
-                <a href="#">Roadmap Karier</a>
-                <a href="#">Self Assessment</a>
-                <a href="#">Pelatihan</a>
+                <a href="/roadmap-karier">Roadmap Karier</a>
+                <a href="/self-assessment">Self Assessment</a>
+                <a href="/skill-training">Pelatihan</a>
+                <a href="/forum">Forum Diskusi</a>
                 <a href="/mentorship">Mentorship</a>
-                <a href="#">Notifikasi</a>
+                <a href="/notifikasi">Notifikasi</a>
             </div>
             <div class="profile-mini">
                 <div class="avatar-mini">U</div>
@@ -89,18 +90,19 @@
                         <span>{{ $cv->email }} • {{ $cv->telepon }}</span>
                         <span>Dibuat: {{ $cv->created_at->format('d M Y, H:i') }}</span>
                     </div>
-                    @if($cv->skills)
+                    @if($cv->skills->isNotEmpty())
                     <div class="tag-list">
-                        @foreach(array_slice($cv->skills_array, 0, 5) as $skill)
-                        <span class="tag">{{ $skill }}</span>
+                        @foreach($cv->skills->take(5) as $skill)
+                        <span class="tag">{{ $skill->nama_skill }}</span>
                         @endforeach
-                        @if(count($cv->skills_array) > 5)
-                        <span class="tag" style="background:#f0f4fa;color:var(--muted)">+{{ count($cv->skills_array) - 5 }}</span>
+                        @if($cv->skills->count() > 5)
+                        <span class="tag" style="background:#f0f4fa;color:var(--muted)">+{{ $cv->skills->count() - 5 }}</span>
                         @endif
                     </div>
                     @endif
                     <div class="actions">
                         <a href="{{ route('cv.show', $cv->id) }}" class="btn btn-ghost" style="padding:8px 14px;font-size:.88rem">Lihat CV</a>
+                        <a href="{{ route('cv.edit', $cv->id) }}" class="btn btn-ghost" style="padding:8px 14px;font-size:.88rem">Edit</a>
                         <form action="{{ route('cv.destroy', $cv->id) }}" method="POST" onsubmit="return confirm('Hapus CV ini?')">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-danger" style="padding:8px 14px;font-size:.88rem">Hapus</button>

@@ -769,16 +769,20 @@
                 <button type="button" data-nav="dashboard">Dashboard</button>
                 <button type="button" data-nav="profile">Profil</button>
                 <button type="button" data-nav="cv">Manajemen CV</button>
+                <button type="button" data-nav="buat-cv">Buat CV ATS</button>
                 <button type="button" data-nav="roadmap">Roadmap Karier</button>
-                <button type="button" class="active">Mentorship</button>
                 <button type="button" data-nav="assessment">Self Assessment</button>
+                <button type="button" data-nav="pelatihan">Pelatihan</button>
+                <button type="button" data-nav="forum">Forum</button>
+                <button type="button" class="active">Mentorship</button>
+                <button type="button" data-nav="notifikasi">Notifikasi</button>
             </div>
 
             <div class="profile-mini">
-                <div class="avatar-mini" id="miniAvatar">U</div>
+                <div class="avatar-mini" id="miniAvatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
                 <div>
-                    <strong id="miniName">User Name</strong>
-                    <span id="miniEmail">user@email.com</span>
+                    <strong id="miniName">{{ auth()->user()->name ?? 'User Name' }}</strong>
+                    <span id="miniEmail">{{ auth()->user()->email ?? 'user@email.com' }}</span>
                 </div>
             </div>
         </aside>
@@ -903,7 +907,8 @@
     <script>
         const showToast = window.hirifyShowToast;
 
-        let token = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
+        let token = '{{ session("jwt_token") }}' || localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
+        if (token) { localStorage.setItem('hirify_token', token); }
         let selectedBookingStatus = 'all';
         let selectedSlotId = null;
         let activeMentor = null;
@@ -1392,30 +1397,29 @@
             document.querySelector('[data-nav="dashboard"]').addEventListener('click', () => {
                 window.location.href = '/dashboard';
             });
-
             document.querySelector('[data-nav="profile"]').addEventListener('click', () => {
-                window.location.href = '/dashboard';
+                window.location.href = '/profile';
             });
-
-<<<<<<< HEAD
             document.querySelector('[data-nav="cv"]').addEventListener('click', () => {
-                window.location.href = '/cv/create';
+                window.location.href = '/manajemen-cv';
             });
-
+            document.querySelector('[data-nav="buat-cv"]').addEventListener('click', () => {
+                window.location.href = '/buat-cv-ats';
+            });
             document.querySelector('[data-nav="roadmap"]').addEventListener('click', () => {
-                window.location.href = '/roadmap';
+                window.location.href = '/roadmap-karier';
             });
-
             document.querySelector('[data-nav="assessment"]').addEventListener('click', () => {
-                window.location.href = '/assessment';
-=======
+                window.location.href = '/self-assessment';
+            });
+            document.querySelector('[data-nav="pelatihan"]').addEventListener('click', () => {
+                window.location.href = '/pelatihan';
+            });
             document.querySelector('[data-nav="forum"]').addEventListener('click', () => {
                 window.location.href = '/forum';
             });
-
-            document.querySelector('[data-nav="skill-training"]').addEventListener('click', () => {
-                window.location.href = '/skill-training';
->>>>>>> d0fc99372a11b6ab70f8d0b7ccf000fb82e256ab
+            document.querySelector('[data-nav="notifikasi"]').addEventListener('click', () => {
+                window.location.href = '/notifikasi';
             });
         }
 

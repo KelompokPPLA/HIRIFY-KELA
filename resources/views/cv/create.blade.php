@@ -1,9 +1,25 @@
+@php
+    $isEdit = isset($cv);
+    $technicalSkillsValue = old('technical_skills', $isEdit ? $cv->skills->where('tipe', 'technical')->pluck('nama_skill')->implode(', ') : '');
+    $softSkillsValue = old('soft_skills', $isEdit ? $cv->skills->where('tipe', 'soft')->pluck('nama_skill')->implode(', ') : '');
+    $initialEducations = old('pendidikan', $isEdit ? $cv->educations->map(fn ($edu) => [
+        'institusi' => $edu->institusi,
+        'gelar' => $edu->gelar,
+        'tahun' => $edu->tahun,
+    ])->values()->all() : []);
+    $initialExperiences = old('pengalaman', $isEdit ? $cv->experiences->map(fn ($exp) => [
+        'posisi' => $exp->posisi,
+        'perusahaan' => $exp->perusahaan,
+        'deskripsi' => $exp->deskripsi,
+        'periode' => $exp->periode,
+    ])->values()->all() : []);
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hirify | Buat CV ATS</title>
+    <title>Hirify | {{ $isEdit ? 'Edit CV ATS' : 'Buat CV ATS' }}</title>
     <meta name="description" content="Buat CV ATS-friendly yang mudah dibaca oleh Applicant Tracking System">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -92,12 +108,13 @@
         <div class="brand"><span class="brand-mark">H</span><span>Hirify!</span></div>
         <div class="menu">
             <a href="/dashboard">Dashboard</a>
-            <a href="#">Profil</a>
-            <a href="{{ route('cv.index') }}">Manajemen CV</a>
-            <a href="{{ route('cv.create') }}" class="active">Buat CV ATS</a>
-            <a href="#">Roadmap Karier</a>
-            <a href="#">Self Assessment</a>
-            <a href="#">Pelatihan</a>
+            <a href="/profile">Profil</a>
+            <a href="/manajemen-cv">Manajemen CV</a>
+            <a href="/buat-cv-ats" class="active">Buat CV ATS</a>
+            <a href="/roadmap-karier">Roadmap Karier</a>
+            <a href="/self-assessment">Self Assessment</a>
+            <a href="/skill-training">Pelatihan</a>
+            <a href="/forum">Forum Diskusi</a>
             <a href="/mentorship">Mentorship</a>
         </div>
         <div class="profile-mini">
@@ -111,21 +128,24 @@
 
     <main class="content">
         <div class="title-wrap">
-            <h1>Generate CV ATS</h1>
-            <p>Buat CV yang mudah dibaca oleh Applicant Tracking System</p>
+            <h1>{{ $isEdit ? 'Edit CV ATS' : 'Generate CV ATS' }}</h1>
+            <p>{{ $isEdit ? 'Perbarui data CV dan generate ulang preview ATS.' : 'Buat CV yang mudah dibaca oleh Applicant Tracking System' }}</p>
         </div>
 
         <div class="split">
             {{-- LEFT: Form --}}
-            <form id="cvForm" action="{{ route('cv.store') }}" method="POST" class="form-card">
+            <form id="cvForm" action="{{ $isEdit ? route('cv.update', $cv->id) : route('cv.store') }}" method="POST" class="form-card">
                 @csrf
+                @if($isEdit)
+                    @method('PUT')
+                @endif
 
                 <div class="section-title">Data Diri</div>
 
                 <div class="form-grid" style="margin-bottom:12px">
                     <div class="field">
                         <label class="required" for="nama_lengkap">Nama Lengkap</label>
-                        <input id="nama_lengkap" name="nama_lengkap" class="input" placeholder="John Doe" value="{{ old('nama_lengkap') }}" oninput="updatePreview()">
+                        <input id="nama_lengkap" name="nama_lengkap" class="input" placeholder="John Doe" value="{{ old('nama_lengkap', $cv->nama_lengkap ?? '') }}" oninput="updatePreview()">
                         @error('nama_lengkap')<span class="error-text">{{ $message }}</span>@enderror
                     </div>
                     <div></div>
@@ -134,12 +154,12 @@
                 <div class="form-grid" style="margin-bottom:12px">
                     <div class="field">
                         <label class="required" for="email">Email</label>
-                        <input id="email" name="email" type="email" class="input" placeholder="john@email.com" value="{{ old('email') }}" oninput="updatePreview()">
+                        <input id="email" name="email" type="email" class="input" placeholder="john@email.com" value="{{ old('email', $cv->email ?? '') }}" oninput="updatePreview()">
                         @error('email')<span class="error-text">{{ $message }}</span>@enderror
                     </div>
                     <div class="field">
                         <label class="required" for="telepon">Telepon</label>
-                        <input id="telepon" name="telepon" class="input" placeholder="+62 812 3456 7890" value="{{ old('telepon') }}" oninput="updatePreview()">
+                        <input id="telepon" name="telepon" class="input" placeholder="+62 812 3456 7890" value="{{ old('telepon', $cv->telepon ?? '') }}" oninput="updatePreview()">
                         @error('telepon')<span class="error-text">{{ $message }}</span>@enderror
                     </div>
                 </div>
@@ -147,18 +167,18 @@
                 <div class="form-grid" style="margin-bottom:12px">
                     <div class="field">
                         <label for="linkedin">LinkedIn / Portfolio</label>
-                        <input id="linkedin" name="linkedin" class="input" placeholder="https://linkedin.com/in/johndoe" value="{{ old('linkedin') }}" oninput="updatePreview()">
+                        <input id="linkedin" name="linkedin" class="input" placeholder="https://linkedin.com/in/johndoe" value="{{ old('linkedin', $cv->linkedin ?? '') }}" oninput="updatePreview()">
                     </div>
                     <div class="field">
                         <label for="alamat">Alamat / Lokasi</label>
-                        <input id="alamat" name="alamat" class="input" placeholder="Tangerang, Indonesia" value="{{ old('alamat') }}" oninput="updatePreview()">
+                        <input id="alamat" name="alamat" class="input" placeholder="Tangerang, Indonesia" value="{{ old('alamat', $cv->alamat ?? '') }}" oninput="updatePreview()">
                     </div>
                 </div>
 
                 <div class="form-grid full" style="margin-bottom:4px">
                     <div class="field">
                         <label for="ringkasan">Ringkasan Profesional</label>
-                        <textarea id="ringkasan" name="ringkasan" class="textarea" placeholder="Jelaskan tentang diri Anda dalam 2-3 kalimat..." oninput="updatePreview()">{{ old('ringkasan') }}</textarea>
+                        <textarea id="ringkasan" name="ringkasan" class="textarea" placeholder="Jelaskan tentang diri Anda dalam 2-3 kalimat..." oninput="updatePreview()">{{ old('ringkasan', $cv->ringkasan ?? '') }}</textarea>
                     </div>
                 </div>
 
@@ -177,19 +197,19 @@
                 <div class="form-grid full" style="margin-bottom:12px">
                     <div class="field">
                         <label for="technical_skills">Technical Skills (pisahkan dengan koma)</label>
-                        <input id="technical_skills" name="technical_skills" class="input" placeholder="HTML, CSS, JavaScript, Laravel, MySQL" value="{{ old('technical_skills') }}" oninput="updatePreview()">
+                        <input id="technical_skills" name="technical_skills" class="input" placeholder="HTML, CSS, JavaScript, Laravel, MySQL" value="{{ $technicalSkillsValue }}" oninput="updatePreview()">
                     </div>
                 </div>
                 <div class="form-grid full">
                     <div class="field">
                         <label for="soft_skills">Soft Skills (pisahkan dengan koma)</label>
-                        <input id="soft_skills" name="soft_skills" class="input" placeholder="Communication, Teamwork, Problem Solving" value="{{ old('soft_skills') }}" oninput="updatePreview()">
+                        <input id="soft_skills" name="soft_skills" class="input" placeholder="Communication, Teamwork, Problem Solving" value="{{ $softSkillsValue }}" oninput="updatePreview()">
                     </div>
                 </div>
                 {{-- Hidden field to combine skills for backend --}}
                 <input type="hidden" id="skills" name="skills" value="{{ old('skills') }}">
 
-                <button type="submit" class="btn btn-submit">Simpan CV ATS</button>
+                <button type="submit" class="btn btn-submit">{{ $isEdit ? 'Simpan Perubahan CV ATS' : 'Simpan CV ATS' }}</button>
             </form>
 
             {{-- RIGHT: Preview --}}
@@ -222,7 +242,7 @@
 <script>
 let eduCount = 0, expCount = 0;
 
-function addEducation() {
+function addEducation(data = {}) {
     const c = document.getElementById('eduContainer');
     const i = eduCount++;
     const div = document.createElement('div');
@@ -233,23 +253,23 @@ function addEducation() {
         <div class="form-grid" style="margin-bottom:10px">
             <div class="field">
                 <label class="required">Institusi</label>
-                <input name="pendidikan[${i}][institusi]" class="input" placeholder="Universitas Indonesia" oninput="updatePreview()">
+                <input name="pendidikan[${i}][institusi]" class="input" placeholder="Universitas Indonesia" value="${escAttr(data.institusi || '')}" oninput="updatePreview()">
             </div>
             <div class="field">
                 <label class="required">Gelar</label>
-                <input name="pendidikan[${i}][gelar]" class="input" placeholder="Bachelor of Computer Science" oninput="updatePreview()">
+                <input name="pendidikan[${i}][gelar]" class="input" placeholder="Bachelor of Computer Science" value="${escAttr(data.gelar || '')}" oninput="updatePreview()">
             </div>
         </div>
         <div class="field">
             <label class="required">Tahun</label>
-            <input name="pendidikan[${i}][tahun]" class="input" placeholder="2019 - 2023" oninput="updatePreview()" style="max-width:200px">
+            <input name="pendidikan[${i}][tahun]" class="input" placeholder="2019 - 2023" value="${escAttr(data.tahun || '')}" oninput="updatePreview()" style="max-width:200px">
         </div>
     `;
     c.appendChild(div);
     updatePreview();
 }
 
-function addExperience() {
+function addExperience(data = {}) {
     const c = document.getElementById('expContainer');
     const i = expCount++;
     const div = document.createElement('div');
@@ -260,20 +280,20 @@ function addExperience() {
         <div class="form-grid" style="margin-bottom:10px">
             <div class="field">
                 <label class="required">Posisi</label>
-                <input name="pengalaman[${i}][posisi]" class="input" placeholder="Frontend Developer" oninput="updatePreview()">
+                <input name="pengalaman[${i}][posisi]" class="input" placeholder="Frontend Developer" value="${escAttr(data.posisi || '')}" oninput="updatePreview()">
             </div>
             <div class="field">
                 <label class="required">Perusahaan</label>
-                <input name="pengalaman[${i}][perusahaan]" class="input" placeholder="Tech Startup Indonesia" oninput="updatePreview()">
+                <input name="pengalaman[${i}][perusahaan]" class="input" placeholder="Tech Startup Indonesia" value="${escAttr(data.perusahaan || '')}" oninput="updatePreview()">
             </div>
         </div>
         <div class="field" style="margin-bottom:10px">
             <label>Deskripsi Pekerjaan</label>
-            <textarea name="pengalaman[${i}][deskripsi]" class="textarea" placeholder="Deskripsikan tanggung jawab dan pencapaian..." oninput="updatePreview()"></textarea>
+            <textarea name="pengalaman[${i}][deskripsi]" class="textarea" placeholder="Deskripsikan tanggung jawab dan pencapaian..." oninput="updatePreview()">${escHtml(data.deskripsi || '')}</textarea>
         </div>
         <div class="field">
             <label class="required">Periode</label>
-            <input name="pengalaman[${i}][periode]" class="input" placeholder="Jun 2022 - Des 2022" oninput="updatePreview()" style="max-width:240px">
+            <input name="pengalaman[${i}][periode]" class="input" placeholder="Jun 2022 - Des 2022" value="${escAttr(data.periode || '')}" oninput="updatePreview()" style="max-width:240px">
         </div>
     `;
     c.appendChild(div);
@@ -374,9 +394,26 @@ function escHtml(str) {
     return d.innerHTML;
 }
 
-// Add first education and experience on load
-addEducation();
-addExperience();
+function escAttr(str) {
+    return escHtml(str).replace(/"/g, '&quot;');
+}
+
+const initialEducations = @json($initialEducations);
+const initialExperiences = @json($initialExperiences);
+
+if (initialEducations.length) {
+    initialEducations.forEach(item => addEducation(item));
+} else {
+    addEducation();
+}
+
+if (initialExperiences.length) {
+    initialExperiences.forEach(item => addExperience(item));
+} else {
+    addExperience();
+}
+
+updatePreview();
 </script>
 </body>
 </html>

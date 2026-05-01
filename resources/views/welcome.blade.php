@@ -82,14 +82,16 @@
         }
 
         .brand-mark {
-            width: 38px;
-            height: 38px;
-            border-radius: 14px;
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
             display: grid;
             place-items: center;
             color: white;
-            background: linear-gradient(135deg, #0e7490, #2dd4bf);
-            box-shadow: 0 10px 30px rgba(14, 116, 144, 0.25);
+            font-size: 17px;
+            font-weight: 800;
+            background: linear-gradient(145deg, #0399b7, #06d8ee);
+            box-shadow: 0 10px 30px rgba(3, 153, 183, 0.25);
         }
 
         .nav-links {
