@@ -53,58 +53,7 @@ class CvController extends Controller
                 'ringkasan'    => $validated['ringkasan'] ?? null,
             ]);
 
-            // 2. Simpan pendidikan
-            if (!empty($validated['pendidikan'])) {
-                foreach ($validated['pendidikan'] as $edu) {
-                    Education::create([
-                        'cv_id'    => $cv->id,
-                        'institusi' => $edu['institusi'],
-                        'gelar'    => $edu['gelar'],
-                        'tahun'    => $edu['tahun'],
-                    ]);
-                }
-            }
-
-            // 3. Simpan pengalaman
-            if (!empty($validated['pengalaman'])) {
-                foreach ($validated['pengalaman'] as $exp) {
-                    Experience::create([
-                        'cv_id'      => $cv->id,
-                        'posisi'     => $exp['posisi'],
-                        'perusahaan' => $exp['perusahaan'],
-                        'deskripsi'  => $exp['deskripsi'] ?? null,
-                        'periode'    => $exp['periode'],
-                    ]);
-                }
-            }
-
-            // 4. Simpan technical skills
-            if (!empty($validated['technical_skills'])) {
-                $techSkills = array_filter(
-                    array_map('trim', explode(',', $validated['technical_skills']))
-                );
-                foreach ($techSkills as $skill) {
-                    Skill::create([
-                        'cv_id'      => $cv->id,
-                        'nama_skill' => $skill,
-                        'tipe'       => 'technical',
-                    ]);
-                }
-            }
-
-            // 5. Simpan soft skills
-            if (!empty($validated['soft_skills'])) {
-                $softSkills = array_filter(
-                    array_map('trim', explode(',', $validated['soft_skills']))
-                );
-                foreach ($softSkills as $skill) {
-                    Skill::create([
-                        'cv_id'      => $cv->id,
-                        'nama_skill' => $skill,
-                        'tipe'       => 'soft',
-                    ]);
-                }
-            }
+            $this->syncCvDetails($cv, $validated);
 
             return $cv;
         });
@@ -127,6 +76,51 @@ class CvController extends Controller
     }
 
     /**
+     * Show the form for editing the specified CV.
+     */
+    public function edit(string $id)
+    {
+        $cv = Cv::with(['educations', 'experiences', 'skills'])
+                ->where('user_id', auth()->id())
+                ->findOrFail($id);
+
+        return view('cv.create', compact('cv'));
+    }
+
+    /**
+     * Update the specified CV in storage.
+     */
+    public function update(StoreCvRequest $request, string $id)
+    {
+        $validated = $request->validated();
+
+        $cv = DB::transaction(function () use ($validated, $id) {
+            $cv = Cv::where('user_id', auth()->id())->findOrFail($id);
+
+            $cv->update([
+                'nama_lengkap' => $validated['nama_lengkap'],
+                'email'        => $validated['email'],
+                'telepon'      => $validated['telepon'],
+                'alamat'       => $validated['alamat']    ?? null,
+                'linkedin'     => $validated['linkedin']  ?? null,
+                'ringkasan'    => $validated['ringkasan'] ?? null,
+            ]);
+
+            $cv->educations()->delete();
+            $cv->experiences()->delete();
+            $cv->skills()->delete();
+
+            $this->syncCvDetails($cv, $validated);
+
+            return $cv;
+        });
+
+        return redirect()
+            ->route('cv.show', $cv->id)
+            ->with('success', 'CV ATS berhasil diperbarui!');
+    }
+
+    /**
      * Remove the specified CV from storage.
      */
     public function destroy(string $id)
@@ -137,5 +131,43 @@ class CvController extends Controller
         return redirect()
             ->route('cv.index')
             ->with('success', 'CV berhasil dihapus.');
+    }
+
+    private function syncCvDetails(Cv $cv, array $validated): void
+    {
+        foreach ($validated['pendidikan'] ?? [] as $edu) {
+            Education::create([
+                'cv_id'     => $cv->id,
+                'institusi' => $edu['institusi'],
+                'gelar'     => $edu['gelar'],
+                'tahun'     => $edu['tahun'],
+            ]);
+        }
+
+        foreach ($validated['pengalaman'] ?? [] as $exp) {
+            Experience::create([
+                'cv_id'      => $cv->id,
+                'posisi'     => $exp['posisi'],
+                'perusahaan' => $exp['perusahaan'],
+                'deskripsi'  => $exp['deskripsi'] ?? null,
+                'periode'    => $exp['periode'],
+            ]);
+        }
+
+        foreach (array_filter(array_map('trim', explode(',', $validated['technical_skills'] ?? ''))) as $skill) {
+            Skill::create([
+                'cv_id'      => $cv->id,
+                'nama_skill' => $skill,
+                'tipe'       => 'technical',
+            ]);
+        }
+
+        foreach (array_filter(array_map('trim', explode(',', $validated['soft_skills'] ?? ''))) as $skill) {
+            Skill::create([
+                'cv_id'      => $cv->id,
+                'nama_skill' => $skill,
+                'tipe'       => 'soft',
+            ]);
+        }
     }
 }

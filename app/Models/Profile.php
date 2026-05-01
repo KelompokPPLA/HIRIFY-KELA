@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\UUID;
 use Illuminate\Database\Eloquent\Model;
 
 class Profile extends Model
 {
+    use UUID;
+
     protected $fillable = [
         'user_id',
         'first_name',
@@ -13,7 +16,8 @@ class Profile extends Model
         'bio',
         'phone',
         'location',
-        'photo'
+        'photo',
+        'career_path',
     ];
 
     public function user()
