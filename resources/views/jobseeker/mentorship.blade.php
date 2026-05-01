@@ -768,12 +768,10 @@
             <div class="menu">
                 <button type="button" data-nav="dashboard">Dashboard</button>
                 <button type="button" data-nav="profile">Profil</button>
-                <button type="button">Manajemen CV</button>
-                <button type="button">Roadmap Karier</button>
+                <button type="button" data-nav="cv">Manajemen CV</button>
+                <button type="button" data-nav="roadmap">Roadmap Karier</button>
                 <button type="button" class="active">Mentorship</button>
-                <button type="button" data-nav="skill-training">Pelatihan Skill</button>
-                <button type="button" data-nav="forum">Forum Diskusi</button>
-                <button type="button">Notifikasi</button>
+                <button type="button" data-nav="assessment">Self Assessment</button>
             </div>
 
             <div class="profile-mini">
@@ -1399,12 +1397,25 @@
                 window.location.href = '/dashboard';
             });
 
+<<<<<<< HEAD
+            document.querySelector('[data-nav="cv"]').addEventListener('click', () => {
+                window.location.href = '/cv/create';
+            });
+
+            document.querySelector('[data-nav="roadmap"]').addEventListener('click', () => {
+                window.location.href = '/roadmap';
+            });
+
+            document.querySelector('[data-nav="assessment"]').addEventListener('click', () => {
+                window.location.href = '/assessment';
+=======
             document.querySelector('[data-nav="forum"]').addEventListener('click', () => {
                 window.location.href = '/forum';
             });
 
             document.querySelector('[data-nav="skill-training"]').addEventListener('click', () => {
                 window.location.href = '/skill-training';
+>>>>>>> d0fc99372a11b6ab70f8d0b7ccf000fb82e256ab
             });
         }
 

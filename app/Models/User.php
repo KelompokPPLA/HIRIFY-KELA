@@ -38,6 +38,7 @@ class User extends Authenticatable implements JWTSubject
     }
 
     public function mentorProfile()
+    public function getJWTIdentifier()
     {
         return $this->hasOne(Mentor::class);
     }
@@ -61,5 +62,11 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims(): array
     {
         return [];
+    }
+}
+
+    public function cvs()
+    {
+        return $this->hasMany(Cv::class);
     }
 }

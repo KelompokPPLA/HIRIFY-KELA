@@ -101,11 +101,13 @@
         label {
             display: block;
             font-size: 13px;
-            margin: 14px 0 8px;
+            margin: 14px 0 6px;
             font-weight: 700;
         }
 
-        input {
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
             width: 100%;
             border: 1px solid rgba(15, 23, 42, 0.12);
             background: #fbfdff;
@@ -159,24 +161,20 @@
             color: var(--accent);
             font-weight: 600;
             text-decoration: none;
-            transition: color .2s ease;
         }
 
-        .forgot-link a:hover {
-            color: var(--accent-2);
-        }
+        .forgot-link a:hover { color: var(--accent-2); }
 
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 20px;
-                    gap: 16px;
+            gap: 16px;
         }
 
         .back-btn {
             display: inline-flex;
-                        justify-content: center;
             align-items: center;
             gap: 6px;
             padding: 10px 16px;
@@ -187,29 +185,25 @@
             font-weight: 600;
             font-size: 13px;
             text-decoration: none;
-            cursor: pointer;
             transition: all .25s ease;
-            box-shadow: 0 4px 12px rgba(38, 198, 218, 0.1);
             white-space: nowrap;
             flex-shrink: 0;
         }
 
         .back-btn:hover {
-            background: linear-gradient(135deg, rgba(38, 198, 218, 0.18) 0%, rgba(38, 198, 218, 0.12) 100%);
             border-color: rgba(38, 198, 218, 0.6);
             transform: translateX(-3px);
-            box-shadow: 0 6px 16px rgba(38, 198, 218, 0.15);
         }
 
         .password-wrapper {
             position: relative;
-                    display: flex;
-                    align-items: center;
+            display: flex;
+            align-items: center;
         }
 
         .password-wrapper input {
             width: 100%;
-            padding-right: 42px;
+            padding-right: 44px;
         }
 
         .password-toggle {
@@ -219,23 +213,15 @@
             border: none;
             cursor: pointer;
             color: var(--muted);
-            font-size: 20px;
+            font-size: 18px;
             padding: 4px 6px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            transition: all .2s ease;
             line-height: 1;
+            transition: color .2s;
         }
 
-        .password-toggle:hover {
-                        transform: scale(1.1);
-            color: var(--accent);
-        }
-
-        .password-toggle:active {
-            transform: scale(0.95);
-        }
+        .password-toggle:hover { color: var(--accent); }
 
         .btn {
             width: 100%;
@@ -250,25 +236,32 @@
             color: #fff;
             background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
             box-shadow: 0 16px 30px rgba(38, 198, 218, 0.24);
-            transition: transform .15s ease, opacity .2s ease, box-shadow .2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            transition: transform .15s ease, box-shadow .2s ease;
         }
 
         .btn:hover { transform: translateY(-1px); box-shadow: 0 18px 36px rgba(38, 198, 218, 0.3); }
-        .btn:disabled { opacity: .7; cursor: not-allowed; }
+        .btn:active { transform: translateY(0); }
 
-        .feedback {
-            margin-top: 14px;
-            font-size: 14px;
-            min-height: 22px;
-            display: none;
+        /* Error / Success alerts */
+        .alert {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 14px;
         }
 
-        .danger { color: var(--danger); }
-        .success { color: #0f7a41; }
+        .alert-error {
+            background: rgba(180, 35, 24, 0.08);
+            color: var(--danger);
+            border: 1px solid rgba(180, 35, 24, 0.2);
+        }
+
+        .alert-success {
+            background: rgba(15, 122, 65, 0.08);
+            color: #0f7a41;
+            border: 1px solid rgba(15, 122, 65, 0.2);
+        }
 
         .link {
             margin-top: 14px;
@@ -289,19 +282,16 @@
 
         @media (max-width: 900px) {
             .auth-card { grid-template-columns: 1fr; }
-            .hero { gap: 22px; }
+            .hero { display: none; }
         }
 
         @media (max-width: 540px) {
             .auth-card { border-radius: 24px; }
-            .hero,
             .form-wrap { padding: 24px; }
         }
     </style>
 </head>
 <body>
-    @include('components.auth.toast')
-
     <main class="auth-card">
         <section class="hero">
             <div>
@@ -327,10 +317,45 @@
                 @error('email')
                     <p class="feedback danger">{{ $message }}</p>
                 @enderror
+            {{-- Error dari session (validasi gagal) --}}
+            @if ($errors->any())
+                <div class="alert alert-error">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
+            {{-- Pesan sukses dari session --}}
+            @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            {{-- FORM BIASA dengan @csrf — BUKAN fetch() agar session tersimpan dengan benar --}}
+            <form method="POST" action="{{ route('login') }}" id="loginForm">
+                @csrf
+
+                <label for="email">Email</label>
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value="{{ old('email') }}"
+                    required
+                    autocomplete="email"
+                    autofocus
+                >
 
                 <label for="password">Password</label>
                 <div class="password-wrapper">
-                    <input id="password" name="password" type="password" minlength="8" required>
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        minlength="8"
+                        required
+                        autocomplete="current-password"
+                    >
                     <button type="button" class="password-toggle" id="togglePassword" title="Tampilkan/Sembunyikan password">👁</button>
                 </div>
 
@@ -342,8 +367,9 @@
                     <p class="forgot-link"><a href="/forgot-password">Lupa password?</a></p>
                 </div>
 
-                <button class="btn" type="submit" id="submitBtn"><span>Masuk</span><span>→</span></button>
-                <div id="feedback" class="feedback"></div>
+                <button class="btn" type="submit" id="submitBtn">
+                    <span>Masuk</span> <span>→</span>
+                </button>
             </form>
 
             <p class="link">Belum punya akun? <a href="/register">Daftar di sini</a></p>
@@ -366,6 +392,19 @@
         form.addEventListener('submit', (event) => {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Memproses...';
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const input = document.getElementById('password');
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            this.textContent = isPassword ? '🙈' : '👁';
+        });
+
+        // Loading state saat submit
+        document.getElementById('loginForm').addEventListener('submit', function () {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>Memproses...</span>';
         });
     </script>
 </body>
