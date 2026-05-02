@@ -197,6 +197,7 @@
             <button type="button" class="active">Pelatihan Skill</button>
             <button type="button" data-goto="/forum">Forum Diskusi</button>
             <button type="button" data-goto="/mentorship">Mentorship</button>
+            <button type="button" data-goto="/riwayat-feedback">Riwayat Feedback</button>
             <button type="button" data-goto="/notifikasi">Notifikasi</button>
             <button type="button" id="logoutBtn">Logout</button>
         </div>

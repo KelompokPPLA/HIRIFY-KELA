@@ -777,6 +777,7 @@
                 <button type="button" data-nav="pelatihan">Pelatihan</button>
                 <button type="button" data-nav="forum">Forum</button>
                 <button type="button" class="active">Mentorship</button>
+                <button type="button" data-nav="feedback">Riwayat Feedback</button>
                 <button type="button" data-nav="notifikasi">Notifikasi</button>
             </div>
 
@@ -1331,6 +1332,9 @@
             });
             document.querySelector('[data-nav="forum"]').addEventListener('click', () => {
                 window.location.href = '/forum';
+            });
+            document.querySelector('[data-nav="feedback"]').addEventListener('click', () => {
+                window.location.href = '/riwayat-feedback';
             });
             document.querySelector('[data-nav="notifikasi"]').addEventListener('click', () => {
                 window.location.href = '/notifikasi';

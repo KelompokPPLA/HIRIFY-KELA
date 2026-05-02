@@ -137,6 +137,7 @@
                         ['url' => '/pelatihan', 'label' => 'Pelatihan', 'pattern' => 'pelatihan|skill-training', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>'],
                         ['url' => '/forum', 'label' => 'Forum', 'pattern' => 'forum', 'icon' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>'],
                         ['url' => '/mentorship', 'label' => 'Mentorship', 'pattern' => 'mentorship', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'],
+                        ['url' => '/riwayat-feedback', 'label' => 'Riwayat Feedback', 'pattern' => 'riwayat-feedback', 'icon' => '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>'],
                         ['url' => '/notifikasi', 'label' => 'Notifikasi', 'pattern' => 'notifikasi', 'icon' => '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>'],
                     ];
                 @endphp
