@@ -38,10 +38,14 @@ class User extends Authenticatable implements JWTSubject
     }
 
     public function mentorProfile()
-    public function getJWTIdentifier()
     {
         return $this->hasOne(Mentor::class);
     }
+    
+    public function getJWTIdentifier()
+    {
+        return $this->getKey(); // ini isi yang benar untuk JWT
+    }   
 
     public function mentorshipBookings()
     {
@@ -54,16 +58,10 @@ class User extends Authenticatable implements JWTSubject
                      ->orWhere('email', 'like', '%' . $search . '%');
     }
 
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
     public function getJWTCustomClaims(): array
     {
         return [];
     }
-}
 
     public function cvs()
     {
