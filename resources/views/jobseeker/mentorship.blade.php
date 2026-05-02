@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hirify | Mentorship</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
         :root {
             --bg: #f4f8fd;
@@ -768,17 +770,21 @@
             <div class="menu">
                 <button type="button" data-nav="dashboard">Dashboard</button>
                 <button type="button" data-nav="profile">Profil</button>
-                <button type="button">Manajemen CV</button>
-                <button type="button">Roadmap Karier</button>
+                <button type="button" data-nav="cv">Manajemen CV</button>
+                <button type="button" data-nav="buat-cv">Buat CV ATS</button>
+                <button type="button" data-nav="roadmap">Roadmap Karier</button>
+                <button type="button" data-nav="assessment">Self Assessment</button>
+                <button type="button" data-nav="pelatihan">Pelatihan</button>
+                <button type="button" data-nav="forum">Forum</button>
                 <button type="button" class="active">Mentorship</button>
-                <button type="button">Notifikasi</button>
+                <button type="button" data-nav="notifikasi">Notifikasi</button>
             </div>
 
             <div class="profile-mini">
-                <div class="avatar-mini" id="miniAvatar">U</div>
+                <div class="avatar-mini" id="miniAvatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
                 <div>
-                    <strong id="miniName">User Name</strong>
-                    <span id="miniEmail">user@email.com</span>
+                    <strong id="miniName">{{ auth()->user()->name ?? 'User Name' }}</strong>
+                    <span id="miniEmail">{{ auth()->user()->email ?? 'user@email.com' }}</span>
                 </div>
             </div>
         </aside>
@@ -900,10 +906,13 @@
         </div>
     </section>
 
+    <script src="/js/hirify-api.js"></script>
     <script>
         const showToast = window.hirifyShowToast;
 
-        let token = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
+        hirifyInitToken('{{ session("jwt_token") }}');
+        const api = window.hirifyApi;
+        const escapeHtml = window.hirifyEsc;
         let selectedBookingStatus = 'all';
         let selectedSlotId = null;
         let activeMentor = null;
@@ -941,96 +950,6 @@
         const manualDate = document.getElementById('manualDate');
         const durationInput = document.getElementById('durationInput');
         const bookingNotes = document.getElementById('bookingNotes');
-
-        if (!token) {
-            window.location.href = '/login';
-        }
-
-        function clearAuthStorage() {
-            localStorage.removeItem('hirify_token');
-            localStorage.removeItem('hirify_user');
-            localStorage.removeItem('hirify_remember');
-            sessionStorage.removeItem('hirify_token');
-            sessionStorage.removeItem('hirify_user');
-        }
-
-        function activeStorage() {
-            return localStorage.getItem('hirify_token') ? localStorage : sessionStorage;
-        }
-
-        async function refreshToken() {
-            if (!token) {
-                return false;
-            }
-
-            try {
-                const response = await fetch('/api/auth/refresh', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-
-                const result = await response.json();
-
-                if (!response.ok || result.success === false || !result?.data?.token) {
-                    return false;
-                }
-
-                token = result.data.token;
-                activeStorage().setItem('hirify_token', token);
-
-                if (result.data.user) {
-                    activeStorage().setItem('hirify_user', JSON.stringify(result.data.user));
-                }
-
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
-
-        async function api(path, options = {}, canRetry = true) {
-            const response = await fetch(path, {
-                ...options,
-                headers: {
-                    'Accept': 'application/json',
-                    ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
-                    'Authorization': `Bearer ${token}`,
-                    ...(options.headers || {}),
-                },
-            });
-
-            let data = {};
-            try {
-                data = await response.json();
-            } catch (_) {
-                data = {};
-            }
-
-            if (response.status === 401 && canRetry) {
-                const refreshed = await refreshToken();
-                if (refreshed) {
-                    return api(path, options, false);
-                }
-            }
-
-            if (!response.ok || data.success === false) {
-                throw new Error(data.message || 'Terjadi kesalahan request.');
-            }
-
-            return data;
-        }
-
-        function escapeHtml(text) {
-            return String(text || '')
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#39;');
-        }
 
         function formatRupiah(value) {
             return new Intl.NumberFormat('id-ID').format(Number(value || 0));
@@ -1392,9 +1311,29 @@
             document.querySelector('[data-nav="dashboard"]').addEventListener('click', () => {
                 window.location.href = '/dashboard';
             });
-
             document.querySelector('[data-nav="profile"]').addEventListener('click', () => {
-                window.location.href = '/dashboard';
+                window.location.href = '/profile';
+            });
+            document.querySelector('[data-nav="cv"]').addEventListener('click', () => {
+                window.location.href = '/manajemen-cv';
+            });
+            document.querySelector('[data-nav="buat-cv"]').addEventListener('click', () => {
+                window.location.href = '/buat-cv-ats';
+            });
+            document.querySelector('[data-nav="roadmap"]').addEventListener('click', () => {
+                window.location.href = '/roadmap-karier';
+            });
+            document.querySelector('[data-nav="assessment"]').addEventListener('click', () => {
+                window.location.href = '/self-assessment';
+            });
+            document.querySelector('[data-nav="pelatihan"]').addEventListener('click', () => {
+                window.location.href = '/pelatihan';
+            });
+            document.querySelector('[data-nav="forum"]').addEventListener('click', () => {
+                window.location.href = '/forum';
+            });
+            document.querySelector('[data-nav="notifikasi"]').addEventListener('click', () => {
+                window.location.href = '/notifikasi';
             });
         }
 

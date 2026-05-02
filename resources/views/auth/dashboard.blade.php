@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hirify | Dashboard</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
         :root {
             --bg: #f7f9fc;
@@ -147,6 +150,9 @@
             <div style="display:flex; gap:10px;">
                 <a id="mentorSettingsBtn" href="/mentor/settings" class="btn btn-primary" style="display:none; text-decoration:none;">Pengaturan Mentor</a>
                 <a id="mentorshipBtn" href="/mentorship" class="btn btn-primary" style="display:none; text-decoration:none;">Cari Mentor</a>
+                <a id="skillTrainingBtn" href="/skill-training" class="btn btn-primary" style="display:none; text-decoration:none;">Pelatihan Skill</a>
+                <a id="statisticsBtn" href="/admin/statistics" class="btn btn-primary" style="display:none; text-decoration:none;">📊 Statistik Platform</a>
+                <a href="/forum" class="btn btn-primary" style="text-decoration:none;">Forum Diskusi</a>
                 <button id="reloadBtn" class="btn btn-primary">Refresh</button>
                 <button id="logoutBtn" class="btn btn-danger">Logout</button>
             </div>
@@ -176,7 +182,6 @@
     </main>
 
     <script>
-        let token = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
         const welcome = document.getElementById('welcome');
         const profile = document.getElementById('profile');
         const usersTable = document.getElementById('usersTable');
@@ -184,91 +189,11 @@
         const adminHint = document.getElementById('adminHint');
         const mentorSettingsBtn = document.getElementById('mentorSettingsBtn');
         const mentorshipBtn = document.getElementById('mentorshipBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
         const showToast = window.hirifyShowToast;
 
-        if (!token) {
-            window.location.href = '/login';
-        }
-
-        function clearAuthStorage() {
-            localStorage.removeItem('hirify_token');
-            localStorage.removeItem('hirify_user');
-            localStorage.removeItem('hirify_remember');
-            sessionStorage.removeItem('hirify_token');
-            sessionStorage.removeItem('hirify_user');
-        }
-
-        function getActiveStorage() {
-            return localStorage.getItem('hirify_token') ? localStorage : sessionStorage;
-        }
-
-        async function refreshToken() {
-            if (!token) {
-                return false;
-            }
-
-            try {
-                const response = await fetch('/api/auth/refresh', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-
-                const result = await response.json();
-
-                if (!response.ok || result.success === false || !result?.data?.token) {
-                    return false;
-                }
-
-                token = result.data.token;
-
-                const storage = getActiveStorage();
-                storage.setItem('hirify_token', result.data.token);
-
-                if (result.data.user) {
-                    storage.setItem('hirify_user', JSON.stringify(result.data.user));
-                }
-
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
-
-        async function api(path, options = {}, canRetry = true) {
-            const response = await fetch(path, {
-                ...options,
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    ...(options.headers || {}),
-                },
-            });
-
-            let data = {};
-
-            try {
-                data = await response.json();
-            } catch (_) {
-                data = {};
-            }
-
-            if (response.status === 401 && canRetry) {
-                const refreshed = await refreshToken();
-
-                if (refreshed) {
-                    return api(path, options, false);
-                }
-            }
-
-            if (!response.ok || data.success === false) {
-                throw new Error(data.message || 'Terjadi kesalahan request.');
-            }
-
-            return data;
+        function getCsrfToken() {
+            return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
         }
 
         function printProfile(user) {
@@ -281,73 +206,77 @@
             `;
         }
 
-        async function loadDashboard(showSuccessMessage = false) {
+        // ============= Load dashboard via session-based /me =============
+        (async () => {
             try {
-                const me = await api('/api/auth/me');
-                const user = me.data;
+                const response = await fetch('/me', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'include',
+                });
 
-                printProfile(user);
-
-                if (user.role === 'mentor') {
-                    mentorSettingsBtn.style.display = 'inline-flex';
-                } else {
-                    mentorSettingsBtn.style.display = 'none';
-                }
-
-                if (user.role === 'jobseeker') {
-                    mentorshipBtn.style.display = 'inline-flex';
-                } else {
-                    mentorshipBtn.style.display = 'none';
-                }
-
-                if (user.role === 'admin') {
-                    const users = await api('/api/user');
-                    usersBody.innerHTML = users.data.map((item) => `
-                        <tr>
-                            <td>${item.name}</td>
-                            <td>${item.email}</td>
-                            <td>${item.role}</td>
-                        </tr>
-                    `).join('');
-                    usersTable.style.display = 'table';
-                    adminHint.style.display = 'none';
-                } else {
-                    usersTable.style.display = 'none';
-                    adminHint.style.display = 'block';
-                }
-
-                if (showSuccessMessage) {
-                    showToast('Data dashboard berhasil diperbarui.', 'success');
-                }
-            } catch (error) {
-                if (error.message.toLowerCase().includes('unauthenticated')) {
-                    clearAuthStorage();
+                if (!response.ok) {
                     window.location.href = '/login';
                     return;
                 }
-                welcome.textContent = error.message;
-                showToast(error.message || 'Gagal memuat data dashboard.', 'error');
+
+                const result = await response.json();
+                const user = result.user;
+
+                printProfile(user);
+
+                mentorSettingsBtn.style.display = user.role === 'mentor' ? 'inline-flex' : 'none';
+                mentorshipBtn.style.display = user.role === 'jobseeker' ? 'inline-flex' : 'none';
+
+                if (user.role === 'admin') {
+                    if (usersTable) usersTable.style.display = 'block';
+                    if (adminHint) adminHint.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to load user:', error);
+                window.location.href = '/login';
+            }
+        })();
+
+        // ============= Logout =============
+        async function logout() {
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                    },
+                    credentials: 'include',
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showToast('Logout berhasil', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 600);
+                } else {
+                    showToast('Logout gagal', 'error');
+                }
+            } catch (error) {
+                showToast('Logout error: ' + error.message, 'error');
             }
         }
 
-        document.getElementById('reloadBtn').addEventListener('click', () => loadDashboard(true));
+        // ============= Event listeners =============
+        if (reloadBtn) {
+            reloadBtn.addEventListener('click', () => {
+                window.location.reload();
+            });
+        }
 
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try {
-                await api('/api/auth/logout', { method: 'POST' });
-                showToast('Logout berhasil. Sampai jumpa lagi.', 'success', 900);
-            } catch (_) {
-                // Tetap bersihkan local token meskipun request gagal.
-                showToast('Sesi lokal dibersihkan. Silakan login kembali.', 'info', 900);
-            } finally {
-                setTimeout(() => {
-                    clearAuthStorage();
-                    window.location.href = '/login';
-                }, 850);
-            }
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
+        document.querySelectorAll('[data-action="logout"]').forEach(btn => {
+            btn.addEventListener('click', logout);
         });
-
-        loadDashboard();
     </script>
 </body>
 </html>

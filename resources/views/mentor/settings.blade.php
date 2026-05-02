@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hirify | Pengaturan Profil Mentor</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
+@extends('layouts.mentor')
+
+@section('title', 'Pengaturan Profil')
+
+@push('styles')
+<style>
         :root {
             --bg: #f3f7fc;
             --paper: #ffffff;
@@ -70,7 +66,9 @@
             display: grid;
             place-items: center;
             color: #fff;
-            background: linear-gradient(135deg, #1f3057 0%, #1bc2d5 100%);
+            font-size: 17px;
+            font-weight: 800;
+            background: linear-gradient(145deg, #0399b7, #06d8ee);
         }
 
         .panel-pill {
@@ -531,55 +529,10 @@
             }
         }
     </style>
-</head>
-<body>
-    @include('components.auth.toast')
+@endpush
 
-    <div class="app">
-        <aside class="sidebar">
-            <div class="sidebar-top">
-                <div class="brand">
-                    <span class="brand-mark">H</span>
-                    <span>Hirify!</span>
-                </div>
-                <button class="panel-pill" type="button">Mentor Panel</button>
-            </div>
-
-            <nav class="nav">
-                <button class="nav-item" type="button" id="navDashboard">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v4h-7zM14 11h7v10h-7zM3 14h7v7H3z"/></svg>
-                    Dashboard
-                </button>
-                <button class="nav-item" type="button">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Jadwal Sesi
-                </button>
-                <button class="nav-item" type="button">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    Mentee Saya
-                </button>
-                <button class="nav-item" type="button">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    Feedback
-                </button>
-                <button class="nav-item is-active" type="button">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82v.1a2 2 0 1 1-4 0v-.1A1.65 1.65 0 0 0 9 20a1.65 1.65 0 0 0-1-.6 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33h-.1a2 2 0 1 1 0-4h.1A1.65 1.65 0 0 0 4 9c.2-.36.3-.77.26-1.18a1.65 1.65 0 0 0-.6-1L3.6 6.76a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6c.36-.2.77-.3 1.18-.26a1.65 1.65 0 0 0 1-.6V3.6a2 2 0 1 1 4 0v.1A1.65 1.65 0 0 0 15 4a1.65 1.65 0 0 0 1 .6c.41-.04.82.06 1.18.26a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.2.36.3.77.26 1.18a1.65 1.65 0 0 0 .6 1c.36.2.77.3 1.18.26h.1a2 2 0 1 1 0 4h-.1A1.65 1.65 0 0 0 19.4 15z"/></svg>
-                    Pengaturan
-                </button>
-            </nav>
-
-            <div class="sidebar-bottom">
-                <div class="mini-user">
-                    <div class="mini-avatar" id="miniAvatar">M</div>
-                    <div>
-                        <strong id="miniName">Mentor</strong>
-                        <span id="miniEmail">mentor@hirify.com</span>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <main class="main">
+@section('content')
+<main class="main">
             <header class="page-head">
                 <h1>Pengaturan Profil</h1>
                 <p>Kelola informasi profil mentor Anda secara profesional.</p>
@@ -922,12 +875,12 @@
             preview.price.textContent = `Rp ${formatRupiah(price)} / sesi`;
 
             const initial = (name[0] || 'M').toUpperCase();
-            if (!preview.avatar.querySelector('img')) {
-                preview.avatar.textContent = initial;
+            if (!preview.avatar?.querySelector('img')) {
+                if (preview.avatar) preview.avatar.textContent = initial;
             }
-            preview.miniAvatar.textContent = initial;
-            preview.miniName.textContent = name;
-            preview.miniEmail.textContent = email;
+            if (preview.miniAvatar) preview.miniAvatar.textContent = initial;
+            if (preview.miniName) preview.miniName.textContent = name;
+            if (preview.miniEmail) preview.miniEmail.textContent = email;
         }
 
         function fillForm(data) {
@@ -947,11 +900,13 @@
             syncSkillViews();
             syncCertViews();
 
-            if (data.avatar_url) {
-                preview.avatar.innerHTML = `<img src="${data.avatar_url}" alt="Avatar mentor">`;
-            } else {
-                preview.avatar.innerHTML = '';
-                preview.avatar.textContent = (data.name?.[0] || 'M').toUpperCase();
+            if (preview.avatar) {
+                if (data.avatar_url) {
+                    preview.avatar.innerHTML = `<img src="${data.avatar_url}" alt="Avatar mentor">`;
+                } else {
+                    preview.avatar.innerHTML = '';
+                    preview.avatar.textContent = (data.name?.[0] || 'M').toUpperCase();
+                }
             }
 
             syncPreviewFromInputs();
@@ -1183,11 +1138,9 @@
         avatarBtn.addEventListener('click', () => avatarInput.click());
         avatarInput.addEventListener('change', () => uploadAvatar(avatarInput.files?.[0]));
 
-        navDashboard.addEventListener('click', () => {
-            window.location.href = '/dashboard';
-        });
-
         loadProfile();
     </script>
-</body>
-</html>
+
+@endsection
+
+

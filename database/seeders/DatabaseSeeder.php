@@ -15,8 +15,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Admin account
+        User::firstOrCreate(
+            ['email' => 'admin@hirify.test'],
+            [
+                'name' => 'Admin Hirify',
+                'password' => bcrypt('admin123'),
+                'role' => 'admin',
+            ]
+        );
 
+        // Default jobseeker for testing
         User::firstOrCreate(
             ['email' => 'test@example.com'],
             [
@@ -28,6 +37,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             MentorshipDemoSeeder::class,
+            SkillTrainingSeeder::class,
         ]);
     }
 }
