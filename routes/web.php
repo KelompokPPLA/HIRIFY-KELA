@@ -43,7 +43,7 @@ Route::view('/skill-training', 'jobseeker.skill-training')->name('skill.training
 Route::middleware('guest')->group(function () {
     // Login
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
     // Register
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
