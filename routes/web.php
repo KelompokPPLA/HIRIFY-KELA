@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
 
     // Mentorship
     Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
+    Route::get('/riwayat-feedback', [\App\Http\Controllers\JobseekerFeedbackController::class, 'index'])->name('jobseeker.feedback.index');
 
     // Auth Actions
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
