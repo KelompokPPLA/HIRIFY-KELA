@@ -22,7 +22,7 @@ class CvController extends Controller
                   ->orderBy('created_at', 'desc')
                   ->get();
 
-        return view('cv.index', compact('cvs'));
+        return view('buat-cv-ats.create', compact('cvs'));
     }
 
     /**
@@ -30,7 +30,7 @@ class CvController extends Controller
      */
     public function create()
     {
-        return view('cv.create');
+        return view('buat-cv-ats.create');
     }
 
     /**
@@ -110,7 +110,7 @@ class CvController extends Controller
         });
 
         return redirect()
-            ->route('cv.show', $cv->id)
+            ->route('buat-cv-ats.show', $cv->id)
             ->with('success', 'CV ATS berhasil dibuat!');
     }
 
@@ -123,7 +123,7 @@ class CvController extends Controller
                 ->where('user_id', auth()->id())
                 ->findOrFail($id);
 
-        return view('cv.show', compact('cv'));
+        return view('buat-cv-ats.show', compact('cv'));
     }
 
     /**
@@ -135,7 +135,7 @@ class CvController extends Controller
         $cv->delete();
 
         return redirect()
-            ->route('cv.index')
+            ->route('buat-cv-ats.index')
             ->with('success', 'CV berhasil dihapus.');
     }
 }

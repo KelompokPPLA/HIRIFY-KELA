@@ -32,8 +32,18 @@ Route::middleware('auth')->group(function () {
         return view('auth.dashboard');
     })->name('dashboard');
 
-    // CV Management
-    Route::resource('cv', CvController::class);
+    // CV Management — PBI 6: Generate CV ATS
+    Route::resource('buat-cv-ats', CvController::class);
+
+    // Roadmap Karier — PBI 4 (placeholder)
+    Route::get('/roadmap', function () {
+        return view('roadmap-karier.index');
+    })->name('roadmap.index');
+
+    // Self Assessment — PBI 5 (placeholder)
+    Route::get('/assessment', function () {
+        return view('self-assessment.index');
+    })->name('assessment.index');
 
     // Mentor
     Route::view('/mentor/settings', 'mentor.settings')->name('mentor.settings');
