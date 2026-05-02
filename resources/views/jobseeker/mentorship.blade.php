@@ -859,42 +859,14 @@
 
                 <div class="booking-body">
                     <div>
-                        <p class="booking-label">Pilih Jadwal</p>
+                        <p class="booking-label">Daftar Sesi</p>
                         <div id="slotGrid" class="slot-grid"></div>
-                    </div>
-
-                    <div class="modal-grid">
-                        <div>
-                            <label class="muted" for="manualDate">Atur manual (opsional)</label>
-                            <input id="manualDate" class="input" type="datetime-local">
-                        </div>
-                        <div>
-                            <label class="muted" for="durationInput">Durasi (menit)</label>
-                            <select id="durationInput" class="select">
-                                <option value="60">60 menit</option>
-                                <option value="90">90 menit</option>
-                                <option value="120">120 menit</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <p class="booking-label">Topik yang Ingin Dibahas</p>
-                        <textarea id="bookingNotes" class="textarea topic-input" placeholder="Jelaskan topik yang ingin Anda diskusikan dengan mentor..."></textarea>
-                    </div>
-
-                    <div class="summary-box">
-                        <div class="summary-row">
-                            <span>Harga sesi</span>
-                            <strong id="summaryPrice">Rp 0/sesi</strong>
-                        </div>
-                        <div class="summary-row">
-                            <span>Platform fee</span>
-                            <strong>Gratis</strong>
-                        </div>
-                        <div class="summary-row summary-total">
-                            <span>Total</span>
-                            <strong id="summaryTotal">Rp 0/sesi</strong>
+                        <div id="slotDetailPanel" class="meta-box" style="margin-top: 14px; display: none;">
+                            <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Detail Sesi Terpilih</strong>
+                            <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink);">
+                                <span id="slotDetailDate"></span> <span style="color: var(--line);">|</span> <span id="slotDetailTime"></span>
+                            </div>
+                            <p id="slotDetailLabel" style="margin: 6px 0 0; color: #476186; font-size: 0.9rem; line-height: 1.5;"></p>
                         </div>
                     </div>
                 </div>
@@ -902,6 +874,70 @@
                 <div class="booking-footer">
                     <button id="closeModalBtn" class="btn btn-ghost" type="button">Batal</button>
                     <button id="bookBtn" class="btn btn-solid" type="button">Konfirmasi Booking</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="detailModal" class="modal">
+        <div class="modal-card booking-modal">
+            <div class="booking-scroll">
+                <div class="booking-head">
+                    <h3>Detail Booking</h3>
+                    <p id="detailModalSubtitle">Status: <span id="detailModalStatus" style="font-weight:700;"></span></p>
+                </div>
+                <div class="booking-body">
+                    <div class="meta-box">
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Informasi Mentor</strong>
+                        <p style="margin: 0; color: var(--ink); font-weight: 700;" id="detailMentorName"></p>
+                        <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;" id="detailMentorExp"></p>
+                    </div>
+
+                    <div class="meta-box" style="margin-top: 14px;">
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Jadwal Sesi</strong>
+                        <p style="margin: 0; color: var(--ink); font-weight: 700;" id="detailDate"></p>
+                        <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;" id="detailTime"></p>
+                    </div>
+
+                    <div class="meta-box" style="margin-top: 14px;">
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Topik Sesi</strong>
+                        <p style="margin: 0; color: #476186; font-size: 0.9rem; line-height: 1.5;" id="detailLabel"></p>
+                    </div>
+                </div>
+                <div class="booking-footer" style="grid-template-columns: 1fr;">
+                    <button id="closeDetailBtn" class="btn btn-ghost" style="width: 100%;" type="button">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="detailModal" class="modal">
+        <div class="modal-card booking-modal">
+            <div class="booking-scroll">
+                <div class="booking-head">
+                    <h3>Detail Booking</h3>
+                    <p id="detailModalSubtitle">Status: <span id="detailModalStatus" style="font-weight:700;"></span></p>
+                </div>
+                <div class="booking-body">
+                    <div class="meta-box">
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Informasi Mentor</strong>
+                        <p style="margin: 0; color: var(--ink); font-weight: 700;" id="detailMentorName"></p>
+                        <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;" id="detailMentorExp"></p>
+                    </div>
+
+                    <div class="meta-box" style="margin-top: 14px;">
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Jadwal Sesi</strong>
+                        <p style="margin: 0; color: var(--ink); font-weight: 700;" id="detailDate"></p>
+                        <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;" id="detailTime"></p>
+                    </div>
+
+                    <div class="meta-box" style="margin-top: 14px;">
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Topik Sesi</strong>
+                        <p style="margin: 0; color: #476186; font-size: 0.9rem; line-height: 1.5;" id="detailLabel"></p>
+                    </div>
+                </div>
+                <div class="booking-footer" style="grid-template-columns: 1fr;">
+                    <button id="closeDetailBtn" class="btn btn-ghost" style="width: 100%;" type="button">Tutup</button>
                 </div>
             </div>
         </div>
@@ -944,13 +980,7 @@
 
         const mentorModal = document.getElementById('mentorModal');
         const modalSubtitle = document.getElementById('modalSubtitle');
-        const summaryPrice = document.getElementById('summaryPrice');
-        const summaryTotal = document.getElementById('summaryTotal');
         const slotGrid = document.getElementById('slotGrid');
-
-        const manualDate = document.getElementById('manualDate');
-        const durationInput = document.getElementById('durationInput');
-        const bookingNotes = document.getElementById('bookingNotes');
 
         function formatRupiah(value) {
             return new Intl.NumberFormat('id-ID').format(Number(value || 0));
@@ -1021,7 +1051,7 @@
                             <div>
                                 <h3>${escapeHtml(mentor.name || 'Mentor')}</h3>
                                 <p>${escapeHtml(mentor.expertise || '-')}</p>
-                                <div class="mentor-sub">${escapeHtml(mentor.experience_years)} tahun pengalaman • ${escapeHtml(mentor.open_slots_count)} slot tersedia</div>
+                                <div class="mentor-sub">${escapeHtml(mentor.experience_years)} tahun pengalaman</div>
                             </div>
                         </div>
 
@@ -1031,13 +1061,11 @@
 
                         <div class="mentor-foot">
                             <div class="stats">
-                                <span>⭐ ${escapeHtml(mentor.rating)}</span>
-                                <span>📚 ${escapeHtml(mentor.session_count)} sesi</span>
+                                <span>🗓️ ${escapeHtml(mentor.open_slots_count)} Sesi Tersedia</span>
                             </div>
-                            <div class="price">Rp ${formatRupiah(mentor.price_per_session)}/sesi</div>
                         </div>
 
-                        <button class="btn btn-brand" data-open-mentor="${escapeHtml(mentor.id)}" type="button">Lihat Profil & Booking</button>
+                        <button class="btn btn-brand" data-open-mentor="${escapeHtml(mentor.id)}" type="button">Booking</button>
                     </article>
                 `;
             }).join('');
@@ -1057,6 +1085,16 @@
                 const canCancel = ['pending', 'confirmed'].includes(booking.status);
                 const canJoin = booking.status === 'confirmed' && booking.meeting_url;
 
+                let buttonsHtml = `<button class="btn btn-ghost" type="button" data-detail-id="${escapeHtml(booking.id)}">Detail</button>`;
+
+                if (canJoin) {
+                    buttonsHtml += `<button class="btn btn-brand" type="button" data-join-booking="${escapeHtml(booking.meeting_url || '')}">Join</button>`;
+                }
+
+                if (canCancel) {
+                    buttonsHtml += `<button class="btn btn-danger" type="button" data-cancel-booking="${escapeHtml(booking.id)}">Batalkan</button>`;
+                }
+
                 return `
                     <article class="booking-item">
                         <div>
@@ -1066,9 +1104,7 @@
                             <div class="badge ${statusClass(booking.status)}">${escapeHtml(booking.status_label || booking.status)}</div>
                         </div>
                         <div class="booking-actions">
-                            <button class="btn btn-ghost" type="button" data-detail-id="${escapeHtml(booking.id)}">Detail</button>
-                            <button class="btn btn-brand" type="button" ${canJoin ? '' : 'disabled'} data-join-booking="${escapeHtml(booking.meeting_url || '')}">Join</button>
-                            <button class="btn btn-danger" type="button" ${canCancel ? '' : 'disabled'} data-cancel-booking="${escapeHtml(booking.id)}">Batalkan</button>
+                            ${buttonsHtml}
                         </div>
                     </article>
                 `;
@@ -1080,7 +1116,22 @@
                     if (!booking) {
                         return;
                     }
-                    showToast(`${booking.status_label}. ${booking.display_date} ${booking.display_time}.`, 'info');
+
+                    const statusBadge = document.getElementById('detailModalStatus');
+                    statusBadge.textContent = booking.status_label || booking.status;
+                    statusBadge.className = `badge ${statusClass(booking.status)}`;
+                    statusBadge.style.marginTop = '0';
+                    statusBadge.style.display = 'inline-block';
+
+                    document.getElementById('detailMentorName').textContent = booking.mentor?.name || '-';
+                    document.getElementById('detailMentorExp').textContent = booking.mentor?.expertise || '-';
+                    document.getElementById('detailDate').textContent = booking.display_date || '-';
+                    document.getElementById('detailTime').textContent = booking.display_time || '-';
+
+                    const topic = booking.booking_notes || 'Sesi mentoring reguler.';
+                    document.getElementById('detailLabel').textContent = topic;
+
+                    document.getElementById('detailModal').classList.add('show');
                 });
             });
 
@@ -1188,12 +1239,11 @@
                 }
 
                 modalSubtitle.textContent = `dengan ${activeMentor.name || 'Mentor'}`;
-                summaryPrice.textContent = `Rp ${formatRupiah(activeMentor.price_per_session || 0)}/sesi`;
-                summaryTotal.textContent = `Rp ${formatRupiah(activeMentor.price_per_session || 0)}/sesi`;
-                bookingNotes.value = '';
+                document.getElementById('slotDetailPanel').style.display = 'none';
 
                 if (!slots.length) {
-                    slotGrid.innerHTML = '<div class="empty" style="grid-column:1/-1;">Belum ada slot yang dibuka mentor. Anda tetap bisa mengajukan jadwal manual.</div>';
+                    slotGrid.innerHTML = '<div class="empty" style="grid-column:1/-1;">Belum ada slot yang dibuka mentor.</div>';
+                    document.getElementById('slotDetailPanel').style.display = 'none';
                 } else {
                     slotGrid.innerHTML = slots.map((slot) => `
                         <label class="slot" data-slot-id="${escapeHtml(slot.id)}">
@@ -1208,10 +1258,18 @@
 
                     slotGrid.querySelectorAll('.slot').forEach((slotEl) => {
                         slotEl.addEventListener('click', () => {
-                            selectedSlotId = slotEl.getAttribute('data-slot-id');
+                            const id = slotEl.getAttribute('data-slot-id');
+                            const selectedSlot = slots.find(s => s.id == id);
+                            selectedSlotId = id;
                             slotGrid.querySelectorAll('.slot').forEach((item) => item.classList.remove('active'));
                             slotEl.classList.add('active');
-                            manualDate.value = '';
+
+                            if (selectedSlot) {
+                                document.getElementById('slotDetailPanel').style.display = 'block';
+                                document.getElementById('slotDetailDate').textContent = selectedSlot.display_date || '-';
+                                document.getElementById('slotDetailTime').textContent = selectedSlot.display_time || '-';
+                                document.getElementById('slotDetailLabel').textContent = selectedSlot.label || 'Sesi mentoring reguler.';
+                            }
                         });
                     });
                 }
@@ -1230,16 +1288,12 @@
 
             const payload = {
                 mentor_id: activeMentor.id,
-                booking_notes: bookingNotes.value.trim(),
-                duration_minutes: Number(durationInput.value || 60),
             };
 
             if (selectedSlotId) {
                 payload.mentor_availability_id = selectedSlotId;
-            } else if (manualDate.value) {
-                payload.scheduled_start = new Date(manualDate.value).toISOString();
             } else {
-                showToast('Pilih salah satu jadwal atau isi jadwal manual terlebih dahulu.', 'error');
+                showToast('Pilih salah satu jadwal terlebih dahulu.', 'error');
                 return;
             }
 
@@ -1251,8 +1305,6 @@
 
                 showToast('Booking sesi berhasil dibuat.', 'success');
                 mentorModal.classList.remove('show');
-                bookingNotes.value = '';
-                manualDate.value = '';
                 selectedSlotId = null;
 
                 await Promise.all([loadMentors(), loadBookings(), loadUpcoming()]);
@@ -1299,6 +1351,10 @@
 
             document.getElementById('closeModalBtn').addEventListener('click', () => {
                 mentorModal.classList.remove('show');
+            });
+
+            document.getElementById('closeDetailBtn').addEventListener('click', () => {
+                document.getElementById('detailModal').classList.remove('show');
             });
 
             mentorModal.addEventListener('click', (event) => {
