@@ -12,13 +12,21 @@ class SesiJadwalController extends Controller
     public function index()
     {
         $user = auth()->user();
+        $tab = request('tab', 'mendatang');
+
         if ($user) {
-            $sessions = SesiJadwal::where('mentor_id', $user->id)->orderBy('date', 'desc')->paginate(12);
+            $query = SesiJadwal::where('mentor_id', $user->id);
+            if ($tab === 'riwayat') {
+                $query->whereIn('status', ['Completed', 'Cancelled'])->orderBy('date', 'desc');
+            } else {
+                $query->whereIn('status', ['Pending', 'Confirmed'])->orderBy('date', 'asc');
+            }
+            $sessions = $query->paginate(12)->withQueryString();
         } else {
             $sessions = collect();
         }
         
-        return view('sesiJadwal.index', compact('sessions'));
+        return view('sesiJadwal.index', compact('sessions', 'tab'));
     }
 
     public function create()
