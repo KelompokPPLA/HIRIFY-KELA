@@ -67,4 +67,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Cv::class);
     }
+
+    public function roadmaps()
+    {
+        return $this->hasMany(Roadmap::class);
+    }
 }
