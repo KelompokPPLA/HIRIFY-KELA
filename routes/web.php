@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\CvController;
+use App\Http\Controllers\RoadmapController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MentorDashboardController;
@@ -64,10 +65,10 @@ Route::middleware('auth')->group(function () {
     // CV Management — PBI 6: Generate CV ATS
     Route::resource('buat-cv-ats', CvController::class);
 
-    // Roadmap Karier — PBI 4 (placeholder)
-    Route::get('/roadmap', function () {
-        return view('roadmap-karier.index');
-    })->name('roadmap.index');
+    // Roadmap Karier — PBI 4
+    Route::get('/roadmap-karier', [RoadmapController::class, 'index'])->name('roadmap-karier');
+    Route::post('/roadmap-karier', [RoadmapController::class, 'store'])->name('roadmap-karier.store');
+    Route::patch('/roadmap-karier/{id}', [RoadmapController::class, 'update'])->name('roadmap-karier.update');
 
     // Self Assessment — PBI 5 (placeholder)
     Route::get('/assessment', function () {
