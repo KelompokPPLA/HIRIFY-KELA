@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Mentor;
 use App\Models\MentorBooking;
+use App\Models\Feedback;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -56,18 +57,25 @@ class MenteeSayaController extends Controller
         $menteeUsers = $menteesQuery->get();
 
         // Build enriched mentee list
-        $mentorId = $mentor->id;
-        $mentees = $menteeUsers->map(function ($user) use ($menteeData, $mentorId) {
-            $data = $menteeData->get($user->id);
-            $totalSessions = $data ? (int)$data->total_sessions : 0;
-            $completedSessions = $data ? (int)$data->completed_sessions : 0;
-            $progress = $totalSessions > 0 ? round(($completedSessions / $totalSessions) * 100) : 0;
+        $mentorId     = $mentor->id;
+        $mentorUserId = $user->id;
+        $mentees = $menteeUsers->map(function ($user) use ($menteeData, $mentorId, $mentorUserId) {
+            $data             = $menteeData->get($user->id);
+            $totalSessions    = $data ? (int)$data->total_sessions : 0;
+            $completedSessions= $data ? (int)$data->completed_sessions : 0;
+            $progress         = $totalSessions > 0 ? round(($completedSessions / $totalSessions) * 100) : 0;
 
             // Active: has booking that is confirmed or pending (in progress)
             $isActive = MentorBooking::where('mentor_id', $mentorId)
                             ->where('jobseeker_user_id', $user->id)
                             ->whereIn('status', ['confirmed', 'pending'])
                             ->exists();
+
+            // Average mentee_rating given by this mentor for this mentee
+            $avgMenteeRating = Feedback::where('mentor_id', $mentorUserId)
+                            ->where('mentee_id', $user->id)
+                            ->whereNotNull('mentee_rating')
+                            ->avg('mentee_rating');
 
             return [
                 'id'                => $user->id,
@@ -80,6 +88,7 @@ class MenteeSayaController extends Controller
                 'progress'          => $progress,
                 'is_active'         => $isActive,
                 'started_at'        => $data ? $data->started_at : null,
+                'avg_mentee_rating' => $avgMenteeRating ? round($avgMenteeRating, 1) : null,
             ];
         });
 
