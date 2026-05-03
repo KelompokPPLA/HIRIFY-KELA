@@ -259,7 +259,7 @@ class MentorshipController extends Controller
     public function myBookings(Request $request)
     {
         $user = $request->user();
-        $limit = max(5, min((int) $request->query('per_page', 10), 30));
+        $limit = max(5, min((int) $request->query('per_page', 10), 50));
         $statusFilter = collect(explode(',', (string) $request->query('status')))
             ->map(fn ($item) => trim($item))
             ->filter()
