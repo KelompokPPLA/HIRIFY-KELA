@@ -210,9 +210,11 @@ class DashboardController extends Controller
         return $items
             ->filter(fn ($item) => $item['time'] !== null)
             ->sortByDesc('time')
-            ->take(6)
+            ->take(8)
             ->map(function ($item) {
-                $item['time_label'] = Carbon::parse($item['time'])->diffForHumans();
+                $parsed = Carbon::parse($item['time']);
+                $item['time_label']   = $parsed->diffForHumans();
+                $item['time_full']    = $parsed->translatedFormat('d M Y, H:i');
                 return $item;
             })
             ->values()
