@@ -6,6 +6,7 @@ use App\Models\SesiJadwal;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Storage;
 
 class SesiJadwalController extends Controller
 {
@@ -43,9 +44,14 @@ class SesiJadwalController extends Controller
             'duration' => 'required|integer|min:1',
             'platform' => 'nullable|string|max:255',
             'status' => 'required|in:Pending,Confirmed,Completed,Cancelled',
+            'material_file' => 'nullable|file|mimes:pdf,mp4,mov,avi|max:51200', // max 50MB
         ]);
 
         $data['mentor_id'] = auth()->id();
+
+        if ($request->hasFile('material_file')) {
+            $data['material_file'] = $request->file('material_file')->store('materials', 'public');
+        }
 
         SesiJadwal::create($data);
 
@@ -78,7 +84,16 @@ class SesiJadwalController extends Controller
             'duration' => 'required|integer|min:1',
             'platform' => 'nullable|string|max:255',
             'status' => 'required|in:Pending,Confirmed,Completed,Cancelled',
+            'material_file' => 'nullable|file|mimes:pdf,mp4,mov,avi|max:51200',
         ]);
+
+        if ($request->hasFile('material_file')) {
+            // Delete old file if exists
+            if ($session->material_file) {
+                Storage::disk('public')->delete($session->material_file);
+            }
+            $data['material_file'] = $request->file('material_file')->store('materials', 'public');
+        }
 
         $session->update($data);
 
@@ -89,6 +104,11 @@ class SesiJadwalController extends Controller
     {
         $session = SesiJadwal::findOrFail($id);
         if ($session->mentor_id !== auth()->id()) abort(403);
+        
+        if ($session->material_file) {
+            Storage::disk('public')->delete($session->material_file);
+        }
+        
         $session->delete();
         return redirect()->route('mentor.sesi-jadwal.index')->with('success', 'Sesi dihapus.');
     }
