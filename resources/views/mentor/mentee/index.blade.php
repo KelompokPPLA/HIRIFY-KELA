@@ -102,7 +102,7 @@
                     </div>
 
                     {{-- Stats --}}
-                    <div class="px-6 pb-4 grid grid-cols-2 gap-3">
+                    <div class="px-6 pb-4 grid grid-cols-3 gap-3">
                         <div class="bg-gray-50 rounded-lg p-3 text-center">
                             <div class="text-xl font-bold text-gray-900">{{ $mentee['completed_sessions'] }}</div>
                             <div class="text-xs text-gray-400 mt-0.5">Sesi Selesai</div>
@@ -110,6 +110,19 @@
                         <div class="bg-gray-50 rounded-lg p-3 text-center">
                             <div class="text-xl font-bold text-gray-900">{{ $mentee['total_sessions'] }}</div>
                             <div class="text-xs text-gray-400 mt-0.5">Total Sesi</div>
+                        </div>
+                        <div class="bg-amber-50 rounded-lg p-3 text-center border border-amber-100">
+                            @if($mentee['avg_mentee_rating'])
+                                <div class="flex items-center justify-center gap-1">
+                                    <svg class="w-4 h-4 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.97a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.39 2.462a1 1 0 00-.364 1.118l1.287 3.97c.3.921-.755 1.688-1.54 1.118l-3.39-2.462a1 1 0 00-1.175 0L5.11 17.005c-.784.57-1.84-.197-1.54-1.118l1.287-3.97a1 1 0 00-.364-1.118L1.104 8.397c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.97z"/>
+                                    </svg>
+                                    <span class="text-xl font-bold text-amber-600">{{ $mentee['avg_mentee_rating'] }}</span>
+                                </div>
+                            @else
+                                <div class="text-xl font-bold text-gray-300">—</div>
+                            @endif
+                            <div class="text-xs text-amber-600 mt-0.5">Rata-rata Rating</div>
                         </div>
                     </div>
 
