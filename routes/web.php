@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MentorDashboardController;
 use App\Http\Controllers\SesiJadwalController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\MenteeSayaController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -87,6 +88,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('sesi-jadwal', SesiJadwalController::class)->names('mentor.sesi-jadwal');
         Route::post('sesi-jadwal/{id}/notes', [SesiJadwalController::class, 'addNotes'])->name('mentor.sesi-jadwal.notes');
         Route::resource('feedback', FeedbackController::class)->names('mentor.feedback');
+        Route::get('/mentee', [MenteeSayaController::class, 'index'])->name('mentor.mentee.index');
 
         // Availability management
         Route::post('/availability', [MentorDashboardController::class, 'storeAvailability'])->name('mentor.availability.store');
