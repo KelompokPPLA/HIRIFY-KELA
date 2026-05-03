@@ -163,7 +163,11 @@ class MentorshipController extends Controller
 
         $slotItems = $slots->map(fn ($item) => (new MentorAvailabilityResource($item))->toArray(request()))->all();
 
-        return ResponseHelper::jsonResponse(true, 'Jadwal mentor berhasil diambil.', $slotItems, 200);
+        return ResponseHelper::jsonResponse(true, 'Jadwal mentor berhasil diambil.', [
+            'slots'       => $slotItems,
+            'total_slots' => count($slotItems),
+            'has_slots'   => count($slotItems) > 0,
+        ], 200);
     }
 
     public function createBooking(StoreMentorBookingRequest $request)
