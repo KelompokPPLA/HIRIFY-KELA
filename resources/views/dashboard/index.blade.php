@@ -99,12 +99,13 @@
         <p class="mt-1 text-sm text-slate-500">Navigasi langsung ke fitur utama Hirify.</p>
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-3">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @php
             $quickActions = [
-                ['href' => '/skill-training', 'title' => 'Pelatihan Skill', 'desc' => 'Akses katalog kursus dan tingkatkan skill.', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>'],
-                ['href' => '/roadmap-karier', 'title' => 'Lihat Roadmap', 'desc' => 'Ikuti panduan karier sesuai bidangmu.', 'icon' => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>'],
-                ['href' => '/self-assessment', 'title' => 'Mulai Assessment', 'desc' => 'Evaluasi kesiapan kariermu sekarang.', 'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>'],
+                ['href' => '/skill-training', 'title' => 'Pelatihan Skill', 'desc' => 'Akses katalog kursus dan tingkatkan skill kariermu.', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>'],
+                ['href' => '/roadmap-karier', 'title' => 'Roadmap Karier', 'desc' => 'Ikuti panduan dan tahapan karier sesuai bidangmu.', 'icon' => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>'],
+                ['href' => '/self-assessment', 'title' => 'Self Assessment', 'desc' => 'Evaluasi dan ukur kesiapan kariermu sekarang.', 'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>'],
+                ['href' => '/mentorship', 'title' => 'Cari Mentor', 'desc' => 'Temukan mentor berpengalaman untuk membimbingmu.', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'],
             ];
         @endphp
 
