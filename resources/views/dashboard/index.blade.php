@@ -150,8 +150,10 @@
                 </div>
             @empty
                 <div class="rounded-2xl bg-slate-50 border border-dashed border-slate-200 p-8 text-center">
-                    <div class="text-3xl mb-3">📋</div>
-                    <p class="text-sm font-medium text-slate-500">Belum ada aktivitas. Mulai dengan mengikuti pelatihan, mentorship, atau self assessment.</p>
+                    <div class="text-3xl mb-3">🚀</div>
+                    <p class="text-sm font-semibold text-slate-700 mb-1">Belum ada aktivitas tercatat</p>
+                    <p class="text-xs text-slate-500">Mulai perjalanan kariermu dengan mengikuti pelatihan, sesi mentorship, atau self assessment sekarang.</p>
+                    <a href="/skill-training" class="inline-block mt-4 px-4 py-2 rounded-xl text-xs font-bold text-white" style="background: linear-gradient(135deg, #0399b7, #06d8ee);">Mulai Pelatihan</a>
                 </div>
             @endforelse
         </div>
