@@ -294,6 +294,10 @@ class MentorshipController extends Controller
 
     public function cancelBooking(Request $request, string $id)
     {
+        $request->validate([
+            'cancellation_reason' => 'nullable|string|max:500',
+        ]);
+
         $user = $request->user();
 
         $booking = MentorBooking::with('availability')
@@ -313,9 +317,12 @@ class MentorshipController extends Controller
             return ResponseHelper::jsonResponse(false, 'Sesi yang sudah dimulai tidak bisa dibatalkan.', null, 422);
         }
 
-        DB::transaction(function () use ($booking) {
+        $cancellationReason = $request->input('cancellation_reason');
+
+        DB::transaction(function () use ($booking, $cancellationReason) {
             $booking->update([
-                'status' => 'cancelled',
+                'status'           => 'cancelled',
+                'rejection_reason' => $cancellationReason,
             ]);
 
             if ($booking->availability) {
