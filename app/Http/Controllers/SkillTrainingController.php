@@ -114,7 +114,7 @@ class SkillTrainingController extends Controller
 
         $totalLessons     = $course->lessons->count();
         $completedLessons = count($completedLessonIds);
-        $progressPct      = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0;
+        $progressPct      = $totalLessons > 0 ? (int) round(($completedLessons / $totalLessons) * 100) : 0;
 
         $lessons = $course->lessons->map(fn ($l) => [
             'id'               => $l->id,
