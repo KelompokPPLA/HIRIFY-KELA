@@ -11,7 +11,11 @@
             <div class="space-y-5">
                 <div>
                     <p class="text-xs uppercase tracking-[0.24em] text-cyan-200/80 font-semibold">Selamat Datang Kembali</p>
-                    <h1 class="mt-2 text-2xl lg:text-3xl font-bold leading-tight text-white">Halo, {{ auth()->user()->name }}! 👋</h1>
+                    @php
+        $hour = now()->hour;
+        $greeting = $hour < 11 ? 'Selamat Pagi' : ($hour < 15 ? 'Selamat Siang' : ($hour < 18 ? 'Selamat Sore' : 'Selamat Malam'));
+    @endphp
+    <h1 class="mt-2 text-2xl lg:text-3xl font-bold leading-tight text-white">{{ $greeting }}, {{ auth()->user()->name }}! 👋</h1>
                     <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">Temukan rekomendasi terbaru untuk CV, pelatihan, dan mentorship yang sesuai dengan tujuan kariermu.</p>
                 </div>
 
