@@ -1,6 +1,7 @@
-<div id="feedbackModal" class="fixed inset-0 bg-black bg-opacity-40 hidden z-50 items-center justify-center">
-    <div class="mx-4 sm:mx-6 lg:mx-0 w-full max-w-3xl bg-white rounded-xl shadow-lg overflow-auto max-h-[90vh]">
-        <div class="p-6">
+<div id="feedbackModal" class="fixed inset-0 bg-black bg-opacity-40 hidden z-50 overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center px-4">
+        <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg overflow-auto max-h-[90vh]">
+            <div class="p-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-semibold">Buat Feedback Baru</h2>
                 <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">✕</button>
@@ -65,5 +66,6 @@
                 </div>
             </form>
         </div>
+    </div>
     </div>
 </div>
