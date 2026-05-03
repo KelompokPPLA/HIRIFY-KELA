@@ -223,6 +223,77 @@
             text-align: center;
             color: var(--muted);
         }
+        .filters {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            background: var(--card);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            box-shadow: 0 5px 15px rgba(9, 20, 51, 0.03);
+            flex-wrap: wrap;
+        }
+        .search-box {
+            display: flex;
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 12px 110px 12px 16px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--ink);
+            outline: none;
+            transition: all 0.2s;
+        }
+        .filter-input:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 4px rgba(6, 203, 229, 0.15);
+        }
+        .search-btn {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            bottom: 6px;
+            background: linear-gradient(135deg, #06cbe5, #04a9bf);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 16px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(6, 203, 229, 0.2);
+        }
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(6, 203, 229, 0.35);
+        }
+        .search-btn:active {
+            transform: translateY(1px);
+        }
+        .filter-select {
+            padding: 12px 16px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--ink);
+            outline: none;
+            background: #fff;
+            cursor: pointer;
+            min-width: 150px;
+        }
         @media (max-width: 980px) {
             .layout { grid-template-columns: 1fr; }
             .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
@@ -265,21 +336,40 @@
                 <p>Lihat semua feedback dan penilaian yang diberikan oleh mentor Anda setelah sesi mentorship.</p>
             </section>
 
+            <div class="filters">
+                <div class="search-box">
+                    <input type="text" id="searchInput" class="filter-input" placeholder="Cari nama mentor atau isi feedback...">
+                    <button type="button" id="searchBtn" class="search-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        Cari
+                    </button>
+                </div>
+                <select id="ratingFilter" class="filter-select">
+                    <option value="all">Semua Rating</option>
+                    <option value="5">5 Bintang</option>
+                    <option value="4">4 Bintang</option>
+                    <option value="3">3 Bintang</option>
+                    <option value="2">2 Bintang</option>
+                    <option value="1">1 Bintang</option>
+                </select>
+            </div>
+
             @if($feedbacks->isEmpty())
                 <div class="empty-state">
                     <h3 style="font-size: 1.2rem; margin-bottom: 8px;">Belum Ada Feedback</h3>
                     <p>Anda belum menerima feedback apapun dari mentor. Selesaikan sesi mentorship terlebih dahulu.</p>
                 </div>
             @else
-                <div class="feedback-grid">
+
+                <div class="feedback-grid" id="feedbackGrid">
                     @foreach($feedbacks as $fb)
-                        <div class="feedback-card">
+                        <div class="feedback-card" data-mentor="{{ strtolower($fb->mentor->name ?? '') }}" data-rating="{{ $fb->rating }}" data-content="{{ strtolower($fb->strength . ' ' . $fb->improvement . ' ' . $fb->recommendation) }}">
                             <div class="fc-header">
                                 <div class="fc-mentor">
                                     <div class="fc-avatar">{{ strtoupper(substr($fb->mentor->name ?? 'M', 0, 1)) }}</div>
                                     <div class="fc-mentor-info">
                                         <strong>{{ $fb->mentor->name ?? 'Mentor' }}</strong>
-                                        <small>Sesi: {{ $fb->session->scheduled_start ? \Carbon\Carbon::parse($fb->session->scheduled_start)->format('d M Y') : 'Jadwal Manual' }}</small>
+                                        <small>Sesi: {{ $fb->session?->scheduled_start ? \Carbon\Carbon::parse($fb->session->scheduled_start)->format('d M Y') : 'Jadwal Manual' }}</small>
                                     </div>
                                 </div>
                                 <div class="fc-rating">
@@ -311,5 +401,45 @@
             @endif
         </main>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const ratingFilter = document.getElementById('ratingFilter');
+            const cards = document.querySelectorAll('.feedback-card');
+
+            function filterCards() {
+                if(!searchInput || !ratingFilter) return;
+
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedRating = ratingFilter.value;
+
+                cards.forEach(card => {
+                    const mentor = card.getAttribute('data-mentor');
+                    const content = card.getAttribute('data-content');
+                    const rating = card.getAttribute('data-rating');
+
+                    const matchesSearch = mentor.includes(searchTerm) || content.includes(searchTerm);
+                    const matchesRating = selectedRating === 'all' || rating === selectedRating;
+
+                    if (matchesSearch && matchesRating) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            if(searchInput) {
+                searchInput.addEventListener('input', filterCards);
+                searchInput.addEventListener('keypress', (e) => {
+                    if(e.key === 'Enter') filterCards();
+                });
+            }
+            if(searchBtn) searchBtn.addEventListener('click', filterCards);
+            if(ratingFilter) ratingFilter.addEventListener('change', filterCards);
+        });
+    </script>
 </body>
 </html>

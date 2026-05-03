@@ -131,6 +131,19 @@
             box-shadow: 0 0 0 4px var(--ring);
         }
 
+        input[readonly],
+        textarea[readonly] {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+        }
+
+        input[readonly]:focus {
+            box-shadow: none;
+            border-color: #e2e8f0;
+        }
+
         .chip-list {
             display: flex;
             flex-wrap: wrap;
@@ -489,16 +502,16 @@
                             <div class="grid">
                                 <div>
                                     <label for="name">Nama Lengkap</label>
-                                    <input id="name" name="name" required>
+                                    <input id="name" name="name" required pattern="[A-Za-z\s]+" title="Nama lengkap hanya boleh berisi huruf dan spasi" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, ''); syncPreviewFromInputs();">
                                 </div>
                                 <div class="grid-two">
                                     <div>
                                         <label for="email">Email</label>
-                                        <input id="email" name="email" type="email" required>
+                                        <input id="email" name="email" type="email" required readonly title="Email tidak dapat diubah">
                                     </div>
                                     <div>
                                         <label for="phone_number">Nomor Telepon</label>
-                                        <input id="phone_number" name="phone_number" placeholder="+62 8xxx xxxx xxxx">
+                                        <input id="phone_number" name="phone_number" placeholder="08xxx xxxx xxxx" type="text" pattern="\d{10,13}" title="Nomor telepon harus berisi 10-13 digit angka" oninput="this.value = this.value.replace(/[^0-9]/g, ''); syncPreviewFromInputs();" minlength="10" maxlength="13">
                                     </div>
                                 </div>
                             </div>
@@ -509,7 +522,21 @@
                             <div class="grid">
                                 <div>
                                     <label for="expertise">Bidang Keahlian</label>
-                                    <input id="expertise" name="expertise" placeholder="UI/UX Design & Frontend Development" required>
+                                    <input list="expertise-list" id="expertise" name="expertise" placeholder="UI/UX Design & Frontend Development" required autocomplete="off">
+                                    <datalist id="expertise-list">
+                                        <option value="UI/UX Design">
+                                        <option value="Frontend Development">
+                                        <option value="Backend Development">
+                                        <option value="Fullstack Development">
+                                        <option value="Mobile Development">
+                                        <option value="Data Science & Analytics">
+                                        <option value="Product Management">
+                                        <option value="Digital Marketing">
+                                        <option value="Graphic Design">
+                                        <option value="Software Engineering">
+                                        <option value="Quality Assurance (QA)">
+                                        <option value="DevOps Engineering">
+                                    </datalist>
                                 </div>
                                 <div>
                                     <label for="experience_years">Pengalaman (tahun)</label>
@@ -560,7 +587,37 @@
                             <h2>Skills</h2>
                             <div id="skillList" class="chip-list"></div>
                             <div class="chip-input-row">
-                                <input id="skillInput" placeholder="Tambah skill baru">
+                                <input list="skill-options" id="skillInput" placeholder="Tambah skill baru" autocomplete="off">
+                                <datalist id="skill-options">
+                                    <option value="UI/UX Design">
+                                    <option value="Figma">
+                                    <option value="Wireframing">
+                                    <option value="Prototyping">
+                                    <option value="User Research">
+                                    <option value="HTML/CSS">
+                                    <option value="JavaScript">
+                                    <option value="React.js">
+                                    <option value="Vue.js">
+                                    <option value="Node.js">
+                                    <option value="PHP/Laravel">
+                                    <option value="Python">
+                                    <option value="Java">
+                                    <option value="Kotlin">
+                                    <option value="Swift">
+                                    <option value="Flutter">
+                                    <option value="SQL/Database">
+                                    <option value="Git/Version Control">
+                                    <option value="SEO">
+                                    <option value="Communication">
+                                    <option value="Leadership">
+                                    <option value="Problem Solving">
+                                    <option value="Time Management">
+                                    <option value="Teamwork">
+                                    <option value="Critical Thinking">
+                                    <option value="Adaptability">
+                                    <option value="Creativity">
+                                    <option value="Public Speaking">
+                                </datalist>
                                 <button class="btn btn-primary" type="button" id="addSkillBtn">+ Tambah</button>
                             </div>
                         </article>
@@ -962,6 +1019,7 @@
 
                 profileCache = response.data;
                 fillForm(response.data);
+                await loadCertifications();
                 showToast('Profil mentor berhasil diperbarui.', 'success');
             } catch (error) {
                 showToast(error.message || 'Gagal menyimpan profil.', 'error');
