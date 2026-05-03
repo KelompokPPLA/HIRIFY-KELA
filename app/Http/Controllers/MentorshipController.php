@@ -126,7 +126,7 @@ class MentorshipController extends Controller
             ->where('is_booked', false)
             ->where('start_at', '>', now())
             ->orderBy('start_at')
-            ->limit(12)
+            ->limit(20)
             ->get();
 
         $slotItems = $slots->map(fn ($item) => (new MentorAvailabilityResource($item))->toArray(request()))->all();
