@@ -6,6 +6,7 @@ use App\Models\MentorBooking;
 use App\Models\Profile;
 use App\Models\SelfAssessment;
 use App\Models\SkillEnrollment;
+use App\Models\SkillLesson;
 use App\Models\SkillLessonProgress;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -35,14 +36,26 @@ class DashboardController extends Controller
         $profile = $user->profile;
         $profileCompleteness = $this->profileCompleteness($profile);
 
-        $totalEnrolled = SkillEnrollment::where('user_id', $user->id)->count();
+        $enrolledCourseIds = SkillEnrollment::where('user_id', $user->id)->pluck('skill_course_id');
+        $totalEnrolled = $enrolledCourseIds->count();
         $completedEnrolled = SkillEnrollment::where('user_id', $user->id)
             ->whereNotNull('completed_at')
             ->count();
 
-        $trainingProgress = $totalEnrolled > 0
-            ? (int) round(($completedEnrolled / $totalEnrolled) * 100)
-            : 0;
+        if ($totalEnrolled > 0) {
+            $lessonIds = SkillLesson::whereIn('skill_course_id', $enrolledCourseIds)->pluck('id');
+            $totalLessons = $lessonIds->count();
+            $completedLessons = $totalLessons > 0
+                ? SkillLessonProgress::where('user_id', $user->id)
+                    ->whereIn('skill_lesson_id', $lessonIds)
+                    ->count()
+                : 0;
+            $trainingProgress = $totalLessons > 0
+                ? (int) round(($completedLessons / $totalLessons) * 100)
+                : 0;
+        } else {
+            $trainingProgress = 0;
+        }
 
         $mentorshipTotal = MentorBooking::where('jobseeker_user_id', $user->id)->count();
         $mentorshipCompleted = MentorBooking::where('jobseeker_user_id', $user->id)
