@@ -58,7 +58,7 @@
                     'label' => 'Kesiapan Karier',
                     'value' => $careerReadiness . '%',
                     'progress' => $careerReadiness,
-                    'desc' => !$hasAssessment ? 'Belum ada self assessment.' : 'Berdasarkan self assessment terakhir.',
+                    'desc' => !$hasAssessment ? 'Belum ada self assessment. Mulai sekarang!' : ($careerReadinessLabel . ' — ' . ($assessmentDate ?? 'baru saja')),
                     'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>',
                 ],
             ];
