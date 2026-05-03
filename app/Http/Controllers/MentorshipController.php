@@ -21,7 +21,8 @@ class MentorshipController extends Controller
         $search = trim((string) $request->query('search', ''));
         $expertise = trim((string) $request->query('expertise', ''));
         $sort = (string) $request->query('sort', 'recommended');
-        $perPage = max(6, min((int) $request->query('per_page', 8), 24));
+        $perPage    = max(6, min((int) $request->query('per_page', 8), 24));
+        $priceFilter = $request->filled('is_free') ? (bool) $request->query('is_free') : null;
 
         $query = Mentor::query()
             ->with('user')
@@ -54,6 +55,14 @@ class MentorshipController extends Controller
 
         if ($request->filled('price_max')) {
             $query->where('price_per_session', '<=', (float) $request->query('price_max'));
+        }
+
+        if ($priceFilter !== null) {
+            $query->where(function ($q) use ($priceFilter) {
+                $priceFilter
+                    ? $q->whereNull('price_per_session')->orWhere('price_per_session', 0)
+                    : $q->where('price_per_session', '>', 0);
+            });
         }
 
         switch ($sort) {
