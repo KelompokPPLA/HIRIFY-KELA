@@ -34,4 +34,19 @@ class SkillCourse extends Model
     {
         return $this->hasMany(SkillEnrollment::class);
     }
+
+    public function completedEnrollments()
+    {
+        return $this->hasMany(SkillEnrollment::class)->whereNotNull('completed_at');
+    }
+
+    public function getLevelLabelAttribute(): string
+    {
+        return match ($this->level) {
+            'beginner'     => 'Pemula',
+            'intermediate' => 'Menengah',
+            'advanced'     => 'Lanjutan',
+            default        => $this->level,
+        };
+    }
 }
