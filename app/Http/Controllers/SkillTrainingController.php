@@ -79,7 +79,7 @@ class SkillTrainingController extends Controller
     public function courseDetail(string $id): JsonResponse
     {
         $user   = $this->authUser();
-        $course = SkillCourse::with('lessons')->find($id);
+        $course = SkillCourse::with(['lessons' => fn ($q) => $q->orderBy('order_number')])->find($id);
 
         if (! $course) {
             return ResponseHelper::jsonResponse(false, 'Kursus tidak ditemukan.', null, 404);
