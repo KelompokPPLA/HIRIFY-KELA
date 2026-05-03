@@ -183,14 +183,22 @@ class SkillTrainingController extends Controller
             return ResponseHelper::jsonResponse(false, 'Materi tidak ditemukan.', null, 404);
         }
 
-        SkillLessonProgress::firstOrCreate(
-            ['user_id' => $user->id, 'skill_lesson_id' => $lessonId],
-            ['completed_at' => now()]
-        );
+        $alreadyCompleted = SkillLessonProgress::where('user_id', $user->id)
+            ->where('skill_lesson_id', $lessonId)
+            ->exists();
 
-        $totalLessons = SkillLesson::where('skill_course_id', $courseId)->count();
+        if (! $alreadyCompleted) {
+            SkillLessonProgress::create([
+                'user_id'         => $user->id,
+                'skill_lesson_id' => $lessonId,
+                'completed_at'    => now(),
+            ]);
+        }
+
+        $lessonIds    = SkillLesson::where('skill_course_id', $courseId)->pluck('id');
+        $totalLessons = $lessonIds->count();
         $completed    = SkillLessonProgress::where('user_id', $user->id)
-            ->whereIn('skill_lesson_id', SkillLesson::where('skill_course_id', $courseId)->pluck('id'))
+            ->whereIn('skill_lesson_id', $lessonIds)
             ->count();
 
         $progressPct = $totalLessons > 0 ? (int) round(($completed / $totalLessons) * 100) : 0;
@@ -204,6 +212,7 @@ class SkillTrainingController extends Controller
             'completed_count' => $completed,
             'total_lessons'   => $totalLessons,
             'course_completed'=> $progressPct === 100,
+            'lesson_was_new'  => ! $alreadyCompleted,
         ], 200);
     }
 
