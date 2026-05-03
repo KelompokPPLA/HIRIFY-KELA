@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hirify | Dashboard</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
         :root {
             --bg: #f7f9fc;
@@ -189,69 +192,8 @@
         const reloadBtn = document.getElementById('reloadBtn');
         const showToast = window.hirifyShowToast;
 
-        // ============= Check if user is authenticated (session-based) =============
-        (async () => {
-            try {
-                const response = await fetch('/me', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                    },
-                    credentials: 'include',
-                });
-
-                if (!response.ok) {
-                    window.location.href = '/login';
-                    return;
-                }
-
-                token = result.data.token;
-
-                const storage = getActiveStorage();
-                storage.setItem('hirify_token', result.data.token);
-
-                if (result.data.user) {
-                    storage.setItem('hirify_user', JSON.stringify(result.data.user));
-                }
-
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
-
-        async function api(path, options = {}, canRetry = true) {
-            const response = await fetch(path, {
-                ...options,
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    ...(options.headers || {}),
-                },
-            });
-
-            let data = {};
-
-            try {
-                data = await response.json();
-            } catch (_) {
-                data = {};
-            }
-
-            if (response.status === 401 && canRetry) {
-                const refreshed = await refreshToken();
-
-                if (refreshed) {
-                    return api(path, options, false);
-                }
-            }
-
-            if (!response.ok || data.success === false) {
-                throw new Error(data.message || 'Terjadi kesalahan request.');
-            }
-
-            return data;
+        function getCsrfToken() {
+            return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
         }
 
         function printProfile(user) {
@@ -264,47 +206,37 @@
             `;
         }
 
-        async function loadDashboard(showSuccessMessage = false) {
+        // ============= Load dashboard via session-based /me =============
+        (async () => {
             try {
-                const me = await api('/api/auth/me');
-                const user = me.data;
+                const response = await fetch('/me', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const result = await response.json();
+                const user = result.user;
 
                 printProfile(user);
 
-                if (user.role === 'mentor') {
-                    mentorSettingsBtn.style.display = 'inline-flex';
-                } else {
-                    mentorSettingsBtn.style.display = 'none';
-                }
+                mentorSettingsBtn.style.display = user.role === 'mentor' ? 'inline-flex' : 'none';
+                mentorshipBtn.style.display = user.role === 'jobseeker' ? 'inline-flex' : 'none';
 
-                if (user.role === 'jobseeker') {
-                    mentorshipBtn.style.display = 'inline-flex';
-                } else {
-                    mentorshipBtn.style.display = 'none';
-                }
-
-                // Show admin section if user is admin
                 if (user.role === 'admin') {
                     if (usersTable) usersTable.style.display = 'block';
                     if (adminHint) adminHint.style.display = 'block';
-                    await loadUsers();
                 }
             } catch (error) {
                 console.error('Failed to load user:', error);
                 window.location.href = '/login';
             }
         })();
-
-        // ============= Load users (admin only) =============
-        async function loadUsers() {
-            try {
-                // Note: This would need API support for session-based auth
-                // For now, this is a placeholder
-                showToast('Admin users list coming soon', 'info');
-            } catch (error) {
-                showToast('Failed to load users', 'error');
-            }
-        }
 
         // ============= Logout =============
         async function logout() {
@@ -314,6 +246,7 @@
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken(),
                     },
                     credentials: 'include',
                 });
@@ -340,7 +273,7 @@
             });
         }
 
-        // Check for logout button
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
         document.querySelectorAll('[data-action="logout"]').forEach(btn => {
             btn.addEventListener('click', logout);
         });

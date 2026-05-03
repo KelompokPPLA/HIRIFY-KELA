@@ -2,35 +2,23 @@
 
 namespace App\Models;
 
+use App\Traits\UUID;
 use Illuminate\Database\Eloquent\Model;
 
 class Profile extends Model
 {
+    use UUID;
+
     protected $fillable = [
         'user_id',
-        'nama_lengkap',
-        'telepon',
-        'alamat',
-        'tanggal_lahir',
-        'institusi',
-        'jurusan',
-        'ipk',
-        'tahun_mulai_pendidikan',
-        'tahun_selesai_pendidikan',
-        'posisi_kerja',
-        'perusahaan',
-        'periode_mulai_kerja',
-        'periode_selesai_kerja',
-        'deskripsi_kerja',
-        'skills',
+        'first_name',
+        'last_name',
+        'bio',
+        'phone',
+        'location',
+        'photo',
+        'career_path',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'tanggal_lahir' => 'date',
-        ];
-    }
 
     public function user()
     {

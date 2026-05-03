@@ -10,11 +10,11 @@
             <h1 class="text-3xl font-semibold text-slate-950">Mentorship</h1>
             <p class="mt-2 text-sm text-slate-600 max-w-2xl">Dapatkan arahan profesional dari mentor yang berpengalaman dan tingkatkan perkembangan karier Anda.</p>
         </div>
-        <button class="inline-flex items-center rounded-2xl bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary-foreground)] transition hover:bg-[var(--color-primary)]/90">Minta Bimbingan</button>
+        <a href="/mentorship" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">Minta Bimbingan</a>
     </div>
 
     <div class="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-        <section class="rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] p-8 text-[var(--color-primary-foreground)] shadow-lg">
+        <section class="rounded-2xl p-8 text-white shadow-lg" style="background: linear-gradient(135deg, #0b1021, #17253a);">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="text-sm uppercase tracking-[0.24em] text-cyan-100/80">Mentor</p>

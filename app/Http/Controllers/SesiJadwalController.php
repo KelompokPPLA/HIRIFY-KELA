@@ -13,7 +13,7 @@ class SesiJadwalController extends Controller
     {
         $user = auth()->user();
         if ($user) {
-            $sessions = $user->sesiJadwal()->orderBy('date', 'desc')->paginate(12);
+            $sessions = SesiJadwal::where('mentor_id', $user->id)->orderBy('date', 'desc')->paginate(12);
         } else {
             $sessions = collect();
         }

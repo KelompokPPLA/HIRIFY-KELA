@@ -10,11 +10,14 @@
             <h1 class="text-3xl font-semibold text-slate-950">Manajemen CV</h1>
             <p class="mt-2 text-sm text-slate-600 max-w-2xl">Kelola dokumen CV Anda dengan cepat, unggah versi terbaru, dan lihat riwayat perubahan.</p>
         </div>
-        <button class="inline-flex items-center rounded-2xl bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary-foreground)] transition hover:bg-[var(--color-primary)]/90">Unggah CV Baru</button>
+        <a href="{{ route('cv.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Unggah CV Baru
+        </a>
     </div>
 
     <div class="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-        <section class="rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] p-8 text-[var(--color-primary-foreground)] shadow-lg">
+        <section class="rounded-2xl p-8 text-white shadow-lg" style="background: linear-gradient(135deg, #0b1021, #17253a);">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="text-sm uppercase tracking-[0.24em] text-cyan-100/80">Riwayat Dokumen</p>

@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="container">
-        <a href="{{ route('mentor.sesiJadwal.index') }}">← Kembali</a>
+        <a href="{{ route('mentor.sesi-jadwal.index') }}">← Kembali</a>
         <div class="card" style="margin-top:12px">
             <h2>Edit Sesi</h2>
             @if($errors->any())
@@ -22,7 +22,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('sesiJadwal.update', $session->id) }}" method="POST" style="margin-top:12px">
+            <form action="{{ route('mentor.sesi-jadwal.update', $session->id) }}" method="POST" style="margin-top:12px">
                 @csrf
                 @method('PUT')
                 <label>Topik</label>

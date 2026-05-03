@@ -15,7 +15,11 @@ class SkillTrainingController extends Controller
 {
     private function authUser()
     {
-        return JWTAuth::parseToken()->authenticate();
+        try {
+            return JWTAuth::parseToken()->authenticate();
+        } catch (\Throwable $e) {
+            abort(401, 'Token tidak valid atau sudah kedaluwarsa.');
+        }
     }
 
     public function catalog(Request $request): JsonResponse
@@ -24,13 +28,20 @@ class SkillTrainingController extends Controller
         $search   = trim($request->query('search', ''));
         $category = trim($request->query('category', ''));
         $level    = trim($request->query('level', ''));
-        $perPage  = min((int) $request->query('per_page', 12), 50);
+        $perPage  = max(6, min((int) $request->query('per_page', 12), 50));
+        $sort     = $request->query('sort', 'latest');
 
         $enrolledIds = SkillEnrollment::where('user_id', $user->id)
             ->pluck('skill_course_id')
             ->toArray();
 
-        $query = SkillCourse::withCount('lessons')->orderBy('created_at');
+        $query = SkillCourse::withCount('lessons');
+
+        match ($sort) {
+            'title'  => $query->orderBy('title'),
+            'oldest' => $query->orderBy('created_at'),
+            default  => $query->orderByDesc('created_at'),
+        };
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -63,23 +74,27 @@ class SkillTrainingController extends Controller
             'is_free'         => $c->is_free,
             'lessons_count'   => $c->lessons_count,
             'is_enrolled'     => in_array($c->id, $enrolledIds),
+            'price_label'     => $c->is_free ? 'Gratis' : 'Berbayar',
         ]);
 
         $categories = SkillCourse::distinct()->pluck('category')->sort()->values();
+        $levelCounts = SkillCourse::selectRaw('level, COUNT(*) as total')->groupBy('level')->pluck('total', 'level');
 
         return ResponseHelper::jsonResponse(true, 'Katalog kursus berhasil dimuat.', [
-            'items'        => $items,
-            'categories'   => $categories,
-            'total'        => $paginated->total(),
-            'current_page' => $paginated->currentPage(),
-            'last_page'    => $paginated->lastPage(),
+            'items'           => $items,
+            'categories'      => $categories,
+            'level_counts'    => $levelCounts,
+            'total_enrolled'  => count($enrolledIds),
+            'total'           => $paginated->total(),
+            'current_page'    => $paginated->currentPage(),
+            'last_page'       => $paginated->lastPage(),
         ], 200);
     }
 
     public function courseDetail(string $id): JsonResponse
     {
         $user   = $this->authUser();
-        $course = SkillCourse::with('lessons')->find($id);
+        $course = SkillCourse::with(['lessons' => fn ($q) => $q->orderBy('order_number')])->find($id);
 
         if (! $course) {
             return ResponseHelper::jsonResponse(false, 'Kursus tidak ditemukan.', null, 404);
@@ -99,7 +114,7 @@ class SkillTrainingController extends Controller
 
         $totalLessons     = $course->lessons->count();
         $completedLessons = count($completedLessonIds);
-        $progressPct      = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0;
+        $progressPct      = $totalLessons > 0 ? (int) round(($completedLessons / $totalLessons) * 100) : 0;
 
         $lessons = $course->lessons->map(fn ($l) => [
             'id'               => $l->id,
@@ -125,8 +140,10 @@ class SkillTrainingController extends Controller
             'progress_pct'    => $progressPct,
             'completed_count' => $completedLessons,
             'total_lessons'   => $totalLessons,
-            'course_completed'=> $enrollment?->completed_at !== null,
-            'lessons'         => $lessons,
+            'course_completed'  => $enrollment?->completed_at !== null,
+            'course_status'     => ! $enrollment ? 'not_enrolled' : ($enrollment->completed_at ? 'completed' : ($completedLessons > 0 ? 'in_progress' : 'not_started')),
+            'total_duration_minutes' => $course->lessons->sum('duration_minutes'),
+            'lessons'          => $lessons,
         ], 200);
     }
 
@@ -152,9 +169,14 @@ class SkillTrainingController extends Controller
             'skill_course_id' => $id,
         ]);
 
+        $totalLessons = $course->lessons()->count();
+
         return ResponseHelper::jsonResponse(true, 'Berhasil mendaftar ke kursus.', [
-            'course_id' => $id,
-            'title'     => $course->title,
+            'course_id'     => $id,
+            'title'         => $course->title,
+            'category'      => $course->category,
+            'total_lessons' => $totalLessons,
+            'enrolled_at'   => now()->toDateTimeString(),
         ], 201);
     }
 
@@ -178,17 +200,25 @@ class SkillTrainingController extends Controller
             return ResponseHelper::jsonResponse(false, 'Materi tidak ditemukan.', null, 404);
         }
 
-        SkillLessonProgress::firstOrCreate(
-            ['user_id' => $user->id, 'skill_lesson_id' => $lessonId],
-            ['completed_at' => now()]
-        );
+        $alreadyCompleted = SkillLessonProgress::where('user_id', $user->id)
+            ->where('skill_lesson_id', $lessonId)
+            ->exists();
 
-        $totalLessons = SkillLesson::where('skill_course_id', $courseId)->count();
+        if (! $alreadyCompleted) {
+            SkillLessonProgress::create([
+                'user_id'         => $user->id,
+                'skill_lesson_id' => $lessonId,
+                'completed_at'    => now(),
+            ]);
+        }
+
+        $lessonIds    = SkillLesson::where('skill_course_id', $courseId)->pluck('id');
+        $totalLessons = $lessonIds->count();
         $completed    = SkillLessonProgress::where('user_id', $user->id)
-            ->whereIn('skill_lesson_id', SkillLesson::where('skill_course_id', $courseId)->pluck('id'))
+            ->whereIn('skill_lesson_id', $lessonIds)
             ->count();
 
-        $progressPct = $totalLessons > 0 ? round(($completed / $totalLessons) * 100) : 0;
+        $progressPct = $totalLessons > 0 ? (int) round(($completed / $totalLessons) * 100) : 0;
 
         if ($progressPct === 100 && ! $enrollment->completed_at) {
             $enrollment->update(['completed_at' => now()]);
@@ -199,6 +229,7 @@ class SkillTrainingController extends Controller
             'completed_count' => $completed,
             'total_lessons'   => $totalLessons,
             'course_completed'=> $progressPct === 100,
+            'lesson_was_new'  => ! $alreadyCompleted,
         ], 200);
     }
 
@@ -219,27 +250,47 @@ class SkillTrainingController extends Controller
                 ->whereIn('skill_lesson_id', $course->lessons->pluck('id'))
                 ->count();
 
-            $progressPct = $totalLessons > 0 ? round(($completed / $totalLessons) * 100) : 0;
+            $progressPct = $totalLessons > 0 ? (int) round(($completed / $totalLessons) * 100) : 0;
+
+            $nextLesson = null;
+            if (! $enrollment->completed_at && $totalLessons > 0) {
+                $completedIds = SkillLessonProgress::where('user_id', $user->id)
+                    ->whereIn('skill_lesson_id', $course->lessons->pluck('id'))
+                    ->pluck('skill_lesson_id')
+                    ->toArray();
+                $nextLesson = $course->lessons
+                    ->sortBy('order_number')
+                    ->first(fn ($l) => ! in_array($l->id, $completedIds));
+            }
 
             return [
-                'enrollment_id'   => $enrollment->id,
-                'course_id'       => $course->id,
-                'title'           => $course->title,
-                'category'        => $course->category,
-                'level_label'     => $this->levelLabel($course->level),
-                'thumbnail_emoji' => $course->thumbnail_emoji,
-                'instructor_name' => $course->instructor_name,
-                'progress_pct'    => $progressPct,
-                'completed_count' => $completed,
-                'total_lessons'   => $totalLessons,
-                'course_completed'=> (bool) $enrollment->completed_at,
-                'enrolled_at'     => $enrollment->created_at->diffForHumans(),
+                'enrollment_id'        => $enrollment->id,
+                'course_id'            => $course->id,
+                'title'                => $course->title,
+                'category'             => $course->category,
+                'level_label'          => $this->levelLabel($course->level),
+                'thumbnail_emoji'      => $course->thumbnail_emoji,
+                'instructor_name'      => $course->instructor_name,
+                'estimated_hours'      => $course->estimated_hours,
+                'progress_pct'         => $progressPct,
+                'completed_count'      => $completed,
+                'total_lessons'        => $totalLessons,
+                'course_completed'     => (bool) $enrollment->completed_at,
+                'completed_at'         => $enrollment->completed_at?->toDateTimeString(),
+                'enrolled_at'          => $enrollment->created_at->diffForHumans(),
+                'next_lesson_id'       => $nextLesson?->id,
+                'next_lesson_title'    => $nextLesson?->title,
+                'course_status'        => $enrollment->completed_at ? 'completed' : ($completed > 0 ? 'in_progress' : 'not_started'),
             ];
         });
 
+        $completedCount = $enrollments->filter(fn ($e) => $e->completed_at !== null)->count();
+
         return ResponseHelper::jsonResponse(true, 'Kursus saya berhasil dimuat.', [
-            'items' => $items,
-            'total' => $enrollments->count(),
+            'items'           => $items,
+            'total'           => $enrollments->count(),
+            'total_completed' => $completedCount,
+            'total_in_progress' => $enrollments->count() - $completedCount,
         ], 200);
     }
 

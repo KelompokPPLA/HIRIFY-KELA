@@ -31,4 +31,15 @@ class SkillLesson extends Model
     {
         return $this->hasMany(SkillLessonProgress::class);
     }
+
+    public function getDurationLabelAttribute(): string
+    {
+        $minutes = $this->duration_minutes ?? 0;
+        if ($minutes < 60) {
+            return $minutes . ' menit';
+        }
+        $hours   = intdiv($minutes, 60);
+        $remaining = $minutes % 60;
+        return $remaining > 0 ? $hours . ' jam ' . $remaining . ' menit' : $hours . ' jam';
+    }
 }

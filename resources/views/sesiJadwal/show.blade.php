@@ -16,7 +16,7 @@
 </head>
 <body>
     <div class="container">
-        <a href="{{ route('mentor.sesiJadwal.index') }}">← Kembali</a>
+        <a href="{{ route('mentor.sesi-jadwal.index') }}">← Kembali</a>
         <div class="card" style="margin-top:12px">
             <h2>{{ $session->topic }}</h2>
             <div class="muted">{{ $session->date }} • {{ $session->time }} • Durasi: {{ $session->duration }} menit</div>
@@ -27,7 +27,7 @@
             @if(session('error'))<div style="margin-top:8px;padding:10px;background:#fff1f2;border-radius:8px">{{ session('error') }}</div>@endif
 
             <div style="margin-top:14px">
-                <a href="{{ route('sesiJadwal.edit', $session->id) }}" class="btn">Edit Sesi</a>
+                <a href="{{ route('mentor.sesi-jadwal.edit', $session->id) }}" class="btn">Edit Sesi</a>
             </div>
 
             <h3 style="margin-top:18px">Catatan Hasil Sesi</h3>
@@ -38,7 +38,7 @@
             @endif
 
             @if($session->status === 'Completed' && !$session->notes)
-                <form action="{{ route('sesiJadwal.notes', $session->id) }}" method="POST" style="margin-top:12px">
+                <form action="{{ route('mentor.sesi-jadwal.notes', $session->id) }}" method="POST" style="margin-top:12px">
                     @csrf
                     <textarea name="notes" rows="5" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0" placeholder="Tuliskan notes, kesimpulan, rekomendasi..."></textarea>
                     <div style="margin-top:8px"><button class="btn">Simpan Catatan</button></div>

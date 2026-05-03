@@ -21,7 +21,8 @@ class MentorshipController extends Controller
         $search = trim((string) $request->query('search', ''));
         $expertise = trim((string) $request->query('expertise', ''));
         $sort = (string) $request->query('sort', 'recommended');
-        $perPage = max(6, min((int) $request->query('per_page', 8), 24));
+        $perPage    = max(6, min((int) $request->query('per_page', 8), 24));
+        $priceFilter = $request->filled('is_free') ? (bool) $request->query('is_free') : null;
 
         $query = Mentor::query()
             ->with('user')
@@ -31,6 +32,8 @@ class MentorshipController extends Controller
                     ->where('start_at', '>', now()),
                 'bookings as session_count' => fn ($q) => $q
                     ->whereIn('status', ['confirmed', 'completed']),
+                'bookings as completed_session_count' => fn ($q) => $q
+                    ->where('status', 'completed'),
             ]);
 
         if ($search !== '') {
@@ -54,6 +57,14 @@ class MentorshipController extends Controller
             $query->where('price_per_session', '<=', (float) $request->query('price_max'));
         }
 
+        if ($priceFilter !== null) {
+            $query->where(function ($q) use ($priceFilter) {
+                $priceFilter
+                    ? $q->whereNull('price_per_session')->orWhere('price_per_session', 0)
+                    : $q->where('price_per_session', '>', 0);
+            });
+        }
+
         switch ($sort) {
             case 'price_low':
                 $query->orderByRaw('COALESCE(price_per_session, 0) asc');
@@ -63,6 +74,9 @@ class MentorshipController extends Controller
                 break;
             case 'experience':
                 $query->orderByDesc('experience_years');
+                break;
+            case 'slots':
+                $query->orderByDesc('open_slots_count');
                 break;
             default:
                 $query->orderByDesc('session_count')->orderByDesc('experience_years');
@@ -115,7 +129,7 @@ class MentorshipController extends Controller
             ->where('is_booked', false)
             ->where('start_at', '>', now())
             ->orderBy('start_at')
-            ->limit(12)
+            ->limit(20)
             ->get();
 
         $slotItems = $slots->map(fn ($item) => (new MentorAvailabilityResource($item))->toArray(request()))->all();
@@ -149,7 +163,11 @@ class MentorshipController extends Controller
 
         $slotItems = $slots->map(fn ($item) => (new MentorAvailabilityResource($item))->toArray(request()))->all();
 
-        return ResponseHelper::jsonResponse(true, 'Jadwal mentor berhasil diambil.', $slotItems, 200);
+        return ResponseHelper::jsonResponse(true, 'Jadwal mentor berhasil diambil.', [
+            'slots'       => $slotItems,
+            'total_slots' => count($slotItems),
+            'has_slots'   => count($slotItems) > 0,
+        ], 200);
     }
 
     public function createBooking(StoreMentorBookingRequest $request)
@@ -161,6 +179,10 @@ class MentorshipController extends Controller
 
         if (! $mentor) {
             return ResponseHelper::jsonResponse(false, 'Mentor tidak ditemukan.', null, 404);
+        }
+
+        if ($mentor->user_id === $user->id) {
+            return ResponseHelper::jsonResponse(false, 'Anda tidak dapat memesan sesi dengan diri sendiri.', null, 422);
         }
 
         try {
@@ -248,12 +270,15 @@ class MentorshipController extends Controller
     public function myBookings(Request $request)
     {
         $user = $request->user();
-        $limit = max(5, min((int) $request->query('per_page', 10), 30));
+        $limit = max(5, min((int) $request->query('per_page', 10), 50));
         $statusFilter = collect(explode(',', (string) $request->query('status')))
             ->map(fn ($item) => trim($item))
             ->filter()
             ->values()
             ->all();
+
+        $validStatuses = ['pending', 'confirmed', 'completed', 'cancelled', 'rejected'];
+        $statusFilter = array_values(array_intersect($statusFilter, $validStatuses));
 
         $query = MentorBooking::query()
             ->with(['mentor.user'])
@@ -270,8 +295,19 @@ class MentorshipController extends Controller
             ->map(fn ($item) => (new MentorBookingResource($item))->toArray(request()))
             ->all();
 
+        $totalCompleted = MentorBooking::where('jobseeker_user_id', $user->id)
+            ->where('status', 'completed')
+            ->count();
+        $totalUpcoming = MentorBooking::where('jobseeker_user_id', $user->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->count();
+
         return ResponseHelper::jsonResponse(true, 'Riwayat booking berhasil diambil.', [
             'items' => $items,
+            'summary' => [
+                'total_completed' => $totalCompleted,
+                'total_upcoming'  => $totalUpcoming,
+            ],
             'meta' => [
                 'current_page' => $paginator->currentPage(),
                 'last_page' => $paginator->lastPage(),
@@ -283,6 +319,10 @@ class MentorshipController extends Controller
 
     public function cancelBooking(Request $request, string $id)
     {
+        $request->validate([
+            'cancellation_reason' => 'nullable|string|max:500',
+        ]);
+
         $user = $request->user();
 
         $booking = MentorBooking::with('availability')
@@ -302,9 +342,12 @@ class MentorshipController extends Controller
             return ResponseHelper::jsonResponse(false, 'Sesi yang sudah dimulai tidak bisa dibatalkan.', null, 422);
         }
 
-        DB::transaction(function () use ($booking) {
+        $cancellationReason = $request->input('cancellation_reason');
+
+        DB::transaction(function () use ($booking, $cancellationReason) {
             $booking->update([
-                'status' => 'cancelled',
+                'status'           => 'cancelled',
+                'rejection_reason' => $cancellationReason,
             ]);
 
             if ($booking->availability) {

@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Login ke akun Hirify — Platform persiapan karier untuk mahasiswa dan pencari kerja.">
     <title>Hirify | Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
         :root {
             --bg: #f7f9fc;
@@ -310,13 +313,6 @@
                 <a href="/" class="back-btn">← Beranda</a>
             </div>
 
-            <form id="loginForm" method="POST" action="{{ route('login.post') }}">
-                @csrf
-                <label for="email">Email</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" required>
-                @error('email')
-                    <p class="feedback danger">{{ $message }}</p>
-                @enderror
             {{-- Error dari session (validasi gagal) --}}
             @if ($errors->any())
                 <div class="alert alert-error">
@@ -377,21 +373,6 @@
     </main>
 
     <script>
-        const form = document.getElementById('loginForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const passwordInput = document.getElementById('password');
-        const toggleBtn = document.getElementById('togglePassword');
-
-        toggleBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            toggleBtn.textContent = isPassword ? '🙈' : '👁';
-        });
-
-        form.addEventListener('submit', (event) => {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Memproses...';
         // Toggle password visibility
         document.getElementById('togglePassword').addEventListener('click', function () {
             const input = document.getElementById('password');

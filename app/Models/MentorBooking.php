@@ -44,4 +44,19 @@ class MentorBooking extends Model
     {
         return $this->belongsTo(MentorAvailability::class, 'mentor_availability_id');
     }
+
+    public function getDurationMinutesAttribute(): int
+    {
+        if (! $this->scheduled_start || ! $this->scheduled_end) {
+            return 0;
+        }
+        return (int) $this->scheduled_start->diffInMinutes($this->scheduled_end);
+    }
+
+    public function getIsUpcomingAttribute(): bool
+    {
+        return in_array($this->status, ['pending', 'confirmed'], true)
+            && $this->scheduled_start
+            && $this->scheduled_start->isFuture();
+    }
 }
