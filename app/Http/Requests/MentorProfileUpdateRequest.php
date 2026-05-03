@@ -21,8 +21,7 @@ class MentorProfileUpdateRequest extends FormRequest
             'experience_years' => 'nullable|integer|min:0|max:60',
             'bio' => 'nullable|string|max:2000',
             'education' => 'nullable|string|max:255',
-            'availability' => 'nullable|string|max:255',
-            'price_per_session' => 'nullable|numeric|min:0|max:99999999.99',
+
             'skills' => 'nullable|array|max:30',
             'skills.*' => 'string|max:60',
             'certifications' => 'nullable|array|max:30',

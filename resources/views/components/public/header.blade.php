@@ -17,7 +17,10 @@
         <div class="nav-actions">
             @auth
                 <a class="btn btn-ghost" href="{{ route('dashboard') }}">Dashboard</a>
-                <a class="btn btn-dark" href="{{ route('dashboard') }}">Buka Akun</a>
+                <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                    @csrf
+                    <button type="submit" class="btn btn-dark">Logout</button>
+                </form>
             @else
                 <a class="btn btn-ghost" href="{{ route('login') }}">Masuk</a>
                 <a class="btn btn-dark" href="{{ route('register') }}">Daftar</a>

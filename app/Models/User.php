@@ -60,7 +60,7 @@ class User extends Authenticatable implements JWTSubject
     public function profile()
     {
         return $this->hasOne(Profile::class);
-
+    }
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -79,5 +79,10 @@ class User extends Authenticatable implements JWTSubject
     public function mentorshipBookings()
     {
         return $this->hasMany(MentorBooking::class, 'jobseeker_user_id');
+    }
+
+    public function cvs()
+    {
+        return $this->hasMany(Cv::class);
     }
 }

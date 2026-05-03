@@ -3,93 +3,124 @@
 @section('title', 'Roadmap Karier')
 
 @section('content')
-<div class="space-y-8">
+@include('components.auth.toast')
+
+<div class="space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Roadmap</p>
             <h1 class="text-3xl font-semibold text-slate-950">Roadmap Karier</h1>
-            <p class="mt-2 text-sm text-slate-600 max-w-2xl">Rencanakan langkah karier Anda dengan panduan yang disusun untuk setiap fase perkembangan profesional.</p>
+            <p class="mt-2 max-w-2xl text-sm text-slate-600">Pilih jalur karier, lihat milestone, lalu gunakan pelatihan dan CV ATS untuk mengejar targetmu.</p>
         </div>
-        <button class="inline-flex items-center rounded-2xl bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary-foreground)] transition hover:bg-[var(--color-primary)]/90">Lihat Rencana Saya</button>
+        <div id="selectedBadge" class="rounded-2xl bg-cyan-50 px-4 py-2 text-sm font-bold text-cyan-700">Belum memilih roadmap</div>
     </div>
 
-    <div class="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-        <section class="rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] p-8 text-[var(--color-primary-foreground)] shadow-lg">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm uppercase tracking-[0.24em] text-cyan-100/80">Perencanaan</p>
-                    <h2 class="mt-3 text-3xl font-semibold">Langkah Karier Anda</h2>
-                </div>
-                <div class="rounded-3xl bg-white/10 px-4 py-3 text-sm font-semibold text-white">Fase 3 dari 5</div>
+    <section class="rounded-[18px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="text-xl font-semibold text-slate-950">Pilih Jalur Karier</h2>
+                <p class="text-sm text-slate-500">Klik salah satu jalur untuk menyimpan roadmap pilihanmu.</p>
             </div>
-            <div class="mt-8 space-y-4">
-                <div class="rounded-3xl bg-white/10 p-5">
-                    <p class="text-sm text-cyan-100/80">Analisis Keterampilan</p>
-                    <p class="mt-2 text-2xl font-semibold">Kemampuan komunikasi, desain, dan pemrograman.</p>
-                </div>
-                <div class="rounded-3xl bg-white/10 p-5">
-                    <p class="text-sm text-cyan-100/80">Target Pekerjaan</p>
-                    <p class="mt-2 text-2xl font-semibold">UI/UX Designer, Frontend Developer.</p>
-                </div>
-            </div>
-        </section>
-
-        <aside class="space-y-6">
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 class="text-lg font-semibold text-slate-950">Progress Anda</h3>
-                <div class="mt-6 space-y-4">
-                    <div>
-                        <div class="mb-2 flex items-center justify-between text-sm text-slate-500">
-                            <span>Meningkatkan skill</span>
-                            <span>70%</span>
-                        </div>
-                        <div class="h-2 rounded-full bg-slate-100">
-                            <div class="h-2 w-7/10 rounded-full bg-[var(--color-primary)]"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="mb-2 flex items-center justify-between text-sm text-slate-500">
-                            <span>Menyusun portfolio</span>
-                            <span>45%</span>
-                        </div>
-                        <div class="h-2 rounded-full bg-slate-100">
-                            <div class="h-2 w-1/2 rounded-full bg-[var(--color-primary)]"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 class="text-lg font-semibold text-slate-950">Rekomendasi</h3>
-                <p class="mt-4 text-sm text-slate-600">Pelatihan desain dan sesi mentorship akan membantu Anda mencapai target karier lebih cepat.</p>
-            </div>
-        </aside>
-    </div>
-
-    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 class="text-xl font-semibold text-slate-950">Milestone Karier</h2>
-        <div class="mt-6 space-y-5">
-            <div class="flex items-start gap-4">
-                <div class="mt-1 h-3 w-3 rounded-full bg-[var(--color-primary)]"></div>
-                <div>
-                    <p class="font-semibold text-slate-950">Bangun portofolio profesional</p>
-                    <p class="mt-2 text-sm text-slate-600">Selesaikan 3 proyek portofolio dengan deskripsi hasil kerja yang jelas.</p>
-                </div>
-            </div>
-            <div class="flex items-start gap-4">
-                <div class="mt-1 h-3 w-3 rounded-full bg-slate-300"></div>
-                <div>
-                    <p class="font-semibold text-slate-950">Pelajari teknik wawancara</p>
-                    <p class="mt-2 text-sm text-slate-600">Ikuti latihan wawancara dan siapkan jawaban untuk studi kasus nyata.</p>
-                </div>
-            </div>
-            <div class="flex items-start gap-4">
-                <div class="mt-1 h-3 w-3 rounded-full bg-slate-300"></div>
-                <div>
-                    <p class="font-semibold text-slate-950">Optimalkan LinkedIn</p>
-                    <p class="mt-2 text-sm text-slate-600">Perbarui profil Anda dengan kata kunci yang tepat dan pengalaman terbaru.</p>
-                </div>
-            </div>
+            <a href="/skill-training" class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">Lanjut Pelatihan</a>
         </div>
-    </div>
+        <div id="pathGrid" class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3"></div>
+    </section>
+
+    <section id="milestonePanel" class="hidden rounded-[18px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="mb-4">
+            <p id="detailMeta" class="text-xs font-bold uppercase tracking-[0.18em] text-cyan-600"></p>
+            <h2 id="detailTitle" class="mt-1 text-2xl font-semibold text-slate-950"></h2>
+            <p id="detailDesc" class="mt-2 text-sm text-slate-600"></p>
+        </div>
+        <div id="milestoneList" class="grid gap-3"></div>
+    </section>
 </div>
+
+<script src="/js/hirify-api.js"></script>
+<script>
+hirifyInitToken('{{ session("jwt_token") }}');
+const showToast = window.hirifyShowToast;
+const api = window.hirifyApi;
+const esc = window.hirifyEsc;
+
+let paths = [];
+let selectedPath = null;
+
+async function loadRoadmap() {
+    document.getElementById('pathGrid').innerHTML = '<div class="rounded-2xl bg-slate-50 p-5 text-sm font-semibold text-slate-500">Memuat roadmap...</div>';
+    const res = await api('/api/roadmap-karier');
+    paths = res.data.paths || [];
+    selectedPath = res.data.selected_path;
+    renderPaths();
+    if (selectedPath) {
+        showPath(selectedPath);
+    }
+}
+
+function renderPaths() {
+    const selectedTitle = paths.find(path => path.id === selectedPath)?.title;
+    document.getElementById('selectedBadge').textContent = selectedTitle ? `Dipilih: ${selectedTitle}` : 'Belum memilih roadmap';
+
+    document.getElementById('pathGrid').innerHTML = paths.map(path => {
+        const active = path.id === selectedPath;
+        return `
+            <article class="rounded-[18px] border ${active ? 'border-cyan-400 bg-cyan-50' : 'border-slate-200 bg-white'} p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan-600">${esc(path.level)}</p>
+                        <h3 class="mt-2 text-lg font-semibold text-slate-950">${esc(path.title)}</h3>
+                    </div>
+                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">${esc(path.duration)}</span>
+                </div>
+                <p class="mt-3 text-sm leading-6 text-slate-600">${esc(path.description)}</p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <button type="button" data-detail="${esc(path.id)}" class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Lihat Milestone</button>
+                    <button type="button" data-select="${esc(path.id)}" class="rounded-xl bg-cyan-500 px-3 py-2 text-sm font-bold text-white hover:bg-cyan-600">${active ? 'Terpilih' : 'Pilih Roadmap'}</button>
+                </div>
+            </article>
+        `;
+    }).join('');
+
+    document.querySelectorAll('[data-detail]').forEach(button => {
+        button.addEventListener('click', () => showPath(button.dataset.detail));
+    });
+    document.querySelectorAll('[data-select]').forEach(button => {
+        button.addEventListener('click', () => selectPath(button.dataset.select));
+    });
+}
+
+function showPath(pathId) {
+    const path = paths.find(item => item.id === pathId);
+    if (!path) return;
+    document.getElementById('milestonePanel').classList.remove('hidden');
+    document.getElementById('detailMeta').textContent = `${path.duration} - ${path.level}`;
+    document.getElementById('detailTitle').textContent = path.title;
+    document.getElementById('detailDesc').textContent = path.description;
+    document.getElementById('milestoneList').innerHTML = path.milestones.map(item => `
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="flex items-start gap-3">
+                <div class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-slate-950 text-sm font-bold text-white">${esc(item.step)}</div>
+                <div>
+                    <p class="font-semibold text-slate-950">${esc(item.title)}</p>
+                    <p class="mt-1 text-sm text-slate-600">${esc(item.desc)}</p>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function selectPath(pathId) {
+    try {
+        await api('/api/roadmap-karier/select', { method: 'POST', body: JSON.stringify({ path_id: pathId }) });
+        selectedPath = pathId;
+        renderPaths();
+        showPath(pathId);
+        showToast('Roadmap karier berhasil dipilih.', 'success');
+    } catch (error) {
+        showToast(error.message || 'Gagal memilih roadmap.', 'error');
+    }
+}
+
+loadRoadmap().catch(error => showToast(error.message || 'Gagal memuat roadmap.', 'error'));
+</script>
 @endsection

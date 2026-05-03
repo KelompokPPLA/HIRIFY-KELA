@@ -1,176 +1,150 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Dashboard')
 
 @section('content')
-    <section class="rounded-[2rem] bg-[#0F172A] p-8 text-white shadow-[0_30px_70px_rgba(15,23,42,0.2)]" style="background-color: #0F172A;">
-        <div class="grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:items-center">
-            <div class="space-y-6">
+<div class="space-y-8">
+    {{-- Welcome Banner --}}
+    <section class="rounded-[1.5rem] p-7 lg:p-8 text-white shadow-[0_30px_70px_rgba(15,23,42,0.18)] relative overflow-hidden" style="background: linear-gradient(135deg, #0b1021 0%, #10182d 42%, #17253a 100%);">
+        <div class="absolute inset-0 opacity-40 pointer-events-none" style="background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px); background-size: 22px 22px;"></div>
+        <div class="relative z-10 grid gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-center">
+            <div class="space-y-5">
                 <div>
-                    <p class="text-sm uppercase tracking-[0.24em] text-cyan-200/80">Selamat Datang Kembali</p>
-                    <h2 class="mt-2 text-3xl font-semibold leading-tight text-white">Lanjutkan perjalanan kariermu hari ini</h2>
-                    <p class="mt-4 max-w-2xl text-sm leading-6 text-slate-300">Temukan rekomendasi terbaru untuk CV, pelatihan, dan mentorship yang sesuai dengan tujuan kariermu.</p>
+                    <p class="text-xs uppercase tracking-[0.24em] text-cyan-200/80 font-semibold">Selamat Datang Kembali</p>
+                    <h1 class="mt-2 text-2xl lg:text-3xl font-bold leading-tight text-white">Halo, {{ auth()->user()->name }}! 👋</h1>
+                    <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">Temukan rekomendasi terbaru untuk CV, pelatihan, dan mentorship yang sesuai dengan tujuan kariermu.</p>
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-3">
-                    <div class="rounded-3xl bg-[#111827] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] border border-slate-700">
-                        <p class="text-sm text-slate-400">Kelengkapan Profil</p>
-                        <p class="mt-3 text-2xl font-semibold text-white">75%</p>
+                <div class="grid gap-3 sm:grid-cols-3">
+                    <div class="rounded-2xl bg-white/[0.06] backdrop-blur-sm p-5 border border-white/10">
+                        <p class="text-xs text-slate-400 font-medium">Kelengkapan Profil</p>
+                        <p class="mt-2 text-2xl font-bold text-white">{{ $profileCompleteness }}%</p>
                     </div>
-                    <div class="rounded-3xl bg-[#111827] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] border border-slate-700">
-                        <p class="text-sm text-slate-400">Pelatihan Selesai</p>
-                        <p class="mt-3 text-2xl font-semibold text-white">3/5</p>
+                    <div class="rounded-2xl bg-white/[0.06] backdrop-blur-sm p-5 border border-white/10">
+                        <p class="text-xs text-slate-400 font-medium">Pelatihan Selesai</p>
+                        <p class="mt-2 text-2xl font-bold text-white">{{ $trainingCompleted }}/{{ $trainingTotal }}</p>
                     </div>
-                    <div class="rounded-3xl bg-[#111827] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] border border-slate-700">
-                        <p class="text-sm text-slate-400">Sesi Mentorship</p>
-                        <p class="mt-3 text-2xl font-semibold text-white">2</p>
+                    <div class="rounded-2xl bg-white/[0.06] backdrop-blur-sm p-5 border border-white/10">
+                        <p class="text-xs text-slate-400 font-medium">Sesi Mentorship</p>
+                        <p class="mt-2 text-2xl font-bold text-white">{{ $mentorshipCompleted }}</p>
+                        @if ($mentorshipUpcoming > 0)
+                            <p class="mt-1 text-xs text-cyan-300 font-semibold">+{{ $mentorshipUpcoming }} mendatang</p>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <div class="space-y-8">
-        <div class="grid gap-4 sm:grid-cols-3">
-            <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div class="flex items-center justify-between gap-4">
-                    <div>
-                        <p class="text-sm font-medium text-bold-500">Kelengkapan Profil</p>
-                        <p class="mt-2 text-2xl font-semibold text-slate-950">75%</p>
-                    </div>
-                    <div class="flex h-12 w-12 items-center justify-center rounded-3xl text-[#09C9D3]" style="background-color: rgba(9, 201, 211, 0.15); color: #09C9D3;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 12h6"></path>
-                            <path d="M9 16h6"></path>
-                            <path d="M9 8h6"></path>
-                        </svg>
-                    </div>
-                </div>
-                <p class="mt-4 text-sm text-slate-500">Lengkapi profilmu untuk hasil maksimal.</p>
-                <div class="mt-5">
-                    <div class="h-2 rounded-full bg-slate-200">
-                        <div class="h-2 w-3/4 rounded-full" style="background-color: #09C9D3;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div class="flex items-center justify-between gap-4">
-                    <div>
-                        <p class="text-sm font-medium text-bold-500">Progress Pelatihan</p>
-                        <p class="mt-2 text-2xl font-semibold text-slate-950">60%</p>
-                    </div>
-                    <div class="flex h-12 w-12 items-center justify-center rounded-3xl text-[#09C9D3]" style="background-color: rgba(9, 201, 211, 0.15); color: #09C9D3;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14"></path>
-                            <path d="M5 12h14"></path>
-                        </svg>
-                    </div>
-                </div>
-                <p class="mt-4 text-sm text-slate-500">3 dari 5 pelatihan telah diselesaikan.</p>
-                <div class="mt-5">
-                    <div class="h-2 rounded-full bg-slate-200">
-                        <div class="h-2 w-3/5 rounded-full" style="background-color: #09C9D3;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div class="flex items-center justify-between gap-4">
-                    <div>
-                        <p class="text-sm font-medium text-bold-500">Kesiapan Karier</p>
-                        <p class="mt-2 text-2xl font-semibold text-slate-950">85%</p>
-                    </div>
-                    <div class="flex h-12 w-12 items-center justify-center rounded-3xl text-[#09C9D3]" style="background-color: rgba(9, 201, 211, 0.15); color: #09C9D3;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 12l2 2 4-4"></path>
-                            <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <p class="mt-4 text-sm text-slate-500">Berdasarkan self assessment terakhir.</p>
-                <div class="mt-5">
-                    <div class="h-2 rounded-full bg-slate-200">
-                        <div class="h-2 w-[85%] rounded-full" style="background-color: #09C9D3;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    {{-- Progress Cards --}}
+    <div class="grid gap-5 sm:grid-cols-3">
+        @php
+            $progressCards = [
+                [
+                    'label' => 'Kelengkapan Profil',
+                    'value' => $profileCompleteness . '%',
+                    'progress' => $profileCompleteness,
+                    'desc' => $profileCompleteness >= 100 ? 'Profilmu lengkap.' : ($profileCompleteness >= 50 ? 'Hampir lengkap, tinggal sedikit lagi.' : 'Lengkapi profilmu untuk hasil maksimal.'),
+                    'icon' => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
+                ],
+                [
+                    'label' => 'Progress Pelatihan',
+                    'value' => $trainingProgress . '%',
+                    'progress' => $trainingProgress,
+                    'desc' => $trainingTotal === 0 ? 'Belum ada pelatihan terdaftar.' : ($trainingCompleted . ' dari ' . $trainingTotal . ' pelatihan selesai.'),
+                    'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>',
+                ],
+                [
+                    'label' => 'Kesiapan Karier',
+                    'value' => $careerReadiness . '%',
+                    'progress' => $careerReadiness,
+                    'desc' => !$hasAssessment ? 'Belum ada self assessment.' : 'Berdasarkan self assessment terakhir.',
+                    'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>',
+                ],
+            ];
+        @endphp
 
-        <div>
-            <h2 class="text-xl font-semibold text-slate-950">Aksi Cepat</h2>
-            <p class="mt-2 text-sm text-slate-600">Navigasi langsung ke fitur utama Hirify.</p>
-        </div>
-
-        <div class="grid gap-4 sm:grid-cols-3">
-            <a href="/buat-cv-ats" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#09C9D3] text-white transition group-hover:bg-[#09C9D3]/90" style="background-color: #09C9D3;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="stroke-current">
-                        <path d="M9 12h6"></path>
-                        <path d="M9 16h6"></path>
-                        <path d="M9 8h6"></path>
-                    </svg>
+        @foreach ($progressCards as $card)
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-600">{{ $card['label'] }}</p>
+                        <p class="mt-2 text-2xl font-bold text-slate-950">{{ $card['value'] }}</p>
+                    </div>
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl" style="background: rgba(9, 201, 211, 0.12); color: #0399b7;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $card['icon'] !!}</svg>
+                    </div>
                 </div>
-                <div class="mt-5">
-                    <p class="text-sm font-semibold text-slate-950">Buat CV ATS</p>
-                    <p class="mt-2 text-sm text-slate-500">Generate CV yang ATS-friendly dengan mudah.</p>
+                <p class="mt-3 text-sm text-slate-500">{{ $card['desc'] }}</p>
+                <div class="mt-4">
+                    <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
+                        <div class="h-2 rounded-full transition-all duration-700" style="background: linear-gradient(90deg, #0399b7, #06d8ee); width: {{ $card['progress'] }}%;"></div>
+                    </div>
                 </div>
-            </a>
-            <a href="/roadmap-karier" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#09C9D3] text-white transition group-hover:bg-[#09C9D3]/90" style="background-color: #09C9D3;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="stroke-current">
-                        <path d="M4 19h16"></path>
-                        <path d="M6 15l6-6 6 6"></path>
-                    </svg>
-                </div>
-                <div class="mt-5">
-                    <p class="text-sm font-semibold text-slate-950">Lihat Roadmap</p>
-                    <p class="mt-2 text-sm text-slate-500">Ikuti panduan karier sesuai bidangmu.</p>
-                </div>
-            </a>
-            <a href="/self-assessment" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#09C9D3] text-white transition group-hover:bg-[#09C9D3]/90" style="background-color: #09C9D3;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="stroke-current">
-                        <path d="M12 5v14"></path>
-                        <path d="M5 12h14"></path>
-                    </svg>
-                </div>
-                <div class="mt-5">
-                    <p class="text-sm font-semibold text-slate-950">Mulai Assessment</p>
-                    <p class="mt-2 text-sm text-slate-500">Evaluasi kesiapan kariermu sekarang.</p>
-                </div>
-            </a>
-        </div>
+            </div>
+        @endforeach
     </div>
 
-    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    {{-- Quick Actions --}}
+    <div>
+        <h2 class="text-xl font-bold text-slate-950">Aksi Cepat</h2>
+        <p class="mt-1 text-sm text-slate-500">Navigasi langsung ke fitur utama Hirify.</p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+        @php
+            $quickActions = [
+                ['href' => '/skill-training', 'title' => 'Pelatihan Skill', 'desc' => 'Akses katalog kursus dan tingkatkan skill.', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>'],
+                ['href' => '/roadmap-karier', 'title' => 'Lihat Roadmap', 'desc' => 'Ikuti panduan karier sesuai bidangmu.', 'icon' => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>'],
+                ['href' => '/self-assessment', 'title' => 'Mulai Assessment', 'desc' => 'Evaluasi kesiapan kariermu sekarang.', 'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>'],
+            ];
+        @endphp
+
+        @foreach ($quickActions as $action)
+            <a href="{{ $action['href'] }}" class="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-cyan-200">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl text-white transition group-hover:scale-105" style="background: linear-gradient(135deg, #0399b7, #06d8ee); box-shadow: 0 6px 16px rgba(3, 153, 183, 0.25);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $action['icon'] !!}</svg>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm font-bold text-slate-950">{{ $action['title'] }}</p>
+                    <p class="mt-1.5 text-sm text-slate-500">{{ $action['desc'] }}</p>
+                </div>
+            </a>
+        @endforeach
+    </div>
+
+    {{-- Recent Activity --}}
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-xl font-semibold text-slate-950">Aktivitas Terbaru</h2>
-                <p class="mt-2 text-sm text-slate-500">Lihat pembaruan terbaru dari aktivitas akunmu.</p>
+                <h2 class="text-xl font-bold text-slate-950">Aktivitas Terbaru</h2>
+                <p class="mt-1 text-sm text-slate-500">Lihat pembaruan terbaru dari aktivitas akunmu.</p>
             </div>
         </div>
 
-        <div class="mt-6 space-y-4">
-            <div class="flex items-center gap-3 rounded-3xl bg-slate-50 p-4">
-                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 font-bold">✓</div>
-                <div>
-                    <p class="font-semibold text-slate-950">CV berhasil diupdate</p>
-                    <p class="text-sm text-slate-500">2 jam yang lalu</p>
+        <div class="mt-6 space-y-3">
+            @forelse ($activities as $activity)
+                @php
+                    $colorMap = [
+                        'cyan' => ['bg' => 'bg-cyan-50', 'text' => 'text-cyan-600', 'border' => 'border-cyan-100'],
+                        'blue' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-600', 'border' => 'border-blue-100'],
+                        'pink' => ['bg' => 'bg-pink-50', 'text' => 'text-pink-600', 'border' => 'border-pink-100'],
+                    ];
+                    $palette = $colorMap[$activity['color']] ?? $colorMap['cyan'];
+                @endphp
+                <div class="flex items-center gap-3 rounded-2xl bg-slate-50/70 border border-slate-100 p-4 hover:bg-slate-50 transition">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl {{ $palette['bg'] }} {{ $palette['text'] }} font-bold text-sm flex-shrink-0">{{ $activity['icon'] }}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-slate-900 text-sm truncate">{{ $activity['title'] }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ $activity['time_label'] }}</p>
+                    </div>
                 </div>
-            </div>
-            <div class="flex items-center gap-3 rounded-3xl bg-slate-50 p-4">
-                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-100 text-pink-600 font-bold">•</div>
-                <div>
-                    <p class="font-semibold text-slate-950">Pelatihan "UI/UX Fundamentals" selesai</p>
-                    <p class="text-sm text-slate-500">1 hari yang lalu</p>
+            @empty
+                <div class="rounded-2xl bg-slate-50 border border-dashed border-slate-200 p-8 text-center">
+                    <div class="text-3xl mb-3">📋</div>
+                    <p class="text-sm font-medium text-slate-500">Belum ada aktivitas. Mulai dengan mengikuti pelatihan, mentorship, atau self assessment.</p>
                 </div>
-            </div>
-            <div class="flex items-center gap-3 rounded-3xl bg-slate-50 p-4">
-                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-600 font-bold">✓</div>
-                <div>
-                    <p class="font-semibold text-slate-950">Self assessment diselesaikan</p>
-                    <p class="text-sm text-slate-500">3 hari yang lalu</p>
-                </div>
-            </div>
+            @endforelse
         </div>
     </div>
 </div>

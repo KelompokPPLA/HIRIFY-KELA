@@ -117,9 +117,10 @@ composer install
 ```bash
 cp .env.example .env
 php artisan key:generate
+php artisan jwt:secret
 ```
 
-Edit `.env`:
+Edit `.env` sesuaikan database kamu:
 
 ```env
 DB_DATABASE=hirify
@@ -132,7 +133,7 @@ DB_PASSWORD=
 #### 4. Setup Database
 
 ```bash
-php artisan migrate
+php artisan migrate --seed
 ```
 
 ---
@@ -150,6 +151,16 @@ php artisan serve
 ```
 http://localhost:8000
 ```
+
+---
+
+## 🔑 Default Accounts (setelah `--seed`)
+
+| Role      | Email                    | Password    |
+|-----------|--------------------------|-------------|
+| Admin     | admin@hirify.test        | admin123    |
+| Jobseeker | jobseeker@hirify.test    | password123 |
+| Mentor    | sarah.mentor@hirify.test | password123 |
 
 ---
 

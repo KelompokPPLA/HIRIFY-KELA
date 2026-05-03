@@ -65,8 +65,6 @@ class MentorProfileController extends Controller
                 'experience_years' => $validated['experience_years'] ?? 0,
                 'bio' => $validated['bio'] ?? null,
                 'education' => $validated['education'] ?? null,
-                'availability' => $validated['availability'] ?? null,
-                'price_per_session' => $validated['price_per_session'] ?? null,
                 'skills' => $skills,
             ]);
 
