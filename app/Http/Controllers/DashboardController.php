@@ -70,16 +70,26 @@ class DashboardController extends Controller
             ->first();
         $careerReadiness = $latestAssessment ? (int) round($latestAssessment->score ?? 0) : 0;
 
+        $careerReadinessLabel = match (true) {
+            $careerReadiness >= 80 => 'Sangat Siap',
+            $careerReadiness >= 60 => 'Cukup Siap',
+            $careerReadiness >= 40 => 'Sedang Berkembang',
+            $careerReadiness > 0  => 'Perlu Peningkatan',
+            default               => 'Belum Dinilai',
+        };
+
         return [
-            'profileCompleteness' => $profileCompleteness,
-            'trainingCompleted' => $completedEnrolled,
-            'trainingTotal' => $totalEnrolled,
-            'trainingProgress' => $trainingProgress,
-            'mentorshipTotal' => $mentorshipTotal,
-            'mentorshipCompleted' => $mentorshipCompleted,
-            'mentorshipUpcoming' => $mentorshipUpcoming,
-            'careerReadiness' => $careerReadiness,
-            'hasAssessment' => $latestAssessment !== null,
+            'profileCompleteness'  => $profileCompleteness,
+            'trainingCompleted'    => $completedEnrolled,
+            'trainingTotal'        => $totalEnrolled,
+            'trainingProgress'     => $trainingProgress,
+            'mentorshipTotal'      => $mentorshipTotal,
+            'mentorshipCompleted'  => $mentorshipCompleted,
+            'mentorshipUpcoming'   => $mentorshipUpcoming,
+            'careerReadiness'      => $careerReadiness,
+            'careerReadinessLabel' => $careerReadinessLabel,
+            'hasAssessment'        => $latestAssessment !== null,
+            'assessmentDate'       => $latestAssessment?->created_at?->diffForHumans(),
         ];
     }
 
