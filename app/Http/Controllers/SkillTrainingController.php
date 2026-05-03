@@ -70,6 +70,7 @@ class SkillTrainingController extends Controller
             'is_free'         => $c->is_free,
             'lessons_count'   => $c->lessons_count,
             'is_enrolled'     => in_array($c->id, $enrolledIds),
+            'price_label'     => $c->is_free ? 'Gratis' : 'Berbayar',
         ]);
 
         $categories = SkillCourse::distinct()->pluck('category')->sort()->values();
