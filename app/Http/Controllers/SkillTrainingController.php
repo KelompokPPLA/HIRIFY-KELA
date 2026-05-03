@@ -157,9 +157,14 @@ class SkillTrainingController extends Controller
             'skill_course_id' => $id,
         ]);
 
+        $totalLessons = $course->lessons()->count();
+
         return ResponseHelper::jsonResponse(true, 'Berhasil mendaftar ke kursus.', [
-            'course_id' => $id,
-            'title'     => $course->title,
+            'course_id'     => $id,
+            'title'         => $course->title,
+            'category'      => $course->category,
+            'total_lessons' => $totalLessons,
+            'enrolled_at'   => now()->toDateTimeString(),
         ], 201);
     }
 
