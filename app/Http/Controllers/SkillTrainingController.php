@@ -125,8 +125,10 @@ class SkillTrainingController extends Controller
             'progress_pct'    => $progressPct,
             'completed_count' => $completedLessons,
             'total_lessons'   => $totalLessons,
-            'course_completed'=> $enrollment?->completed_at !== null,
-            'lessons'         => $lessons,
+            'course_completed'  => $enrollment?->completed_at !== null,
+            'course_status'     => ! $enrollment ? 'not_enrolled' : ($enrollment->completed_at ? 'completed' : ($completedLessons > 0 ? 'in_progress' : 'not_started')),
+            'total_duration_minutes' => $course->lessons->sum('duration_minutes'),
+            'lessons'          => $lessons,
         ], 200);
     }
 
