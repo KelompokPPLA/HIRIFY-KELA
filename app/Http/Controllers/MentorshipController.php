@@ -177,6 +177,10 @@ class MentorshipController extends Controller
             return ResponseHelper::jsonResponse(false, 'Mentor tidak ditemukan.', null, 404);
         }
 
+        if ($mentor->user_id === $user->id) {
+            return ResponseHelper::jsonResponse(false, 'Anda tidak dapat memesan sesi dengan diri sendiri.', null, 422);
+        }
+
         try {
             $booking = DB::transaction(function () use ($validated, $mentor, $user) {
                 $slot = null;
