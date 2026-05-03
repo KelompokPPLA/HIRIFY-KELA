@@ -281,8 +281,19 @@ class MentorshipController extends Controller
             ->map(fn ($item) => (new MentorBookingResource($item))->toArray(request()))
             ->all();
 
+        $totalCompleted = MentorBooking::where('jobseeker_user_id', $user->id)
+            ->where('status', 'completed')
+            ->count();
+        $totalUpcoming = MentorBooking::where('jobseeker_user_id', $user->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->count();
+
         return ResponseHelper::jsonResponse(true, 'Riwayat booking berhasil diambil.', [
             'items' => $items,
+            'summary' => [
+                'total_completed' => $totalCompleted,
+                'total_upcoming'  => $totalUpcoming,
+            ],
             'meta' => [
                 'current_page' => $paginator->currentPage(),
                 'last_page' => $paginator->lastPage(),
