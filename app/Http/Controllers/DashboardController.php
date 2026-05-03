@@ -140,11 +140,11 @@ class DashboardController extends Controller
             ->get()
             ->each(function ($enrollment) use ($items) {
                 $items->push([
-                    'type' => 'training',
-                    'icon' => '✓',
+                    'type'  => 'training',
+                    'icon'  => '🎓',
                     'color' => 'cyan',
-                    'title' => 'Pelatihan "' . ($enrollment->course->title ?? 'Skill Course') . '" selesai',
-                    'time' => $enrollment->completed_at,
+                    'title' => 'Kursus "' . ($enrollment->course->title ?? 'Skill Course') . '" berhasil diselesaikan',
+                    'time'  => $enrollment->completed_at,
                 ]);
             });
 
@@ -155,13 +155,17 @@ class DashboardController extends Controller
             ->limit(5)
             ->get()
             ->each(function ($progress) use ($items) {
-                $title = $progress->lesson?->title ?? 'Lesson';
+                $lessonTitle  = $progress->lesson?->title ?? 'Materi';
+                $courseTitle  = $progress->lesson?->course?->title ?? '';
+                $title = $courseTitle
+                    ? 'Materi "' . $lessonTitle . '" pada kursus ' . $courseTitle . ' selesai'
+                    : 'Materi "' . $lessonTitle . '" selesai';
                 $items->push([
-                    'type' => 'lesson',
-                    'icon' => '◉',
+                    'type'  => 'lesson',
+                    'icon'  => '📖',
                     'color' => 'cyan',
-                    'title' => 'Lesson "' . $title . '" selesai',
-                    'time' => $progress->completed_at,
+                    'title' => $title,
+                    'time'  => $progress->completed_at,
                 ]);
             });
 
