@@ -188,7 +188,7 @@ class SkillTrainingController extends Controller
             ->whereIn('skill_lesson_id', SkillLesson::where('skill_course_id', $courseId)->pluck('id'))
             ->count();
 
-        $progressPct = $totalLessons > 0 ? round(($completed / $totalLessons) * 100) : 0;
+        $progressPct = $totalLessons > 0 ? (int) round(($completed / $totalLessons) * 100) : 0;
 
         if ($progressPct === 100 && ! $enrollment->completed_at) {
             $enrollment->update(['completed_at' => now()]);
