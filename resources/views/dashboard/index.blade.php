@@ -141,7 +141,7 @@
                     ];
                     $palette = $colorMap[$activity['color']] ?? $colorMap['cyan'];
                 @endphp
-                <div class="flex items-center gap-3 rounded-2xl bg-slate-50/70 border border-slate-100 p-4 hover:bg-slate-50 transition">
+                <div class="flex items-center gap-3 rounded-2xl bg-slate-50/70 border border-slate-100 p-4 hover:bg-slate-50 transition" title="{{ $activity['time_full'] ?? '' }}">
                     <div class="flex h-10 w-10 items-center justify-center rounded-xl {{ $palette['bg'] }} {{ $palette['text'] }} font-bold text-sm flex-shrink-0">{{ $activity['icon'] }}</div>
                     <div class="flex-1 min-w-0">
                         <p class="font-semibold text-slate-900 text-sm truncate">{{ $activity['title'] }}</p>
