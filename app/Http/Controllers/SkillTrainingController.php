@@ -15,7 +15,11 @@ class SkillTrainingController extends Controller
 {
     private function authUser()
     {
-        return JWTAuth::parseToken()->authenticate();
+        try {
+            return JWTAuth::parseToken()->authenticate();
+        } catch (\Throwable $e) {
+            abort(401, 'Token tidak valid atau sudah kedaluwarsa.');
+        }
     }
 
     public function catalog(Request $request): JsonResponse
