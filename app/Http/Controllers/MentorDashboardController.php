@@ -31,7 +31,7 @@ class MentorDashboardController extends Controller
                 ->get();
 
             $acceptedBookings = MentorBooking::where('mentor_id', $mentor->id)
-                ->where('status', 'accepted')
+                ->where('status', 'confirmed')
                 ->with('jobseeker', 'availability')
                 ->orderBy('scheduled_start')
                 ->get();
@@ -105,7 +105,7 @@ class MentorDashboardController extends Controller
         $mentor = Auth::user()->mentor;
         $booking = MentorBooking::where('mentor_id', $mentor->id)->findOrFail($id);
 
-        $booking->update(['status' => 'accepted']);
+        $booking->update(['status' => 'confirmed']);
 
         // mark availability as booked
         if ($booking->mentor_availability_id) {
