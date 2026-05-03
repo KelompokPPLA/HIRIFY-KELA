@@ -102,12 +102,18 @@ class MentorDashboardController extends Controller
     // Accept booking
     public function acceptBooking(Request $request, $id)
     {
-        $mentor = Auth::user()->mentor;
-        $booking = MentorBooking::where('mentor_id', $mentor->id)->findOrFail($id);
+        $mentor = Auth::user()->mentorProfile;
+
+        if (! $mentor) {
+            return back()->with('error', 'Profil mentor tidak ditemukan.');
+        }
+
+        $booking = MentorBooking::where('mentor_id', $mentor->id)
+            ->where('status', 'pending')
+            ->findOrFail($id);
 
         $booking->update(['status' => 'confirmed']);
 
-        // mark availability as booked
         if ($booking->mentor_availability_id) {
             $availability = MentorAvailability::find($booking->mentor_availability_id);
             if ($availability) {
@@ -115,7 +121,7 @@ class MentorDashboardController extends Controller
             }
         }
 
-        return back()->with('success', 'Booking diterima.');
+        return back()->with('success', 'Booking berhasil dikonfirmasi.');
     }
 
     // Reject booking
