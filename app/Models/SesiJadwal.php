@@ -20,6 +20,7 @@ class SesiJadwal extends Model
         'platform',
         'status',
         'notes',
+        'material_file',
     ];
 
     public function mentor()
