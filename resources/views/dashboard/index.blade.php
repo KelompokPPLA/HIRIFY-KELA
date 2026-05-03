@@ -31,8 +31,10 @@
                     <div class="rounded-2xl bg-white/[0.06] backdrop-blur-sm p-5 border border-white/10">
                         <p class="text-xs text-slate-400 font-medium">Sesi Mentorship</p>
                         <p class="mt-2 text-2xl font-bold text-white">{{ $mentorshipCompleted }}</p>
-                        @if ($mentorshipUpcoming > 0)
-                            <p class="mt-1 text-xs text-cyan-300 font-semibold">+{{ $mentorshipUpcoming }} mendatang</p>
+                        @if ($mentorshipPending > 0)
+                            <p class="mt-1 text-xs text-yellow-300 font-semibold">{{ $mentorshipPending }} menunggu konfirmasi</p>
+                        @elseif ($mentorshipUpcoming > 0)
+                            <p class="mt-1 text-xs text-cyan-300 font-semibold">+{{ $mentorshipUpcoming }} sesi mendatang</p>
                         @endif
                     </div>
                 </div>
