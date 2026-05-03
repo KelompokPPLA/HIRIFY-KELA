@@ -234,20 +234,53 @@
             box-shadow: 0 5px 15px rgba(9, 20, 51, 0.03);
             flex-wrap: wrap;
         }
-        .filter-input {
+        .search-box {
+            display: flex;
             flex: 1;
-            min-width: 200px;
-            padding: 12px 16px;
+            min-width: 250px;
+            position: relative;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 12px 110px 12px 16px;
             border: 1px solid var(--line);
             border-radius: 10px;
             font-family: inherit;
             font-size: 0.95rem;
             color: var(--ink);
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
         .filter-input:focus {
             border-color: var(--brand);
+            box-shadow: 0 0 0 4px rgba(6, 203, 229, 0.15);
+        }
+        .search-btn {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            bottom: 6px;
+            background: linear-gradient(135deg, #06cbe5, #04a9bf);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 16px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(6, 203, 229, 0.2);
+        }
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(6, 203, 229, 0.35);
+        }
+        .search-btn:active {
+            transform: translateY(1px);
         }
         .filter-select {
             padding: 12px 16px;
@@ -304,7 +337,13 @@
             </section>
 
             <div class="filters">
-                <input type="text" id="searchInput" class="filter-input" placeholder="Cari nama mentor atau isi feedback...">
+                <div class="search-box">
+                    <input type="text" id="searchInput" class="filter-input" placeholder="Cari nama mentor atau isi feedback...">
+                    <button type="button" id="searchBtn" class="search-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        Cari
+                    </button>
+                </div>
                 <select id="ratingFilter" class="filter-select">
                     <option value="all">Semua Rating</option>
                     <option value="5">5 Bintang</option>
@@ -366,6 +405,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
             const ratingFilter = document.getElementById('ratingFilter');
             const cards = document.querySelectorAll('.feedback-card');
 
@@ -391,7 +431,13 @@
                 });
             }
 
-            if(searchInput) searchInput.addEventListener('input', filterCards);
+            if(searchInput) {
+                searchInput.addEventListener('input', filterCards);
+                searchInput.addEventListener('keypress', (e) => {
+                    if(e.key === 'Enter') filterCards();
+                });
+            }
+            if(searchBtn) searchBtn.addEventListener('click', filterCards);
             if(ratingFilter) ratingFilter.addEventListener('change', filterCards);
         });
     </script>
