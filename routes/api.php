@@ -36,6 +36,9 @@ Route::prefix('auth')->group(function () {
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::apiResource('user', UserController::class);
     Route::get('user/all/paginated', [UserController::class, 'getAllPaginated']);
+	// Admin CRUD for mentors and training modules
+	Route::apiResource('mentor', \App\Http\Controllers\Admin\MentorController::class);
+	Route::apiResource('module', \App\Http\Controllers\Admin\ModuleController::class);
     Route::get('admin/statistics', [AdminStatisticsController::class, 'index']);
 });
 
