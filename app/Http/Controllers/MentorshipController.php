@@ -75,6 +75,9 @@ class MentorshipController extends Controller
             case 'experience':
                 $query->orderByDesc('experience_years');
                 break;
+            case 'slots':
+                $query->orderByDesc('open_slots_count');
+                break;
             default:
                 $query->orderByDesc('session_count')->orderByDesc('experience_years');
                 break;
