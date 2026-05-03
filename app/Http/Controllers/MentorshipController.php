@@ -277,6 +277,9 @@ class MentorshipController extends Controller
             ->values()
             ->all();
 
+        $validStatuses = ['pending', 'confirmed', 'completed', 'cancelled', 'rejected'];
+        $statusFilter = array_values(array_intersect($statusFilter, $validStatuses));
+
         $query = MentorBooking::query()
             ->with(['mentor.user'])
             ->where('jobseeker_user_id', $user->id)
