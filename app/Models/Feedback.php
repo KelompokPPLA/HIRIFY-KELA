@@ -16,6 +16,7 @@ class Feedback extends Model
         'mentee_id',
         'session_id',
         'rating',
+        'mentee_rating',
         'strength',
         'improvement',
         'recommendation',
