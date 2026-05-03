@@ -56,23 +56,24 @@
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
         <aside class="sidebar w-[280px] min-h-screen bg-white border-r border-slate-200 flex flex-col" id="sidebar">
-            <div class="px-6 py-5 border-b border-slate-100">
+            <div class="px-6 py-5 border-b border-slate-100 flex flex-col gap-4">
                 <a href="/mentor/dashboard" class="flex items-center gap-3">
-                    <div class="w-[36px] h-[36px] rounded-xl flex items-center justify-center text-white text-[17px] font-extrabold flex-shrink-0" style="background: linear-gradient(145deg, #0399b7, #06d8ee); box-shadow: 0 6px 18px rgba(3, 153, 183, 0.25);">H</div>
+                    <div class="w-[40px] h-[40px] rounded-full flex items-center justify-center text-white text-[20px] font-extrabold flex-shrink-0" style="background: linear-gradient(145deg, #0399b7, #06d8ee); box-shadow: 0 4px 10px rgba(3, 153, 183, 0.3);">H</div>
                     <div class="leading-tight">
-                        <p class="text-[20px] font-extrabold tracking-tight text-[#0d1b3d]">Hirify</p>
-                        <p class="text-[11px] text-slate-400 font-medium">Mentor Panel</p>
+                        <p class="text-[24px] font-extrabold tracking-tight text-[#0d1b3d]">Hirify!</p>
                     </div>
                 </a>
+                <div class="w-full text-center py-2.5 rounded-full font-bold text-xs tracking-wide" style="background-color: #ebfcfe; color: #0399b7;">
+                    MENTOR PANEL
+                </div>
             </div>
 
-            <nav class="flex-1 px-3 py-5 space-y-1">
-                <p class="px-3 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Menu Mentor</p>
-
+            <nav class="flex-1 px-3 py-5 space-y-2">
                 @php
                     $mentorItems = [
-                        ['url' => '/mentor/dashboard', 'label' => 'Dashboard', 'pattern' => 'mentor/dashboard', 'icon' => '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>'],
-                        ['url' => '/mentor/sesi-jadwal', 'label' => 'Sesi & Jadwal', 'pattern' => 'mentor/sesi-jadwal', 'icon' => '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>'],
+                        ['url' => '/mentor/dashboard', 'label' => 'Dashboard', 'pattern' => 'mentor/dashboard', 'icon' => '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>'],
+                        ['url' => '/mentor/sesi-jadwal', 'label' => 'Jadwal Sesi', 'pattern' => 'mentor/sesi-jadwal', 'icon' => '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>'],
+                        ['url' => '#', 'label' => 'Mentee Saya', 'pattern' => 'mentor/mentee', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'],
                         ['url' => '/mentor/feedback', 'label' => 'Feedback', 'pattern' => 'mentor/feedback', 'icon' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>'],
                         ['url' => '/mentor/settings', 'label' => 'Pengaturan', 'pattern' => 'mentor/settings', 'icon' => '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>'],
                     ];
