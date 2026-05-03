@@ -21,7 +21,7 @@
             </div>
         @endif
 
-        <form action="{{ route('mentor.sesi-jadwal.store') }}" method="POST">
+        <form action="{{ route('mentor.sesi-jadwal.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div class="space-y-5">
@@ -52,14 +52,21 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Status</label>
-                    <select name="status" class="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:ring-sky-200 focus:border-sky-500 transition">
-                        <option value="Pending" {{ old('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="Confirmed" {{ old('status') == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
-                        <option value="Completed" {{ old('status') == 'Completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="Cancelled" {{ old('status') == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <select name="status" class="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:ring-sky-200 focus:border-sky-500 transition">
+                            <option value="Pending" {{ old('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="Confirmed" {{ old('status') == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
+                            <option value="Completed" {{ old('status') == 'Completed' ? 'selected' : '' }}>Completed</option>
+                            <option value="Cancelled" {{ old('status') == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">File Materi (PDF/Video)</label>
+                        <input type="file" name="material_file" accept=".pdf,video/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 transition border border-gray-200 rounded-lg py-1.5 px-3">
+                        <p class="mt-1 text-xs text-gray-400">PDF atau Video (Maks. 50MB)</p>
+                    </div>
                 </div>
             </div>
 
