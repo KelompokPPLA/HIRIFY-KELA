@@ -10,6 +10,7 @@ use App\Http\Resources\MentorMarketplaceResource;
 use App\Models\Mentor;
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
+use App\Models\UserNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -258,6 +259,15 @@ class MentorshipController extends Controller
         }
 
         $booking->load(['mentor.user']);
+
+        UserNotification::create([
+            'user_id' => $user->id,
+            'type' => 'jadwal',
+            'title' => 'Booking mentorship dibuat',
+            'message' => 'Booking sesi dengan ' . ($booking->mentor?->user?->name ?? 'mentor') . ' berhasil dibuat dan menunggu konfirmasi.',
+            'action_url' => '/mentorship',
+            'data' => ['booking_id' => $booking->id, 'status' => 'pending'],
+        ]);
 
         return ResponseHelper::jsonResponse(
             true,

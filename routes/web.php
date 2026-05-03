@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\AdminMentorManagementController;
 use App\Http\Controllers\AdminStatisticsController;
+use App\Http\Controllers\AdminTrainingModuleController;
+use App\Http\Controllers\AdminUserManagementController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoadmapController;
@@ -11,6 +14,7 @@ use App\Http\Controllers\MentorDashboardController;
 use App\Http\Controllers\SesiJadwalController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\MenteeSayaController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -64,7 +68,9 @@ Route::middleware('auth')->group(function () {
     Route::view('/forum', 'forum.index')->name('forum.index');
 
     // Notifikasi
-    Route::view('/notifikasi', 'notifikasi.index')->name('notifikasi.index');
+    Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifikasi.index');
+    Route::post('/notifikasi/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifikasi.read-all');
+    Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifikasi.read');
 
     // Mentorship
     Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
@@ -77,7 +83,24 @@ Route::middleware('auth')->group(function () {
     // ---- Admin Routes ----
     Route::middleware('role:admin')->group(function () {
         Route::get('/admin/statistics', [AdminStatisticsController::class, 'show'])->name('admin.statistics');
-        Route::get('/admin/users', [AdminStatisticsController::class, 'users'])->name('admin.users');
+        Route::get('/admin/users', [AdminUserManagementController::class, 'index'])->name('admin.users');
+        Route::get('/admin/users/create', [AdminUserManagementController::class, 'create'])->name('admin.users.create');
+        Route::post('/admin/users', [AdminUserManagementController::class, 'store'])->name('admin.users.store');
+        Route::get('/admin/users/{user}/edit', [AdminUserManagementController::class, 'edit'])->name('admin.users.edit');
+        Route::patch('/admin/users/{user}', [AdminUserManagementController::class, 'update'])->name('admin.users.update');
+        Route::delete('/admin/users/{user}', [AdminUserManagementController::class, 'destroy'])->name('admin.users.destroy');
+        Route::get('/admin/mentors', [AdminMentorManagementController::class, 'index'])->name('admin.mentors');
+        Route::get('/admin/mentors/create', [AdminMentorManagementController::class, 'create'])->name('admin.mentors.create');
+        Route::post('/admin/mentors', [AdminMentorManagementController::class, 'store'])->name('admin.mentors.store');
+        Route::get('/admin/mentors/{mentor}/edit', [AdminMentorManagementController::class, 'edit'])->name('admin.mentors.edit');
+        Route::patch('/admin/mentors/{mentor}', [AdminMentorManagementController::class, 'update'])->name('admin.mentors.update');
+        Route::delete('/admin/mentors/{mentor}', [AdminMentorManagementController::class, 'destroy'])->name('admin.mentors.destroy');
+        Route::get('/admin/training-modules', [AdminTrainingModuleController::class, 'index'])->name('admin.training-modules');
+        Route::get('/admin/training-modules/create', [AdminTrainingModuleController::class, 'create'])->name('admin.training-modules.create');
+        Route::post('/admin/training-modules', [AdminTrainingModuleController::class, 'store'])->name('admin.training-modules.store');
+        Route::get('/admin/training-modules/{trainingModule}/edit', [AdminTrainingModuleController::class, 'edit'])->name('admin.training-modules.edit');
+        Route::patch('/admin/training-modules/{trainingModule}', [AdminTrainingModuleController::class, 'update'])->name('admin.training-modules.update');
+        Route::delete('/admin/training-modules/{trainingModule}', [AdminTrainingModuleController::class, 'destroy'])->name('admin.training-modules.destroy');
         Route::get('/admin/activity', [AdminStatisticsController::class, 'activity'])->name('admin.activity');
     });
 
@@ -89,6 +112,7 @@ Route::middleware('auth')->group(function () {
         Route::post('sesi-jadwal/{id}/notes', [SesiJadwalController::class, 'addNotes'])->name('mentor.sesi-jadwal.notes');
         Route::resource('feedback', FeedbackController::class)->names('mentor.feedback');
         Route::get('/mentee', [MenteeSayaController::class, 'index'])->name('mentor.mentee.index');
+        Route::get('/mentee/{mentee}', [MenteeSayaController::class, 'show'])->name('mentor.mentee.show');
 
         // Availability management
         Route::post('/availability', [MentorDashboardController::class, 'storeAvailability'])->name('mentor.availability.store');

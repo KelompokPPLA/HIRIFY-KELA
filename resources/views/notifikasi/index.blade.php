@@ -7,85 +7,106 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Pusat Informasi</p>
-            <h1 class="mt-1 text-2xl lg:text-3xl font-bold text-slate-950">Notifikasi</h1>
-            <p class="mt-2 text-sm text-slate-500 max-w-2xl">Kelola semua pemberitahuan penting terkait aktivitas akun dan karier Anda.</p>
+            <h1 class="mt-1 text-2xl font-bold text-slate-950 lg:text-3xl">Notifikasi</h1>
+            <p class="mt-2 max-w-2xl text-sm text-slate-500">Pantau booking, jadwal, feedback, dan informasi penting lain dari Hirify.</p>
         </div>
-        <button class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 active:scale-[0.97]">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle></svg>
-            Tandai Semua Dibaca
-        </button>
+        <form method="POST" action="{{ route('notifikasi.read-all') }}">
+            @csrf
+            <button class="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle></svg>
+                Tandai Semua Dibaca
+            </button>
+        </form>
     </div>
 
-    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex flex-col gap-4">
-            @php
-                $notifications = [
-                    [
-                        'title' => 'Sesi mentorship baru tersedia',
-                        'desc' => 'Mentor menemukan slot waktu baru minggu ini. Segera booking jadwalmu.',
-                        'badge' => 'Baru',
-                        'badgeColor' => 'bg-cyan-50 text-cyan-700 border-cyan-200',
-                        'time' => '10 menit lalu',
-                        'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
-                        'iconColor' => 'bg-cyan-50 text-cyan-600',
-                        'unread' => true,
-                    ],
-                    [
-                        'title' => 'CV Anda telah diperbarui',
-                        'desc' => 'Versi terbaru CV ATS berhasil disimpan ke akun Anda.',
-                        'badge' => 'Sukses',
-                        'badgeColor' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                        'time' => '1 jam lalu',
-                        'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line>',
-                        'iconColor' => 'bg-emerald-50 text-emerald-600',
-                        'unread' => true,
-                    ],
-                    [
-                        'title' => 'Disarankan: Ikuti modul pelatihan terbaru',
-                        'desc' => 'Tingkatkan peluang karier Anda dengan pelatihan skill yang relevan.',
-                        'badge' => 'Info',
-                        'badgeColor' => 'bg-slate-50 text-slate-600 border-slate-200',
-                        'time' => 'Kemarin',
-                        'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>',
-                        'iconColor' => 'bg-slate-100 text-slate-600',
-                        'unread' => false,
-                    ],
-                    [
-                        'title' => 'Self assessment selesai',
-                        'desc' => 'Hasil assessment terakhir Anda sudah tersedia. Lihat rekomendasi yang diberikan.',
-                        'badge' => 'Selesai',
-                        'badgeColor' => 'bg-violet-50 text-violet-700 border-violet-200',
-                        'time' => '2 hari lalu',
-                        'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>',
-                        'iconColor' => 'bg-violet-50 text-violet-600',
-                        'unread' => false,
-                    ],
-                ];
-            @endphp
+    @if (session('success'))
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">{{ session('success') }}</div>
+    @endif
 
-            @foreach ($notifications as $notif)
-                <div class="group flex items-start gap-4 rounded-2xl border {{ $notif['unread'] ? 'border-cyan-100 bg-cyan-50/30' : 'border-slate-100 bg-slate-50/50' }} p-4 transition hover:shadow-sm">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl {{ $notif['iconColor'] }}">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $notif['icon'] !!}</svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="min-w-0">
-                                <p class="text-sm font-bold text-slate-900 {{ $notif['unread'] ? '' : 'text-slate-700' }}">{{ $notif['title'] }}</p>
-                                <p class="mt-1 text-sm text-slate-500 leading-relaxed">{{ $notif['desc'] }}</p>
-                            </div>
-                            <span class="shrink-0 rounded-lg border px-2.5 py-1 text-[11px] font-bold {{ $notif['badgeColor'] }}">{{ $notif['badge'] }}</span>
+    <div class="grid gap-3 sm:grid-cols-4">
+        @php
+            $summaryCards = [
+                ['label' => 'Belum dibaca', 'value' => $unreadCount, 'class' => 'bg-slate-900 text-white'],
+                ['label' => 'Booking', 'value' => (int) ($typeCounts['booking'] ?? 0), 'class' => 'bg-cyan-50 text-cyan-700 border border-cyan-100'],
+                ['label' => 'Jadwal', 'value' => (int) ($typeCounts['jadwal'] ?? 0), 'class' => 'bg-violet-50 text-violet-700 border border-violet-100'],
+                ['label' => 'Feedback', 'value' => (int) ($typeCounts['feedback'] ?? 0), 'class' => 'bg-amber-50 text-amber-700 border border-amber-100'],
+            ];
+        @endphp
+        @foreach ($summaryCards as $card)
+            <div class="rounded-2xl p-4 {{ $card['class'] }}">
+                <p class="text-xs font-bold uppercase tracking-[0.16em] opacity-70">{{ $card['label'] }}</p>
+                <p class="mt-2 text-2xl font-bold">{{ $card['value'] }}</p>
+            </div>
+        @endforeach
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 p-5">
+            <form method="GET" action="/notifikasi" class="grid gap-3 sm:grid-cols-[180px_180px_auto]">
+                <select name="type" class="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100">
+                    <option value="">Semua tipe</option>
+                    @foreach (['booking' => 'Booking', 'jadwal' => 'Jadwal', 'feedback' => 'Feedback', 'system' => 'System'] as $value => $label)
+                        <option value="{{ $value }}" @selected(($type ?? '') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <select name="status" class="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100">
+                    <option value="">Semua status</option>
+                    <option value="unread" @selected(($status ?? '') === 'unread')>Belum dibaca</option>
+                    <option value="read" @selected(($status ?? '') === 'read')>Sudah dibaca</option>
+                </select>
+                <button type="submit" class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Filter</button>
+            </form>
+        </div>
+
+        <div class="divide-y divide-slate-100">
+            @forelse ($notifications as $notification)
+                @php
+                    $isUnread = $notification->read_at === null;
+                    $badgeClass = match($notification->type) {
+                        'booking' => 'bg-cyan-50 text-cyan-700 border-cyan-200',
+                        'jadwal' => 'bg-violet-50 text-violet-700 border-violet-200',
+                        'feedback' => 'bg-amber-50 text-amber-700 border-amber-200',
+                        default => 'bg-slate-50 text-slate-700 border-slate-200',
+                    };
+                @endphp
+                <div class="flex flex-col gap-4 p-5 transition hover:bg-slate-50 sm:flex-row sm:items-start sm:justify-between {{ $isUnread ? 'bg-cyan-50/30' : '' }}">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="rounded-lg border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] {{ $badgeClass }}">{{ $notification->type }}</span>
+                            <span class="rounded-lg px-2.5 py-1 text-[11px] font-bold {{ $isUnread ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500' }}">
+                                {{ $isUnread ? 'Belum dibaca' : 'Sudah dibaca' }}
+                            </span>
+                            <span class="text-xs font-medium text-slate-400">{{ $notification->created_at?->diffForHumans() }}</span>
                         </div>
-                        <p class="mt-2 text-xs font-medium text-slate-400">{{ $notif['time'] }}</p>
+                        <h2 class="mt-3 text-base font-bold text-slate-900">{{ $notification->title }}</h2>
+                        <p class="mt-1 text-sm leading-relaxed text-slate-600">{{ $notification->message }}</p>
+                        @if ($notification->action_url)
+                            <a href="{{ $notification->action_url }}" class="mt-3 inline-flex text-sm font-semibold text-cyan-700 hover:text-cyan-800">Buka detail</a>
+                        @endif
                     </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
 
-    {{-- Empty State Hint --}}
-    <div class="text-center text-sm text-slate-400 py-2">
-        Menampilkan 4 notifikasi terbaru
+                    @if ($isUnread)
+                        <form method="POST" action="{{ route('notifikasi.read', $notification->id) }}">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50">Tandai dibaca</button>
+                        </form>
+                    @endif
+                </div>
+            @empty
+                <div class="p-12 text-center">
+                    <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-slate-400">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    </div>
+                    <p class="mt-4 font-semibold text-slate-700">Belum ada notifikasi</p>
+                    <p class="mt-1 text-sm text-slate-500">Informasi booking, jadwal, dan feedback akan muncul di sini.</p>
+                </div>
+            @endforelse
+        </div>
+
+        @if ($notifications->hasPages())
+            <div class="border-t border-slate-200 p-5">{{ $notifications->links() }}</div>
+        @endif
     </div>
 </div>
 @endsection

@@ -6,6 +6,7 @@ use App\Models\Feedback;
 use App\Models\MentorBooking;
 use App\Models\SesiJadwal;
 use App\Models\User;
+use App\Models\UserNotification;
 use Illuminate\Http\Request;
 
 class FeedbackController extends Controller
@@ -72,15 +73,24 @@ class FeedbackController extends Controller
             return back()->with('error', 'Selected mentee has no prior booking with you.');
         }
 
-        Feedback::create([
+        $feedback = Feedback::create([
             'mentor_id'      => auth()->id(),
             'mentee_id'      => $data['mentee_id'],
             'session_id'     => $data['session_id'],
-            'rating'         => null,
+            'rating'         => $data['mentee_rating'],
             'mentee_rating'  => $data['mentee_rating'],
             'strength'       => $data['strength'],
             'improvement'    => $data['improvement'],
             'recommendation' => $data['recommendation'],
+        ]);
+
+        UserNotification::create([
+            'user_id' => $data['mentee_id'],
+            'type' => 'feedback',
+            'title' => 'Feedback mentorship baru',
+            'message' => 'Mentor memberikan feedback baru untuk perkembangan karier Anda.',
+            'action_url' => '/riwayat-feedback',
+            'data' => ['feedback_id' => $feedback->id, 'session_id' => $data['session_id']],
         ]);
 
         return redirect()->route('mentor.feedback.index')->with('success', 'Feedback berhasil disimpan.');

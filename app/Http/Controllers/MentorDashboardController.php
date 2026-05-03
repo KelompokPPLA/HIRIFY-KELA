@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
+use App\Models\UserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -121,6 +122,15 @@ class MentorDashboardController extends Controller
             }
         }
 
+        UserNotification::create([
+            'user_id' => $booking->jobseeker_user_id,
+            'type' => 'booking',
+            'title' => 'Booking mentorship dikonfirmasi',
+            'message' => 'Booking sesi mentorship Anda telah dikonfirmasi oleh mentor.',
+            'action_url' => '/mentorship',
+            'data' => ['booking_id' => $booking->id, 'status' => 'confirmed'],
+        ]);
+
         return back()->with('success', 'Booking berhasil dikonfirmasi.');
     }
 
@@ -131,12 +141,32 @@ class MentorDashboardController extends Controller
             'rejection_reason' => 'nullable|string|max:500',
         ]);
 
-        $mentor = Auth::user()->mentor;
+        $mentor = Auth::user()->mentorProfile;
+
+        if (! $mentor) {
+            return back()->with('error', 'Profil mentor tidak ditemukan.');
+        }
+
         $booking = MentorBooking::where('mentor_id', $mentor->id)->findOrFail($id);
 
         $booking->update([
             'status' => 'rejected',
             'rejection_reason' => $request->rejection_reason,
+        ]);
+
+        if ($booking->mentor_availability_id) {
+            MentorAvailability::where('id', $booking->mentor_availability_id)->update(['is_booked' => false]);
+        }
+
+        UserNotification::create([
+            'user_id' => $booking->jobseeker_user_id,
+            'type' => 'booking',
+            'title' => 'Booking mentorship ditolak',
+            'message' => $request->rejection_reason
+                ? 'Booking sesi Anda ditolak. Alasan: ' . $request->rejection_reason
+                : 'Booking sesi Anda ditolak oleh mentor.',
+            'action_url' => '/mentorship',
+            'data' => ['booking_id' => $booking->id, 'status' => 'rejected'],
         ]);
 
         return back()->with('success', 'Booking ditolak.');
