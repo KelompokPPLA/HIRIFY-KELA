@@ -9,18 +9,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('profiles', function (Blueprint $table) {
-            $table->id();
 
             // UUID FK (HARUS SAMA DENGAN users.id)
-            $table->uuid('user_id');
+            $table->uuid('id')->primary();
 
-            $table->foreign('user_id')
-                  ->references('id')
-                  ->on('users')
-                  ->cascadeOnDelete();
+                // Relasi ke user
+            $table->uuid('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->string('nama_lengkap')->nullable();
             $table->string('telepon')->nullable();
+            $table->string('photo')->nullable();
             $table->text('alamat')->nullable();
             $table->date('tanggal_lahir')->nullable();
             $table->string('institusi')->nullable();
