@@ -24,13 +24,20 @@ class SkillTrainingController extends Controller
         $search   = trim($request->query('search', ''));
         $category = trim($request->query('category', ''));
         $level    = trim($request->query('level', ''));
-        $perPage  = min((int) $request->query('per_page', 12), 50);
+        $perPage  = max(6, min((int) $request->query('per_page', 12), 50));
+        $sort     = $request->query('sort', 'latest');
 
         $enrolledIds = SkillEnrollment::where('user_id', $user->id)
             ->pluck('skill_course_id')
             ->toArray();
 
-        $query = SkillCourse::withCount('lessons')->orderBy('created_at');
+        $query = SkillCourse::withCount('lessons');
+
+        match ($sort) {
+            'title'  => $query->orderBy('title'),
+            'oldest' => $query->orderBy('created_at'),
+            default  => $query->orderByDesc('created_at'),
+        };
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
