@@ -31,6 +31,8 @@ class MentorshipController extends Controller
                     ->where('start_at', '>', now()),
                 'bookings as session_count' => fn ($q) => $q
                     ->whereIn('status', ['confirmed', 'completed']),
+                'bookings as completed_session_count' => fn ($q) => $q
+                    ->where('status', 'completed'),
             ]);
 
         if ($search !== '') {
