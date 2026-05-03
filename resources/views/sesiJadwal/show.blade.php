@@ -37,6 +37,15 @@
                             <span class="text-gray-400 italic">Belum ditentukan</span>
                         @endif
                     </div>
+                    @if($session->material_file)
+                        <div class="mt-3 flex items-center gap-2">
+                            <span class="font-medium text-gray-700">Materi:</span>
+                            <a href="{{ Storage::url($session->material_file) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1 bg-sky-50 text-sky-700 rounded-md text-sm font-medium border border-sky-100 hover:bg-sky-100 transition">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002 2h12a2 2 0 002-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                Lihat/Unduh Materi
+                            </a>
+                        </div>
+                    @endif
                 </div>
                 <div>
                     @php

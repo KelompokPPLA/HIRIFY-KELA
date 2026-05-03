@@ -21,7 +21,7 @@
             </div>
         @endif
 
-        <form action="{{ route('mentor.sesi-jadwal.update', $session->id) }}" method="POST">
+        <form action="{{ route('mentor.sesi-jadwal.update', $session->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             
@@ -53,14 +53,29 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Status</label>
-                    <select name="status" class="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:ring-sky-200 focus:border-sky-500 transition">
-                        <option value="Pending" {{ old('status', $session->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="Confirmed" {{ old('status', $session->status) == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
-                        <option value="Completed" {{ old('status', $session->status) == 'Completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="Cancelled" {{ old('status', $session->status) == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <select name="status" class="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:ring-sky-200 focus:border-sky-500 transition">
+                            <option value="Pending" {{ old('status', $session->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="Confirmed" {{ old('status', $session->status) == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
+                            <option value="Completed" {{ old('status', $session->status) == 'Completed' ? 'selected' : '' }}>Completed</option>
+                            <option value="Cancelled" {{ old('status', $session->status) == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Update File Materi (PDF/Video)</label>
+                        <input type="file" name="material_file" accept=".pdf,video/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 transition border border-gray-200 rounded-lg py-1.5 px-3">
+                        @if($session->material_file)
+                            <div class="mt-2 text-xs text-gray-500 flex items-center gap-1.5">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                <span class="font-medium">File saat ini:</span>
+                                <a href="{{ Storage::url($session->material_file) }}" target="_blank" class="text-sky-600 hover:underline">Lihat Materi</a>
+                            </div>
+                        @else
+                            <p class="mt-1 text-xs text-gray-400">PDF atau Video (Maks. 50MB)</p>
+                        @endif
+                    </div>
                 </div>
             </div>
 
