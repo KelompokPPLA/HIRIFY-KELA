@@ -66,13 +66,16 @@ class SkillTrainingController extends Controller
         ]);
 
         $categories = SkillCourse::distinct()->pluck('category')->sort()->values();
+        $levelCounts = SkillCourse::selectRaw('level, COUNT(*) as total')->groupBy('level')->pluck('total', 'level');
 
         return ResponseHelper::jsonResponse(true, 'Katalog kursus berhasil dimuat.', [
-            'items'        => $items,
-            'categories'   => $categories,
-            'total'        => $paginated->total(),
-            'current_page' => $paginated->currentPage(),
-            'last_page'    => $paginated->lastPage(),
+            'items'           => $items,
+            'categories'      => $categories,
+            'level_counts'    => $levelCounts,
+            'total_enrolled'  => count($enrolledIds),
+            'total'           => $paginated->total(),
+            'current_page'    => $paginated->currentPage(),
+            'last_page'       => $paginated->lastPage(),
         ], 200);
     }
 
