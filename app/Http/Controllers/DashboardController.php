@@ -57,12 +57,17 @@ class DashboardController extends Controller
             $trainingProgress = 0;
         }
 
-        $mentorshipTotal = MentorBooking::where('jobseeker_user_id', $user->id)->count();
+        $mentorshipTotal = MentorBooking::where('jobseeker_user_id', $user->id)
+            ->whereNotIn('status', ['cancelled', 'rejected'])
+            ->count();
         $mentorshipCompleted = MentorBooking::where('jobseeker_user_id', $user->id)
             ->where('status', 'completed')
             ->count();
         $mentorshipUpcoming = MentorBooking::where('jobseeker_user_id', $user->id)
             ->whereIn('status', ['pending', 'confirmed'])
+            ->count();
+        $mentorshipPending = MentorBooking::where('jobseeker_user_id', $user->id)
+            ->where('status', 'pending')
             ->count();
 
         $latestAssessment = SelfAssessment::where('user_id', $user->id)
@@ -86,6 +91,7 @@ class DashboardController extends Controller
             'mentorshipTotal'      => $mentorshipTotal,
             'mentorshipCompleted'  => $mentorshipCompleted,
             'mentorshipUpcoming'   => $mentorshipUpcoming,
+            'mentorshipPending'    => $mentorshipPending,
             'careerReadiness'      => $careerReadiness,
             'careerReadinessLabel' => $careerReadinessLabel,
             'hasAssessment'        => $latestAssessment !== null,
