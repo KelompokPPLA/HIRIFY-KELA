@@ -99,17 +99,27 @@ class DashboardController extends Controller
             return 0;
         }
 
-        $fields = ['first_name', 'last_name', 'bio', 'phone', 'location', 'photo', 'career_path'];
-        $filled = 0;
+        $fields = [
+            'first_name'  => 1,
+            'last_name'   => 1,
+            'bio'         => 2,
+            'phone'       => 1,
+            'location'    => 1,
+            'photo'       => 2,
+            'career_path' => 2,
+        ];
 
-        foreach ($fields as $field) {
+        $totalWeight = array_sum($fields);
+        $filledWeight = 0;
+
+        foreach ($fields as $field => $weight) {
             $value = $profile->{$field} ?? null;
             if (!empty(trim((string) $value))) {
-                $filled++;
+                $filledWeight += $weight;
             }
         }
 
-        return (int) round(($filled / count($fields)) * 100);
+        return (int) round(($filledWeight / $totalWeight) * 100);
     }
 
     private function recentActivities(User $user): array
