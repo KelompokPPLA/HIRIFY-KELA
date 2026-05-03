@@ -221,27 +221,47 @@ class SkillTrainingController extends Controller
                 ->whereIn('skill_lesson_id', $course->lessons->pluck('id'))
                 ->count();
 
-            $progressPct = $totalLessons > 0 ? round(($completed / $totalLessons) * 100) : 0;
+            $progressPct = $totalLessons > 0 ? (int) round(($completed / $totalLessons) * 100) : 0;
+
+            $nextLesson = null;
+            if (! $enrollment->completed_at && $totalLessons > 0) {
+                $completedIds = SkillLessonProgress::where('user_id', $user->id)
+                    ->whereIn('skill_lesson_id', $course->lessons->pluck('id'))
+                    ->pluck('skill_lesson_id')
+                    ->toArray();
+                $nextLesson = $course->lessons
+                    ->sortBy('order_number')
+                    ->first(fn ($l) => ! in_array($l->id, $completedIds));
+            }
 
             return [
-                'enrollment_id'   => $enrollment->id,
-                'course_id'       => $course->id,
-                'title'           => $course->title,
-                'category'        => $course->category,
-                'level_label'     => $this->levelLabel($course->level),
-                'thumbnail_emoji' => $course->thumbnail_emoji,
-                'instructor_name' => $course->instructor_name,
-                'progress_pct'    => $progressPct,
-                'completed_count' => $completed,
-                'total_lessons'   => $totalLessons,
-                'course_completed'=> (bool) $enrollment->completed_at,
-                'enrolled_at'     => $enrollment->created_at->diffForHumans(),
+                'enrollment_id'        => $enrollment->id,
+                'course_id'            => $course->id,
+                'title'                => $course->title,
+                'category'             => $course->category,
+                'level_label'          => $this->levelLabel($course->level),
+                'thumbnail_emoji'      => $course->thumbnail_emoji,
+                'instructor_name'      => $course->instructor_name,
+                'estimated_hours'      => $course->estimated_hours,
+                'progress_pct'         => $progressPct,
+                'completed_count'      => $completed,
+                'total_lessons'        => $totalLessons,
+                'course_completed'     => (bool) $enrollment->completed_at,
+                'completed_at'         => $enrollment->completed_at?->toDateTimeString(),
+                'enrolled_at'          => $enrollment->created_at->diffForHumans(),
+                'next_lesson_id'       => $nextLesson?->id,
+                'next_lesson_title'    => $nextLesson?->title,
+                'course_status'        => $enrollment->completed_at ? 'completed' : ($completed > 0 ? 'in_progress' : 'not_started'),
             ];
         });
 
+        $completedCount = $enrollments->filter(fn ($e) => $e->completed_at !== null)->count();
+
         return ResponseHelper::jsonResponse(true, 'Kursus saya berhasil dimuat.', [
-            'items' => $items,
-            'total' => $enrollments->count(),
+            'items'           => $items,
+            'total'           => $enrollments->count(),
+            'total_completed' => $completedCount,
+            'total_in_progress' => $enrollments->count() - $completedCount,
         ], 200);
     }
 
