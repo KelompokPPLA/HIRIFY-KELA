@@ -10,18 +10,21 @@
     <style>
 
         :root {
-            --bg: #f4f8fd;
+            --bg: #f8fafc;
             --card: #ffffff;
-            --ink: #0d1b3d;
-            --muted: #6c7a93;
-            --line: #e5edf6;
-            --brand: #06cbe5;
-            --brand-dark: #06b0c6;
-            --deep: #08152f;
-            --ok: #0b7f53;
-            --warn: #b98007;
-            --danger: #b42318;
-            --shadow: 0 20px 45px rgba(9, 20, 51, 0.08);
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --brand: #06b6d4;
+            --brand-dark: #0891b2;
+            --deep: #020617;
+            --ok: #10b981;
+            --warn: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * { box-sizing: border-box; }
@@ -134,6 +137,33 @@
             font-size: .82rem;
         }
 
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 12px;
+            border: 1px solid #fee2e2;
+            background: #fff5f5;
+            color: #dc2626;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+        }
+
+        .logout-btn:hover {
+            background: #fecaca;
+            transform: translateY(-1px);
+        }
+
+        .logout-btn svg {
+            flex-shrink: 0;
+        }
+
         .content {
             padding: 24px;
             display: grid;
@@ -155,8 +185,13 @@
         .card {
             background: var(--card);
             border: 1px solid var(--line);
-            border-radius: 18px;
+            border-radius: 24px;
             box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
         }
 
         .upcoming {
@@ -220,7 +255,10 @@
         }
 
         .search-card {
-            padding: 14px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
         .search-row {
@@ -262,8 +300,14 @@
         }
 
         .btn-brand {
-            background: linear-gradient(140deg, #08cde6, #00b2cb);
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
             color: #fff;
+            box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+        }
+        
+        .btn-brand:hover {
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+            transform: translateY(-2px);
         }
 
         .btn-ghost {
@@ -279,14 +323,24 @@
         }
 
         .filter-panel {
-            margin-top: 10px;
+            margin-top: 18px;
             display: none;
-            grid-template-columns: 1fr 1fr 1fr 1fr auto;
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            padding: 16px;
+            background: rgba(248, 250, 252, 0.5);
+            border-radius: 16px;
+            border: 1px solid var(--line);
         }
 
         .filter-panel.show {
             display: grid;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .section-title {
@@ -302,9 +356,20 @@
         }
 
         .mentor-card {
-            padding: 16px;
+            padding: 24px;
             display: grid;
-            gap: 12px;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mentor-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 100px; height: 100px;
+            background: radial-gradient(circle at top right, rgba(6, 182, 212, 0.05), transparent);
+            pointer-events: none;
         }
 
         .mentor-head {
@@ -314,16 +379,17 @@
         }
 
         .mentor-avatar {
-            width: 68px;
-            height: 68px;
-            border-radius: 50%;
-            background: linear-gradient(140deg, #046e93, #07cde7);
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
             color: #fff;
             font-weight: 800;
-            font-size: 1.45rem;
+            font-size: 1.6rem;
             display: grid;
             place-items: center;
             overflow: hidden;
+            box-shadow: 0 8px 16px rgba(6, 182, 212, 0.2);
         }
 
         .mentor-avatar img {
@@ -467,10 +533,10 @@
             margin-top: 7px;
         }
 
-        .badge.pending { background: #fff8e1; color: var(--warn); }
-        .badge.confirmed { background: #e7f6ff; color: #0d6db1; }
-        .badge.completed { background: #eafaf2; color: var(--ok); }
-        .badge.cancelled, .badge.rejected { background: #fdeceb; color: var(--danger); }
+        .badge.pending { background: #fef3c7; color: #92400e; }
+        .badge.confirmed { background: #e0f2fe; color: #075985; }
+        .badge.completed { background: #d1fae5; color: #065f46; }
+        .badge.cancelled, .badge.rejected { background: #fee2e2; color: #991b1b; }
 
         .booking-actions {
             display: flex;
@@ -788,6 +854,18 @@
                     <span id="miniEmail">{{ auth()->user()->email ?? 'user@email.com' }}</span>
                 </div>
             </div>
+
+            <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="margin-top: 2px;">
+                @csrf
+                <button type="submit" class="logout-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Keluar
+                </button>
+            </form>
         </aside>
 
         <main class="content">
@@ -813,14 +891,19 @@
 
                 <div id="filterPanel" class="filter-panel">
                     <input id="expertiseInput" class="input" placeholder="Bidang keahlian, contoh: UI/UX">
-                    <select id="sortInput" class="select">
-                        <option value="recommended">Urutkan: Rekomendasi</option>
-                        <option value="experience">Pengalaman tertinggi</option>
-                        <option value="price_low">Harga terendah</option>
-                        <option value="price_high">Harga tertinggi</option>
+                    <select id="experienceInput" class="select">
+                        <option value="">Semua Pengalaman</option>
+                        <option value="1">1+ Tahun</option>
+                        <option value="3">3+ Tahun</option>
+                        <option value="5">5+ Tahun</option>
+                        <option value="10">10+ Tahun</option>
                     </select>
-                    <input id="priceMinInput" class="input" type="number" min="0" step="10000" placeholder="Harga min">
-                    <input id="priceMaxInput" class="input" type="number" min="0" step="10000" placeholder="Harga max">
+                    <select id="ratingInput" class="select">
+                        <option value="">Semua Rating</option>
+                        <option value="4.8">Rating 4.8+</option>
+                        <option value="4.5">Rating 4.5+</option>
+                        <option value="4.0">Rating 4.0+</option>
+                    </select>
                     <button id="applyFilterBtn" class="btn btn-brand" type="button">Terapkan</button>
                 </div>
             </section>
@@ -903,37 +986,25 @@
                         <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Topik Sesi</strong>
                         <p style="margin: 0; color: #476186; font-size: 0.9rem; line-height: 1.5;" id="detailLabel"></p>
                     </div>
-                </div>
-                <div class="booking-footer" style="grid-template-columns: 1fr;">
-                    <button id="closeDetailBtn" class="btn btn-ghost" style="width: 100%;" type="button">Tutup</button>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section id="detailModal" class="modal">
-        <div class="modal-card booking-modal">
-            <div class="booking-scroll">
-                <div class="booking-head">
-                    <h3>Detail Booking</h3>
-                    <p id="detailModalSubtitle">Status: <span id="detailModalStatus" style="font-weight:700;"></span></p>
-                </div>
-                <div class="booking-body">
-                    <div class="meta-box">
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Informasi Mentor</strong>
-                        <p style="margin: 0; color: var(--ink); font-weight: 700;" id="detailMentorName"></p>
-                        <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;" id="detailMentorExp"></p>
+                    <div id="detailPlatformBox" class="meta-box" style="margin-top: 14px; display: none;">
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Tautan / Platform</strong>
+                        <p style="margin: 0; color: #476186; font-size: 0.9rem;" id="detailPlatform"></p>
                     </div>
 
-                    <div class="meta-box" style="margin-top: 14px;">
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Jadwal Sesi</strong>
-                        <p style="margin: 0; color: var(--ink); font-weight: 700;" id="detailDate"></p>
-                        <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;" id="detailTime"></p>
+                    <div id="detailMeetingBox" class="meta-box" style="margin-top: 14px; display: none;">
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Link Meeting</strong>
+                        <a href="#" target="_blank" style="margin: 0; color: var(--brand); font-size: 0.9rem; font-weight: 700; text-decoration: underline;" id="detailMeetingUrl">Buka Link Sesi Mentorship</a>
                     </div>
 
-                    <div class="meta-box" style="margin-top: 14px;">
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Topik Sesi</strong>
-                        <p style="margin: 0; color: #476186; font-size: 0.9rem; line-height: 1.5;" id="detailLabel"></p>
+                    <div id="detailRejectionBox" class="meta-box" style="margin-top: 14px; display: none; background: #fff5f5; border-color: #fee2e2;">
+                        <strong style="color: #dc2626; font-size: 1.05rem; display: block; margin-bottom: 6px;">Alasan Penolakan</strong>
+                        <p style="margin: 0; color: #b91c1c; font-size: 0.9rem; line-height: 1.5;" id="detailRejectionReason"></p>
+                    </div>
+
+                    <div id="detailMaterialBox" class="meta-box" style="margin-top: 14px; display: none;">
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Materi Sesi</strong>
+                        <a href="#" target="_blank" style="margin: 0; color: var(--brand); font-size: 0.9rem; font-weight: 700; text-decoration: underline;" id="detailMaterialUrl">Unduh Materi Mentoring</a>
                     </div>
                 </div>
                 <div class="booking-footer" style="grid-template-columns: 1fr;">
@@ -952,6 +1023,7 @@
         const escapeHtml = window.hirifyEsc;
         let selectedBookingStatus = 'all';
         let selectedSlotId = null;
+        let selectedSlotIsManual = false;
         let activeMentor = null;
 
         const state = {
@@ -962,17 +1034,15 @@
             filters: {
                 search: '',
                 expertise: '',
-                sort: 'recommended',
-                price_min: '',
-                price_max: '',
+                min_experience: '',
+                min_rating: '',
             },
         };
 
         const searchInput = document.getElementById('searchInput');
         const expertiseInput = document.getElementById('expertiseInput');
-        const sortInput = document.getElementById('sortInput');
-        const priceMinInput = document.getElementById('priceMinInput');
-        const priceMaxInput = document.getElementById('priceMaxInput');
+        const experienceInput = document.getElementById('experienceInput');
+        const ratingInput = document.getElementById('ratingInput');
         const filterPanel = document.getElementById('filterPanel');
         const mentorGrid = document.getElementById('mentorGrid');
         const bookingList = document.getElementById('bookingList');
@@ -1082,7 +1152,7 @@
             }
 
             bookingList.innerHTML = state.bookings.map((booking) => {
-                const canCancel = ['pending', 'confirmed'].includes(booking.status);
+                const canCancel = booking.status === 'pending';
                 const canJoin = booking.status === 'confirmed' && booking.meeting_url;
 
                 let buttonsHtml = `<button class="btn btn-ghost" type="button" data-detail-id="${escapeHtml(booking.id)}">Detail</button>`;
@@ -1128,8 +1198,48 @@
                     document.getElementById('detailDate').textContent = booking.display_date || '-';
                     document.getElementById('detailTime').textContent = booking.display_time || '-';
 
-                    const topic = booking.booking_notes || 'Sesi mentoring reguler.';
+                    const topic = booking.session_topic || booking.booking_notes || 'Sesi mentoring reguler.';
                     document.getElementById('detailLabel').textContent = topic;
+
+                    // Platform
+                    const platformBox = document.getElementById('detailPlatformBox');
+                    const platformEl = document.getElementById('detailPlatform');
+                    if (booking.platform) {
+                        platformBox.style.display = 'block';
+                        platformEl.textContent = booking.platform;
+                    } else {
+                        platformBox.style.display = 'none';
+                    }
+
+                    // Meeting URL
+                    const meetingBox = document.getElementById('detailMeetingBox');
+                    const meetingUrlEl = document.getElementById('detailMeetingUrl');
+                    if (booking.status === 'confirmed' && booking.meeting_url) {
+                        meetingBox.style.display = 'block';
+                        meetingUrlEl.href = booking.meeting_url;
+                    } else {
+                        meetingBox.style.display = 'none';
+                    }
+
+                    // Rejection Reason
+                    const rejectionBox = document.getElementById('detailRejectionBox');
+                    const rejectionReasonEl = document.getElementById('detailRejectionReason');
+                    if (booking.status === 'rejected' && booking.rejection_reason) {
+                        rejectionBox.style.display = 'block';
+                        rejectionReasonEl.textContent = booking.rejection_reason;
+                    } else {
+                        rejectionBox.style.display = 'none';
+                    }
+
+                    // Material
+                    const materialBox = document.getElementById('detailMaterialBox');
+                    const materialUrlEl = document.getElementById('detailMaterialUrl');
+                    if (booking.material_url) {
+                        materialBox.style.display = 'block';
+                        materialUrlEl.href = booking.material_url;
+                    } else {
+                        materialBox.style.display = 'none';
+                    }
 
                     document.getElementById('detailModal').classList.add('show');
                 });
@@ -1246,7 +1356,7 @@
                     document.getElementById('slotDetailPanel').style.display = 'none';
                 } else {
                     slotGrid.innerHTML = slots.map((slot) => `
-                        <label class="slot" data-slot-id="${escapeHtml(slot.id)}">
+                        <label class="slot" data-slot-id="${escapeHtml(slot.id)}" data-is-manual="${!!slot.is_manual}">
                             <input type="radio" name="slotChoice" value="${escapeHtml(slot.id)}">
                             <span class="slot-icon">🗓</span>
                             <div>
@@ -1259,8 +1369,12 @@
                     slotGrid.querySelectorAll('.slot').forEach((slotEl) => {
                         slotEl.addEventListener('click', () => {
                             const id = slotEl.getAttribute('data-slot-id');
-                            const selectedSlot = slots.find(s => s.id == id);
+                            const isManual = slotEl.getAttribute('data-is-manual') === 'true';
+                            const selectedSlot = slots.find(s => s.id == id && (!!s.is_manual) === isManual);
+                            
                             selectedSlotId = id;
+                            selectedSlotIsManual = isManual;
+                            
                             slotGrid.querySelectorAll('.slot').forEach((item) => item.classList.remove('active'));
                             slotEl.classList.add('active');
 
@@ -1291,7 +1405,11 @@
             };
 
             if (selectedSlotId) {
-                payload.mentor_availability_id = selectedSlotId;
+                if (selectedSlotIsManual) {
+                    payload.sesi_jadwal_id = selectedSlotId;
+                } else {
+                    payload.mentor_availability_id = selectedSlotId;
+                }
             } else {
                 showToast('Pilih salah satu jadwal terlebih dahulu.', 'error');
                 return;
@@ -1333,9 +1451,8 @@
 
             document.getElementById('applyFilterBtn').addEventListener('click', async () => {
                 state.filters.expertise = expertiseInput.value.trim();
-                state.filters.sort = sortInput.value;
-                state.filters.price_min = priceMinInput.value.trim();
-                state.filters.price_max = priceMaxInput.value.trim();
+                state.filters.min_experience = experienceInput.value;
+                state.filters.min_rating = ratingInput.value;
                 await loadMentors();
             });
 
@@ -1395,6 +1512,17 @@
             document.querySelector('[data-nav="notifikasi"]').addEventListener('click', () => {
                 window.location.href = '/notifikasi';
             });
+
+            // Logout Logic
+            const logoutForm = document.getElementById('logoutForm');
+            if (logoutForm) {
+                logoutForm.addEventListener('submit', (e) => {
+                    // Clear any stored auth tokens if they exist
+                    if (typeof clearAuthStorage === 'function') {
+                        clearAuthStorage();
+                    }
+                });
+            }
         }
 
         async function boot() {
