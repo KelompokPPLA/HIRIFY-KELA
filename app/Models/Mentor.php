@@ -49,6 +49,11 @@ class Mentor extends Model
         return $this->hasMany(MentorBooking::class);
     }
 
+    public function sesiJadwal()
+    {
+        return $this->hasMany(SesiJadwal::class, 'mentor_id', 'user_id');
+    }
+
     public function scopeSearch($query, $search)
     {
         return $query->whereHas('user', function ($q) use ($search) {

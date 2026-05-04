@@ -28,6 +28,7 @@ class MentorBookingResource extends JsonResource
             'display_date' => $this->scheduled_start?->locale('id')->translatedFormat('D, d M Y'),
             'display_time' => $this->scheduled_start?->format('H:i') . ' - ' . $this->scheduled_end?->format('H:i'),
             'booking_notes' => $this->booking_notes,
+            'rejection_reason' => $this->rejection_reason,
             'meeting_url' => $this->meeting_url,
             'price_per_session' => (float) ($this->price_per_session ?? 0),
             'mentor' => [
@@ -37,6 +38,10 @@ class MentorBookingResource extends JsonResource
                 'avatar_url' => $mentor?->profile_picture ? Storage::url($mentor->profile_picture) : null,
             ],
             'availability_id' => $this->mentor_availability_id,
+            'sesi_jadwal_id' => $this->sesi_jadwal_id,
+            'session_topic' => $this->sesiJadwal?->topic,
+            'platform' => $this->sesiJadwal?->platform,
+            'material_url' => $this->sesiJadwal?->material_file ? Storage::url($this->sesiJadwal->material_file) : null,
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }
