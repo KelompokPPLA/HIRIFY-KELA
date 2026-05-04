@@ -66,6 +66,27 @@
             </div>
         </div>
 
+        <div class="p-6 sm:p-8 border-b border-gray-100">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Peserta (Jobseeker)</h3>
+            @if($session->bookings->count() > 0)
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach($session->bookings as $booking)
+                        <div class="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
+                            <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+                                {{ substr($booking->jobseeker->name, 0, 1) }}
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">{{ $booking->jobseeker->name }}</div>
+                                <div class="text-xs text-gray-500 capitalize">Status: {{ $booking->status }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-gray-500 italic">Belum ada peserta yang mengambil sesi ini.</div>
+            @endif
+        </div>
+
         <div class="p-6 sm:p-8 bg-gray-50">
             <h3 class="text-lg font-bold text-gray-900 mb-4">Catatan Hasil Sesi</h3>
             
