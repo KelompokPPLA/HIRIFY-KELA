@@ -10,6 +10,7 @@ use App\Http\Resources\MentorMarketplaceResource;
 use App\Models\Mentor;
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
+use App\Models\SesiJadwal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,9 @@ class MentorshipController extends Controller
                     ->whereIn('status', ['confirmed', 'completed']),
                 'bookings as completed_session_count' => fn ($q) => $q
                     ->where('status', 'completed'),
+                'sesiJadwal as manual_slots_count' => fn ($q) => $q
+                    ->whereIn('status', ['Pending', 'Confirmed'])
+                    ->where('date', '>=', now()->toDateString()),
             ]);
 
         if ($search !== '') {
@@ -49,31 +53,25 @@ class MentorshipController extends Controller
             $query->where('expertise', 'like', '%' . $expertise . '%');
         }
 
-        if ($request->filled('price_min')) {
-            $query->where('price_per_session', '>=', (float) $request->query('price_min'));
+        if ($request->filled('min_experience')) {
+            $query->where('experience_years', '>=', (int) $request->query('min_experience'));
         }
 
-        if ($request->filled('price_max')) {
-            $query->where('price_per_session', '<=', (float) $request->query('price_max'));
-        }
-
-        if ($priceFilter !== null) {
-            $query->where(function ($q) use ($priceFilter) {
-                $priceFilter
-                    ? $q->whereNull('price_per_session')->orWhere('price_per_session', 0)
-                    : $q->where('price_per_session', '>', 0);
-            });
+        if ($request->filled('min_rating')) {
+            $minRating = (float) $request->query('min_rating');
+            // Rating simulation: min(5, round(4.5 + ($count / 200), 1))
+            // To get 4.8+, count needs to be >= 60
+            // To get 4.5+, count needs to be >= 0
+            if ($minRating >= 4.8) {
+                $query->where('session_count', '>=', 60);
+            } elseif ($minRating >= 4.5) {
+                $query->where('session_count', '>=', 0);
+            }
         }
 
         switch ($sort) {
-            case 'price_low':
-                $query->orderByRaw('COALESCE(price_per_session, 0) asc');
-                break;
-            case 'price_high':
-                $query->orderByRaw('COALESCE(price_per_session, 0) desc');
-                break;
             case 'experience':
-                $query->orderByDesc('experience_years');
+                $query->orderBy('experience_years', 'desc');
                 break;
             case 'slots':
                 $query->orderByDesc('open_slots_count');
@@ -89,6 +87,9 @@ class MentorshipController extends Controller
             $mentor->rating = $mentor->session_count > 0
                 ? min(5, round(4.5 + ($mentor->session_count / 200), 1))
                 : 4.8;
+
+            // Combine automated slots and manual slots for the display count
+            $mentor->open_slots_count = $mentor->open_slots_count + $mentor->manual_slots_count;
 
             return (new MentorMarketplaceResource($mentor))->toArray(request());
         })->all();
@@ -133,6 +134,37 @@ class MentorshipController extends Controller
             ->get();
 
         $slotItems = $slots->map(fn ($item) => (new MentorAvailabilityResource($item))->toArray(request()))->all();
+
+        // Also fetch from SesiJadwal (manual slots created by mentor)
+        $manualSessions = SesiJadwal::where('mentor_id', $mentor->user_id)
+            ->where('status', 'Pending')
+            ->where('date', '>=', now()->toDateString())
+            ->whereDoesntHave('feedbacks') // Simple check if it's "fresh"
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('mentor_bookings')
+                    ->whereColumn('mentor_bookings.sesi_jadwal_id', 'sesiJadwal.id')
+                    ->whereIn('mentor_bookings.status', ['pending', 'confirmed', 'completed']);
+            })
+            ->orderBy('date')
+            ->orderBy('time')
+            ->get();
+
+        foreach ($manualSessions as $session) {
+            $startAt = Carbon::parse($session->date . ' ' . $session->time);
+            $endAt = (clone $startAt)->addMinutes($session->duration);
+            
+            $slotItems[] = [
+                'id' => $session->id, // Frontend will handle this ID
+                'is_manual' => true,  // Flag for backend if needed
+                'start_at' => $startAt->toIso8601String(),
+                'end_at' => $endAt->toIso8601String(),
+                'label' => $session->topic,
+                'is_booked' => false,
+                'display_date' => $startAt->locale('id')->translatedFormat('D, d M Y'),
+                'display_time' => $startAt->format('H:i') . ' - ' . $endAt->format('H:i'),
+            ];
+        }
 
         return ResponseHelper::jsonResponse(true, 'Detail mentor berhasil diambil.', [
             'mentor' => (new MentorMarketplaceResource($mentor))->toArray(request()),
@@ -207,6 +239,39 @@ class MentorshipController extends Controller
 
                     $start = $slot->start_at->copy();
                     $end = $slot->end_at->copy();
+                } elseif (! empty($validated['sesi_jadwal_id'])) {
+                    $session = SesiJadwal::where('id', $validated['sesi_jadwal_id'])
+                        ->where('mentor_id', $mentor->user_id)
+                        ->first();
+
+                    if (! $session) {
+                        throw new \RuntimeException('Sesi jadwal tidak ditemukan.');
+                    }
+
+                    if ($session->status !== 'Pending') {
+                        throw new \RuntimeException('Sesi jadwal sudah tidak tersedia untuk dibooking.');
+                    }
+
+                    $start = Carbon::parse($session->date . ' ' . $session->time);
+                    $end = (clone $start)->addMinutes($session->duration);
+                    
+                    $booking = MentorBooking::create([
+                        'mentor_id' => $mentor->id,
+                        'jobseeker_user_id' => $user->id,
+                        'sesi_jadwal_id' => $session->id,
+                        'scheduled_start' => $start,
+                        'scheduled_end' => $end,
+                        'status' => 'pending',
+                        'price_per_session' => $mentor->price_per_session,
+                        'booking_notes' => $validated['booking_notes'] ?? null,
+                    ]);
+
+                    // Update SesiJadwal status to Confirmed or keep Pending until mentor confirms?
+                    // User says "ketika mentor membuat jadwal sesi maka muncul... ketika diklik muncul detail"
+                    // Let's keep it Pending in SesiJadwal for now, or maybe change to Confirmed if we want to "reserve" it.
+                    // Actually, let's keep it as is, but we could update status.
+                    
+                    return $booking;
                 } else {
                     if (empty($validated['scheduled_start'])) {
                         throw new \RuntimeException('Pilih slot jadwal atau isi jadwal manual.');
