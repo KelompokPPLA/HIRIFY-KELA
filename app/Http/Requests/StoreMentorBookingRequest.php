@@ -16,6 +16,7 @@ class StoreMentorBookingRequest extends FormRequest
         return [
             'mentor_id' => ['required', 'uuid', 'exists:mentors,id'],
             'mentor_availability_id' => ['nullable', 'uuid', 'exists:mentor_availabilities,id'],
+            'sesi_jadwal_id' => ['nullable', 'integer', 'exists:sesiJadwal,id'],
             'scheduled_start' => ['nullable', 'date', 'after:now'],
             'duration_minutes' => ['nullable', 'integer', 'min:30', 'max:180'],
             'booking_notes' => ['nullable', 'string', 'max:1000'],
