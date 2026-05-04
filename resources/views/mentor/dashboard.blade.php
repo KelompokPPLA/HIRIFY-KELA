@@ -9,8 +9,8 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-4 rounded shadow">
-                <h3 class="font-semibold text-gray-700">Total Slot</h3>
-                <div class="text-3xl font-bold">{{ $availabilities->count() }}</div>
+                <h3 class="font-semibold text-gray-700">Total Sesi</h3>
+                <div class="text-3xl font-bold">{{ $sessions->count() }}</div>
             </div>
             <div class="bg-white p-4 rounded shadow">
                 <h3 class="font-semibold text-gray-700">Pending Booking</h3>
@@ -25,42 +25,28 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <section id="jadwal" class="bg-white p-6 rounded shadow">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold">Slot Ketersediaan</h3>
-                    <button onclick="document.getElementById('availability-form').classList.toggle('hidden')" class="text-sm px-3 py-1 bg-teal-500 text-white rounded">Tambah Slot</button>
+                    <h3 class="text-lg font-semibold">Sesi Mentor</h3>
+                    <a href="{{ route('mentor.sesi-jadwal.create') }}" class="text-sm px-3 py-1 bg-sky-600 text-white rounded">Buat Sesi</a>
                 </div>
 
-                <form id="availability-form" action="{{ route('mentor.availability.store') }}" method="post" class="mb-4 hidden">
-                    @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <input type="datetime-local" name="start_at" class="border rounded p-2" required>
-                        <input type="datetime-local" name="end_at" class="border rounded p-2" required>
-                        <input type="text" name="label" placeholder="Label (opsional)" class="border rounded p-2 md:col-span-2">
-                    </div>
-                    <div class="mt-3">
-                        <button class="px-4 py-2 bg-blue-600 text-white rounded">Simpan</button>
-                    </div>
-                </form>
-
                 <div class="space-y-3">
-                    @forelse($availabilities as $slot)
-                        <div class="flex items-center justify-between p-3 border rounded">
+                    @forelse($sessions as $session)
+                        <div class="flex items-center justify-between p-3 border rounded hover:bg-gray-50 transition">
                             <div>
-                                <div class="font-medium">{{ $slot->label ?? 'Slot' }}</div>
-                                <div class="text-sm text-gray-500">{{ $slot->start_at->format('d M Y H:i') }} - {{ $slot->end_at->format('H:i') }}</div>
+                                <div class="font-medium text-gray-900">{{ $session->topic }}</div>
+                                <div class="text-sm text-gray-500">
+                                    {{ date('d M Y', strtotime($session->date)) }} • {{ date('H:i', strtotime($session->time)) }} WIB • {{ $session->duration }} menit
+                                </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="text-sm px-2 py-1 rounded {{ $slot->is_booked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
-                                    {{ $slot->is_booked ? 'Tidak tersedia' : 'Tersedia' }}
+                                <span class="text-xs px-2 py-1 rounded-full {{ $session->status === 'Confirmed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
+                                    {{ $session->status }}
                                 </span>
-                                <form action="{{ route('mentor.availability.destroy', $slot->id) }}" method="post">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="text-sm text-red-600">Hapus</button>
-                                </form>
+                                <a href="{{ route('mentor.sesi-jadwal.show', $session->id) }}" class="text-sm text-sky-600 font-medium">Detail</a>
                             </div>
                         </div>
                     @empty
-                        <div class="text-gray-500">Belum ada slot.</div>
+                        <div class="text-gray-500 italic">Belum ada sesi yang dibuat.</div>
                     @endforelse
                 </div>
             </section>
