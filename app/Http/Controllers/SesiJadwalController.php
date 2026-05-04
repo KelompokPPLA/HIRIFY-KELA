@@ -60,7 +60,7 @@ class SesiJadwalController extends Controller
 
     public function show($id)
     {
-        $session = SesiJadwal::findOrFail($id);
+        $session = SesiJadwal::with(['bookings.jobseeker'])->findOrFail($id);
         if ($session->mentor_id !== auth()->id()) abort(403);
         return view('sesiJadwal.show', compact('session'));
     }
