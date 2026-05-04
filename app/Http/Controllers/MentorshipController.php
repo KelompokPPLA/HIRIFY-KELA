@@ -105,8 +105,9 @@ class MentorshipController extends Controller
         ], 200);
     }
 
-    public function mentorDetail(string $id)
+    public function mentorDetail(Request $request, string $id)
     {
+        $user = $request->user();
         $mentor = Mentor::with(['user', 'certifications'])
             ->withCount([
                 'availabilities as open_slots_count' => fn ($q) => $q
@@ -139,11 +140,11 @@ class MentorshipController extends Controller
         $manualSessions = SesiJadwal::where('mentor_id', $mentor->user_id)
             ->where('status', 'Pending')
             ->where('date', '>=', now()->toDateString())
-            ->whereDoesntHave('feedbacks') // Simple check if it's "fresh"
-            ->whereNotExists(function ($query) {
+            ->whereNotExists(function ($query) use ($user) {
                 $query->select(DB::raw(1))
                     ->from('mentor_bookings')
                     ->whereColumn('mentor_bookings.sesi_jadwal_id', 'sesiJadwal.id')
+                    ->where('mentor_bookings.jobseeker_user_id', $user?->id ?? 0)
                     ->whereIn('mentor_bookings.status', ['pending', 'confirmed', 'completed']);
             })
             ->orderBy('date')
@@ -250,6 +251,16 @@ class MentorshipController extends Controller
 
                     if ($session->status !== 'Pending') {
                         throw new \RuntimeException('Sesi jadwal sudah tidak tersedia untuk dibooking.');
+                    }
+
+                    // Check if already booked by this user
+                    $alreadyBooked = MentorBooking::where('sesi_jadwal_id', $session->id)
+                        ->where('jobseeker_user_id', $user->id)
+                        ->whereIn('status', ['pending', 'confirmed', 'completed'])
+                        ->exists();
+
+                    if ($alreadyBooked) {
+                        throw new \RuntimeException('Anda sudah memesan sesi ini.');
                     }
 
                     $start = Carbon::parse($session->date . ' ' . $session->time);
