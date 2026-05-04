@@ -121,6 +121,13 @@ class MentorDashboardController extends Controller
             }
         }
 
+        if ($booking->sesi_jadwal_id) {
+            $session = \App\Models\SesiJadwal::find($booking->sesi_jadwal_id);
+            if ($session) {
+                $session->update(['status' => 'Confirmed']);
+            }
+        }
+
         return back()->with('success', 'Booking berhasil dikonfirmasi.');
     }
 
