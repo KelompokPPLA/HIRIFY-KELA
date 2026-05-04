@@ -19,7 +19,16 @@ class MenteeSayaController extends Controller
         $mentor = Mentor::where('user_id', $user->id)->first();
 
         if (!$mentor) {
-            return view('mentor.mentee.index', ['mentees' => collect(), 'stats' => []]);
+            return view('mentor.mentee.index', [
+                'mentees' => collect(),
+                'stats' => [
+                    'total' => 0,
+                    'active' => 0,
+                    'inactive' => 0
+                ],
+                'search' => '',
+                'filterStatus' => 'all'
+            ]);
         }
 
         // Build query: get all bookings for this mentor grouped by mentee
