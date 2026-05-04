@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
+use App\Models\SesiJadwal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,13 +16,15 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         $mentor = $user ? ($user->mentorProfile ?? null) : null;
 
-        $availabilities = collect();
+        $sessions = collect();
         $pendingBookings = collect();
         $acceptedBookings = collect();
 
         if ($mentor) {
-            $availabilities = MentorAvailability::where('mentor_id', $mentor->id)
-                ->orderBy('start_at')
+            $sessions = SesiJadwal::where('mentor_id', $user->id)
+                ->whereIn('status', ['Pending', 'Confirmed'])
+                ->orderBy('date', 'asc')
+                ->orderBy('time', 'asc')
                 ->get();
 
             $pendingBookings = MentorBooking::where('mentor_id', $mentor->id)
@@ -37,7 +40,7 @@ class MentorDashboardController extends Controller
                 ->get();
         }
 
-        return view('mentor.dashboard', compact('availabilities', 'pendingBookings', 'acceptedBookings'));
+        return view('mentor.dashboard', compact('sessions', 'pendingBookings', 'acceptedBookings'));
     }
 
     // Store a new availability slot
