@@ -362,7 +362,60 @@ class MentorshipController extends Controller
             ->orderByDesc('scheduled_start');
 
         if (! empty($statusFilter)) {
-            $query->whereIn('status', $statusFilter);
+            $query->where(function ($q) use ($statusFilter) {
+                // 1. Matches database status directly
+                $q->whereIn('status', $statusFilter);
+
+                // 2. Effectively 'completed' (Session is Completed, Booking was Confirmed)
+                if (in_array('completed', $statusFilter)) {
+                    $q->orWhere(function ($sq) {
+                        $sq->where('status', 'confirmed')
+                           ->whereHas('sesiJadwal', function ($ssq) {
+                               $ssq->where('status', 'Completed');
+                           });
+                    });
+                }
+
+                // 3. Effectively 'cancelled' (Session is Cancelled, Booking was Pending/Confirmed, OR has rejection reason but was overwritten)
+                if (in_array('cancelled', $statusFilter)) {
+                    $q->orWhere(function ($sq) {
+                        $sq->whereIn('status', ['pending', 'confirmed'])
+                           ->whereHas('sesiJadwal', function ($ssq) {
+                               $ssq->where('status', 'Cancelled');
+                           });
+                    })->orWhere(function ($sq) {
+                        $sq->where('status', 'completed')
+                           ->whereNotNull('rejection_reason');
+                    });
+                }
+            });
+
+            // --- EXCLUSION LOGIC ---
+            // If searching for 'completed' but NOT 'cancelled', hide those with rejection reasons (they were overwritten)
+            if (in_array('completed', $statusFilter) && ! in_array('cancelled', $statusFilter)) {
+                $query->where(function ($q) {
+                    $q->whereNull('rejection_reason');
+                });
+            }
+            // If searching for 'confirmed' but NOT 'completed', hide effectively completed sessions
+            if (in_array('confirmed', $statusFilter) && ! in_array('completed', $statusFilter)) {
+                $query->whereNot(function ($q) {
+                    $q->where('status', 'confirmed')
+                        ->whereHas('sesiJadwal', function ($sq) {
+                            $sq->where('status', 'Completed');
+                        });
+                });
+            }
+
+            // If searching for 'confirmed'/'pending' but NOT 'cancelled', hide effectively cancelled sessions
+            if ((in_array('confirmed', $statusFilter) || in_array('pending', $statusFilter)) && ! in_array('cancelled', $statusFilter)) {
+                $query->whereNot(function ($q) {
+                    $q->whereIn('status', ['pending', 'confirmed'])
+                        ->whereHas('sesiJadwal', function ($sq) {
+                            $sq->where('status', 'Cancelled');
+                        });
+                });
+            }
         }
 
         $paginator = $query->paginate($limit);

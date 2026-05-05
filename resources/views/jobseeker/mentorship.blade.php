@@ -925,6 +925,7 @@
                     <button data-status="confirmed">Confirmed</button>
                     <button data-status="completed">Completed</button>
                     <button data-status="cancelled">Cancelled</button>
+                    <button data-status="rejected">Rejected</button>
                 </div>
 
                 <div id="bookingList" class="booking-list"></div>
@@ -1006,6 +1007,11 @@
                         <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Materi Sesi</strong>
                         <a href="#" target="_blank" style="margin: 0; color: var(--brand); font-size: 0.9rem; font-weight: 700; text-decoration: underline;" id="detailMaterialUrl">Unduh Materi Mentoring</a>
                     </div>
+
+                    <div id="detailNotesBox" class="meta-box" style="margin-top: 14px; display: none; background: #f0f9ff; border-color: #bae6fd;">
+                        <strong style="color: #0369a1; font-size: 1.05rem; display: block; margin-bottom: 6px;">Catatan Mentor</strong>
+                        <p style="margin: 0; color: #0c4a6e; font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap;" id="detailNotes"></p>
+                    </div>
                 </div>
                 <div class="booking-footer" style="grid-template-columns: 1fr;">
                     <button id="closeDetailBtn" class="btn btn-ghost" style="width: 100%;" type="button">Tutup</button>
@@ -1075,14 +1081,16 @@
             }
 
             upcomingList.innerHTML = state.upcoming.map((item) => {
-                const canJoin = item.status === 'confirmed' && item.meeting_url;
+                const joinUrl = item.meeting_url || item.platform;
+                const canJoin = item.status === 'confirmed' && joinUrl;
+                
                 return `
                     <article class="upcoming-item">
                         <div class="upcoming-meta">
                             <strong>${escapeHtml(item.mentor?.name || 'Mentor')}</strong>
                             <small>${escapeHtml(item.mentor?.expertise || '-')} • ${escapeHtml(item.display_date || '')} • ${escapeHtml(item.display_time || '')}</small>
                         </div>
-                        <button class="join-btn" ${canJoin ? '' : 'disabled'} data-join-url="${escapeHtml(item.meeting_url || '')}">
+                        <button class="join-btn" ${canJoin ? '' : 'disabled'} data-join-url="${escapeHtml(joinUrl || '')}">
                             ${canJoin ? 'Join' : 'Menunggu'}
                         </button>
                     </article>
@@ -1168,9 +1176,19 @@
                 return `
                     <article class="booking-item">
                         <div>
-                            <strong>${escapeHtml(booking.mentor?.name || 'Mentor')}</strong>
-                            <small>${escapeHtml(booking.mentor?.expertise || '-')}</small><br>
-                            <small>${escapeHtml(booking.display_date || '-')} • ${escapeHtml(booking.display_time || '-')}</small>
+                            <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px;">
+                                <div style="flex: 1;">
+                                    <strong style="font-size: 1.1rem; color: var(--brand-dark);">${escapeHtml(booking.mentor?.name || 'Mentor')}</strong>
+                                    ${booking.session_topic ? `
+                                        <div style="margin-top: 2px; color: var(--brand); font-weight: 600; font-size: 0.95rem; line-height: 1.4;">
+                                            ${escapeHtml(booking.session_topic)}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <small style="display: block; color: var(--muted); margin-bottom: 8px;">
+                                ${escapeHtml(booking.mentor?.expertise || '-')} • ${escapeHtml(booking.display_date || '-')} • ${escapeHtml(booking.display_time || '-')}
+                            </small>
                             <div class="badge ${statusClass(booking.status)}">${escapeHtml(booking.status_label || booking.status)}</div>
                         </div>
                         <div class="booking-actions">
@@ -1204,7 +1222,8 @@
                     // Platform
                     const platformBox = document.getElementById('detailPlatformBox');
                     const platformEl = document.getElementById('detailPlatform');
-                    if (booking.platform) {
+                    const showPlatform = booking.platform && (booking.status === 'confirmed' || booking.status === 'completed');
+                    if (showPlatform) {
                         platformBox.style.display = 'block';
                         platformEl.textContent = booking.platform;
                     } else {
@@ -1234,11 +1253,22 @@
                     // Material
                     const materialBox = document.getElementById('detailMaterialBox');
                     const materialUrlEl = document.getElementById('detailMaterialUrl');
-                    if (booking.material_url) {
+                    const showMaterial = booking.material_url && (booking.status === 'confirmed' || booking.status === 'completed');
+                    if (showMaterial) {
                         materialBox.style.display = 'block';
                         materialUrlEl.href = booking.material_url;
                     } else {
                         materialBox.style.display = 'none';
+                    }
+
+                    // Mentor Notes
+                    const notesBox = document.getElementById('detailNotesBox');
+                    const notesEl = document.getElementById('detailNotes');
+                    if (booking.session_notes && booking.status === 'completed') {
+                        notesBox.style.display = 'block';
+                        notesEl.textContent = booking.session_notes;
+                    } else {
+                        notesBox.style.display = 'none';
                     }
 
                     document.getElementById('detailModal').classList.add('show');

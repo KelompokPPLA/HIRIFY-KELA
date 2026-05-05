@@ -19,10 +19,21 @@ class MentorBookingResource extends JsonResource
             'rejected' => 'Ditolak',
         ];
 
+        $status = $this->status;
+        // Self-healing: if it has a rejection reason but status is completed, it was likely an overwritten cancellation
+        if ($status === 'completed' && ! empty($this->rejection_reason)) {
+            $status = 'cancelled';
+        }
+
+        // Fallback to SesiJadwal status if it's completed but booking is still confirmed
+        if ($this->sesiJadwal && strtolower($this->sesiJadwal->status) === 'completed' && $status === 'confirmed') {
+            $status = 'completed';
+        }
+
         return [
             'id' => $this->id,
-            'status' => $this->status,
-            'status_label' => $statusLabels[$this->status] ?? ucfirst($this->status),
+            'status' => $status,
+            'status_label' => $statusLabels[$status] ?? ucfirst($status),
             'scheduled_start' => $this->scheduled_start?->toIso8601String(),
             'scheduled_end' => $this->scheduled_end?->toIso8601String(),
             'display_date' => $this->scheduled_start?->locale('id')->translatedFormat('D, d M Y'),
@@ -40,6 +51,7 @@ class MentorBookingResource extends JsonResource
             'availability_id' => $this->mentor_availability_id,
             'sesi_jadwal_id' => $this->sesi_jadwal_id,
             'session_topic' => $this->sesiJadwal?->topic,
+            'session_notes' => $this->sesiJadwal?->notes,
             'platform' => $this->sesiJadwal?->platform,
             'material_url' => $this->sesiJadwal?->material_file ? Storage::url($this->sesiJadwal->material_file) : null,
             'created_at' => $this->created_at?->toIso8601String(),

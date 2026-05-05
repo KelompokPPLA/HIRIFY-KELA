@@ -97,6 +97,15 @@ class SesiJadwalController extends Controller
 
         $session->update($data);
 
+        // Sync status with related bookings (only for active bookings)
+        if ($session->status === 'Completed') {
+            $session->bookings()->whereIn('status', ['pending', 'confirmed'])
+                ->update(['status' => 'completed']);
+        } elseif ($session->status === 'Cancelled') {
+            $session->bookings()->whereIn('status', ['pending', 'confirmed'])
+                ->update(['status' => 'cancelled']);
+        }
+
         return redirect()->route('mentor.sesi-jadwal.show', $session->id)->with('success', 'Sesi diperbarui.');
     }
 
