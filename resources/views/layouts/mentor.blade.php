@@ -42,8 +42,13 @@
 
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 40; }
         .sidebar-overlay.open { display: block; }
+        
+        /* Non-scrolling sidebar on desktop */
+        @media (min-width: 1025px) {
+            .sidebar { position: sticky !important; top: 0 !important; height: 100vh !important; overflow-y: auto !important; flex-shrink: 0 !important; border-right-width: 2px !important; border-color: rgba(226, 232, 240, 0.9) !important; box-shadow: 4px 0 20px rgba(15, 23, 42, 0.015) !important; }
+        }
         @media (max-width: 1024px) {
-            .sidebar { position: fixed; left: -300px; top: 0; z-index: 50; transition: left 0.3s ease; }
+            .sidebar { position: fixed; left: -300px; top: 0; height: 100vh !important; z-index: 50; transition: left 0.3s ease; }
             .sidebar.open { left: 0; box-shadow: 8px 0 30px rgba(15, 23, 42, 0.15); }
         }
         .page-enter { animation: pageEnter 0.35s ease; }
@@ -55,7 +60,7 @@
     <div class="flex min-h-screen">
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-        <aside class="sidebar w-[280px] min-h-screen bg-white border-r border-slate-200 flex flex-col" id="sidebar">
+        <aside class="sidebar w-[280px] min-h-screen bg-white border-r-2 border-slate-200/90 shadow-[1px_0_15px_rgba(15,23,42,0.015)] flex flex-col" id="sidebar">
             <div class="px-6 py-5 border-b border-slate-100 flex flex-col gap-4">
                 <a href="/mentor/dashboard" class="flex items-center gap-3">
                     <div class="w-[40px] h-[40px] rounded-full flex items-center justify-center text-white text-[20px] font-extrabold flex-shrink-0" style="background: linear-gradient(145deg, #0399b7, #06d8ee); box-shadow: 0 4px 10px rgba(3, 153, 183, 0.3);">H</div>
