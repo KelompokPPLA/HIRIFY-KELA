@@ -20,11 +20,13 @@ class Profile extends Model
         'career_path',
         'education',
         'experience',
+        'skills',
     ];
 
     protected $casts = [
         'education' => 'array',
         'experience' => 'array',
+        'skills' => 'array',
     ];
 
     public function user()

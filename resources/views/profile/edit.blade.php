@@ -50,32 +50,54 @@
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Nama Lengkap</span>
                             <input id="nameInput" type="text" name="name" value="{{ old('name', $user->name) }}"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required />
+                                class="w-full rounded-2xl border {{ $errors->has('name') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required
+                                oninvalid="this.setCustomValidity('Nama lengkap wajib di isi.')"
+                                oninput="this.setCustomValidity('')" />
+                            @error('name')
+                                <p class="text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </label>
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Email</span>
                             <input id="emailInput" type="email" name="email" value="{{ old('email', $user->email) }}"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required />
+                                class="w-full rounded-2xl border {{ $errors->has('email') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required
+                                oninvalid="if (this.validity.valueMissing) { this.setCustomValidity('Email wajib di isi.'); } else { this.setCustomValidity('Format email tidak valid.'); }"
+                                oninput="this.setCustomValidity('')" />
+                            @error('email')
+                                <p class="text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </label>
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Telepon</span>
                             <input id="phoneInput" type="text" name="phone" value="{{ old('phone', $profile?->phone ?? '') }}"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
+                                class="w-full rounded-2xl border {{ $errors->has('phone') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
+                            @error('phone')
+                                <p class="text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </label>
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Lokasi</span>
                             <input id="locationInput" type="text" name="location" value="{{ old('location', $profile?->location ?? '') }}"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
+                                class="w-full rounded-2xl border {{ $errors->has('location') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
+                            @error('location')
+                                <p class="text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </label>
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Foto Profil</span>
                             <input id="photoInput" type="file" name="photo" accept="image/*"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
+                                class="w-full rounded-2xl border {{ $errors->has('photo') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
+                            @error('photo')
+                                <p class="text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </label>
                         <label class="space-y-2 text-sm sm:col-span-2">
                             <span class="text-slate-600">Bio</span>
                             <textarea id="bioInput" name="bio" rows="3"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 resize-none">{{ old('bio', $profile?->bio ?? '') }}</textarea>
+                                class="w-full rounded-2xl border {{ $errors->has('bio') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 resize-none">{{ old('bio', $profile?->bio ?? '') }}</textarea>
+                            @error('bio')
+                                <p class="text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </label>
                     </div>
                 </div>
@@ -100,6 +122,17 @@
                         <button type="button" class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100" onclick="addExperience()">+ Tambah Pengalaman</button>
                     </div>
                     <div id="experienceSection" class="mt-6 space-y-4"></div>
+                </div>
+
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold text-slate-950">Skill</h2>
+                            <p class="mt-3 text-sm text-slate-500">Tambahkan skill yang ingin ditampilkan di profil Anda.</p>
+                        </div>
+                        <button type="button" class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100" onclick="addSkill()">+ Tambah Skill</button>
+                    </div>
+                    <div id="skillSection" class="mt-6 space-y-4"></div>
                 </div>
             </div>
 
@@ -231,12 +264,15 @@
 
     const educationSection = document.getElementById('educationSection');
     const experienceSection = document.getElementById('experienceSection');
+    const skillSection = document.getElementById('skillSection');
 
     const initialEducations = @json(old('pendidikan', $profile?->education ?? []));
     const initialExperiences = @json(old('pengalaman', $profile?->experience ?? []));
+    const initialSkills = @json(old('skills', $profile?->skills ?? []));
 
     let educationCount = 0;
     let experienceCount = 0;
+    let skillCount = 0;
 
     function escAttr(value) {
         return String(value ?? '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -269,16 +305,16 @@
             <div class="grid gap-4 md:grid-cols-2">
                 <label class="space-y-2 text-sm">
                     <span class="text-slate-600">Institusi</span>
-                    <input name="pendidikan[${index}][institusi]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Universitas Indonesia" value="${escAttr(data.institusi || '')}" />
+                    <input name="pendidikan[${index}][institusi]" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Universitas Indonesia" value="${escAttr(data.institusi || '')}" oninvalid="this.setCustomValidity('Institusi pendidikan wajib di isi.')" oninput="this.setCustomValidity('')" />
                 </label>
                 <label class="space-y-2 text-sm">
                     <span class="text-slate-600">Gelar</span>
-                    <input name="pendidikan[${index}][gelar]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Sarjana Teknik Informatika" value="${escAttr(data.gelar || '')}" />
+                    <input name="pendidikan[${index}][gelar]" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Sarjana Teknik Informatika" value="${escAttr(data.gelar || '')}" oninvalid="this.setCustomValidity('Gelar pendidikan wajib di isi.')" oninput="this.setCustomValidity('')" />
                 </label>
             </div>
             <label class="mt-4 space-y-2 text-sm block">
                 <span class="text-slate-600">Tahun / Periode</span>
-                <input name="pendidikan[${index}][tahun]" class="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="2019 - 2023" value="${escAttr(data.tahun || '')}" />
+                <input name="pendidikan[${index}][tahun]" required class="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="2019 - 2023" value="${escAttr(data.tahun || '')}" oninvalid="this.setCustomValidity('Tahun pendidikan wajib di isi.')" oninput="this.setCustomValidity('')" />
             </label>
         `;
         educationSection.appendChild(wrapper);
@@ -300,16 +336,16 @@
             <div class="grid gap-4 md:grid-cols-2">
                 <label class="space-y-2 text-sm">
                     <span class="text-slate-600">Posisi</span>
-                    <input name="pengalaman[${index}][posisi]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Frontend Developer" value="${escAttr(data.posisi || '')}" />
+                    <input name="pengalaman[${index}][posisi]" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Frontend Developer" value="${escAttr(data.posisi || '')}" oninvalid="this.setCustomValidity('Posisi wajib di isi.')" oninput="this.setCustomValidity('')" />
                 </label>
                 <label class="space-y-2 text-sm">
                     <span class="text-slate-600">Perusahaan</span>
-                    <input name="pengalaman[${index}][perusahaan]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Tech Startup Indonesia" value="${escAttr(data.perusahaan || '')}" />
+                    <input name="pengalaman[${index}][perusahaan]" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Tech Startup Indonesia" value="${escAttr(data.perusahaan || '')}" oninvalid="this.setCustomValidity('Perusahaan wajib di isi.')" oninput="this.setCustomValidity('')" />
                 </label>
             </div>
             <label class="mt-4 space-y-2 text-sm block">
                 <span class="text-slate-600">Periode</span>
-                <input name="pengalaman[${index}][periode]" class="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Jun 2022 - Des 2022" value="${escAttr(data.periode || '')}" />
+                <input name="pengalaman[${index}][periode]" required class="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Jun 2022 - Des 2022" value="${escAttr(data.periode || '')}" oninvalid="this.setCustomValidity('Periode kerja wajib di isi.')" oninput="this.setCustomValidity('')" />
             </label>
             <label class="mt-4 space-y-2 text-sm block">
                 <span class="text-slate-600">Deskripsi Pekerjaan</span>
@@ -317,6 +353,23 @@
             </label>
         `;
         experienceSection.appendChild(wrapper);
+    }
+
+    function addSkill(data = '') {
+        const index = skillCount++;
+        const wrapper = document.createElement('div');
+        wrapper.id = `skill-${index}`;
+        wrapper.className = 'flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-4';
+        wrapper.innerHTML = `
+            <div class="flex-1 space-y-2 text-sm">
+                <label class="block">
+                    <span class="text-slate-600">Skill ${index + 1}</span>
+                    <input name="skills[${index}]" type="text" value="${escAttr(data)}" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" placeholder="Contoh: JavaScript" />
+                </label>
+            </div>
+            <button type="button" class="inline-flex items-center rounded-full bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100" onclick="removeBlock('skill-${index}')">Hapus</button>
+        `;
+        skillSection.appendChild(wrapper);
     }
 
     function renderInitialCvSections() {
@@ -330,6 +383,12 @@
             initialExperiences.forEach(item => addExperience(item));
         } else {
             addExperience();
+        }
+
+        if (Array.isArray(initialSkills) && initialSkills.length) {
+            initialSkills.forEach(item => addSkill(item));
+        } else {
+            addSkill();
         }
     }
 
