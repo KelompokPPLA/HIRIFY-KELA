@@ -7,13 +7,14 @@ use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\AdminStatisticsController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CvController;
 use App\Http\Controllers\RoadmapController;
 use App\Http\Controllers\SelfAssessmentController;
 use App\Http\Controllers\MentorDashboardController;
 use App\Http\Controllers\SesiJadwalController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\MenteeSayaController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -93,7 +94,10 @@ Route::middleware('auth')->group(function () {
     Route::view('/forum', 'forum.index')->name('forum.index');
 
     // Notifikasi
+    Route::get('/notifikasi', [NotificationController::class, 'index']);
     Route::view('/notifikasi', 'notifikasi.index')->name('notifikasi.index');
+    Route::post('/notifikasi/read-all', [NotifikasiController::class, 'readAll'])
+    ->name('notifikasi.read-all');
 
     // Mentorship
     Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
