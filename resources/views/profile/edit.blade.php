@@ -4,189 +4,335 @@
 
 @section('content')
 <div class="space-y-8">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <a href="{{ route('profile') }}" class="inline-flex items-center gap-2 text-slate-600 hover:text-[#09C9D3]">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-                <span>Kembali</span>
-            </a>
-            <h1 class="mt-4 text-3xl font-semibold text-slate-950">Edit Profil</h1>
-            <p class="mt-2 max-w-2xl text-sm text-slate-600">Perbarui informasi profil Anda dengan mudah, mulai dari data diri, pendidikan, pengalaman kerja, hingga skill.</p>
-        </div>
+    @if(session('success'))
+    <div class="rounded-2xl bg-emerald-50 border border-emerald-200 px-5 py-3 text-sm font-medium text-emerald-700">
+        {{ session('success') }}
     </div>
+    @endif
 
-    <form action="{{ route('profile.update') }}" method="POST" class="space-y-6">
+    @if($errors->any())
+    <div class="rounded-2xl bg-red-50 border border-red-200 px-5 py-3 text-sm font-medium text-red-700">
+        <ul class="list-disc list-inside space-y-1">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
         @csrf
-        @method('PUT')
 
-        @if ($errors->any())
-            <div class="rounded-3xl border border-red-200 bg-red-50 p-4">
-                <p class="font-semibold text-red-800">Terjadi kesalahan:</p>
-                <ul class="mt-2 list-inside list-disc text-sm text-red-700">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Profil</p>
+                <h1 class="text-3xl font-semibold text-slate-950">Edit Profil</h1>
+                <p class="mt-2 text-sm text-slate-600 max-w-2xl">Perbarui data pribadi Anda untuk memperkuat profil karier.</p>
             </div>
-        @endif
+            <div class="flex gap-3">
+                <a href="{{ route('profile.index') }}" class="inline-flex items-center rounded-xl bg-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">Batalkan Perubahan</a>
+                <button type="submit" class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">Simpan Perubahan</button>
+            </div>
+        </div>
 
         <div class="grid gap-6 xl:grid-cols-[0.72fr_0.28fr]">
             <div class="space-y-6">
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-xl font-semibold text-slate-950">Data Diri</h2>
-                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.24em] text-slate-500">Akun</p>
+                            <h2 class="mt-2 text-xl font-semibold text-slate-950">Informasi Diri</h2>
+                        </div>
+                        <span class="rounded-2xl bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">{{ ucfirst($user->role) }}</span>
+                    </div>
+
+                    <div class="mt-6 grid gap-4 sm:grid-cols-2">
                         <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Nama Lengkap</span>
-                            <input type="text" name="nama_lengkap" value="{{ old('nama_lengkap', $profile?->nama_lengkap ?? '') }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
+                            <span class="text-slate-600">Nama Lengkap</span>
+                            <input id="nameInput" type="text" name="name" value="{{ old('name', $user->name) }}"
+                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required />
                         </label>
                         <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Email</span>
-                            <input type="email" name="email" value="{{ old('email', $user->email) }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
+                            <span class="text-slate-600">Email</span>
+                            <input id="emailInput" type="email" name="email" value="{{ old('email', $user->email) }}"
+                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required />
                         </label>
                         <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Nomor Telepon</span>
-                            <input type="text" name="telepon" value="{{ old('telepon', $profile?->telepon ?? '') }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
+                            <span class="text-slate-600">Telepon</span>
+                            <input id="phoneInput" type="text" name="phone" value="{{ old('phone', $profile?->phone ?? '') }}"
+                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
                         </label>
                         <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Tanggal Lahir</span>
-                            <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $profile?->tanggal_lahir ?? '') }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
+                            <span class="text-slate-600">Lokasi</span>
+                            <input id="locationInput" type="text" name="location" value="{{ old('location', $profile?->location ?? '') }}"
+                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
+                        </label>
+                        <label class="space-y-2 text-sm">
+                            <span class="text-slate-600">Foto Profil</span>
+                            <input id="photoInput" type="file" name="photo" accept="image/*"
+                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
                         </label>
                         <label class="space-y-2 text-sm sm:col-span-2">
-                            <span class="font-medium text-slate-600">Alamat</span>
-                            <textarea name="alamat" rows="3" required class="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15">{{ old('alamat', $profile?->alamat ?? '') }}</textarea>
+                            <span class="text-slate-600">Bio</span>
+                            <textarea id="bioInput" name="bio" rows="3"
+                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 resize-none">{{ old('bio', $profile?->bio ?? '') }}</textarea>
                         </label>
                     </div>
                 </div>
 
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-xl font-semibold text-slate-950">Pendidikan</h2>
-                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
-                        <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Institusi</span>
-                            <input type="text" name="institusi" value="{{ old('institusi', $profile?->institusi ?? '') }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
-                        </label>
-                        <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Jurusan</span>
-                            <input type="text" name="jurusan" value="{{ old('jurusan', $profile?->jurusan ?? '') }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
-                        </label>
-                        <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">IPK</span>
-                            <input type="number" step="0.01" name="ipk" value="{{ old('ipk', $profile?->ipk ?? '') }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
-                        </label>
-                        <div></div>
-                        <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Tahun Mulai</span>
-                            <input type="number" name="tahun_mulai_pendidikan" value="{{ old('tahun_mulai_pendidikan', $profile?->tahun_mulai_pendidikan ?? '') }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
-                        </label>
-                        <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Tahun Selesai</span>
-                            <input type="number" name="tahun_selesai_pendidikan" value="{{ old('tahun_selesai_pendidikan', $profile?->tahun_selesai_pendidikan ?? '') }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
-                        </label>
-                    </div>
-                </div>
-
-                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-xl font-semibold text-slate-950">Pengalaman</h2>
-                    <div class="mt-5 grid gap-4">
-                        <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Posisi</span>
-                            <input type="text" name="posisi_kerja" value="{{ old('posisi_kerja', $profile?->posisi_kerja ?? '') }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
-                        </label>
-                        <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Perusahaan</span>
-                            <input type="text" name="perusahaan" value="{{ old('perusahaan', $profile?->perusahaan ?? '') }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
-                        </label>
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <label class="space-y-2 text-sm">
-                                <span class="font-medium text-slate-600">Periode Mulai</span>
-                                <input type="text" name="periode_mulai_kerja" value="{{ old('periode_mulai_kerja', $profile?->periode_mulai_kerja ?? '') }}" placeholder="Juni 2022" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
-                            </label>
-                            <label class="space-y-2 text-sm">
-                                <span class="font-medium text-slate-600">Periode Selesai</span>
-                                <input type="text" name="periode_selesai_kerja" value="{{ old('periode_selesai_kerja', $profile?->periode_selesai_kerja ?? '') }}" placeholder="Desember 2022" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15" />
-                            </label>
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold text-slate-950">Pendidikan</h2>
+                            <p class="mt-3 text-sm text-slate-500">Isi riwayat pendidikan dengan format ATS: institusi, gelar, dan tahun.</p>
                         </div>
-                        <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Deskripsi</span>
-                            <textarea name="deskripsi_kerja" rows="4" class="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15">{{ old('deskripsi_kerja', $profile?->deskripsi_kerja ?? '') }}</textarea>
-                        </label>
+                        <button type="button" class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100" onclick="addEducation()">+ Tambah Pendidikan</button>
                     </div>
+                    <div id="educationSection" class="mt-6 space-y-4"></div>
                 </div>
 
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-xl font-semibold text-slate-950">Skills</h2>
-                    <div class="mt-5 grid gap-4">
-                        <label class="space-y-2 text-sm">
-                            <span class="font-medium text-slate-600">Skills (pisahkan dengan koma)</span>
-                            <textarea name="skills" rows="3" placeholder="React, TypeScript, Tailwind CSS, Node.js" class="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#09C9D3] focus:ring-2 focus:ring-[#09C9D3]/15">{{ old('skills', $profile?->skills ?? '') }}</textarea>
-                        </label>
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold text-slate-950">Pengalaman Kerja</h2>
+                            <p class="mt-3 text-sm text-slate-500">Isi pengalaman kerja dengan jabatan, perusahaan, periode, dan deskripsi singkat.</p>
+                        </div>
+                        <button type="button" class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100" onclick="addExperience()">+ Tambah Pengalaman</button>
                     </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <button type="submit" class="rounded-full bg-[#09C9D3] px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-[#09C9D3]/20 transition hover:bg-[#08b4c0]">Simpan Perubahan</button>
-                    <a href="{{ route('profile') }}" class="rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</a>
+                    <div id="experienceSection" class="mt-6 space-y-4"></div>
                 </div>
             </div>
 
             <aside class="space-y-6">
-                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h3 class="text-lg font-semibold text-slate-950">Preview Profil</h3>
-                    <div class="mt-6 rounded-3xl bg-gradient-to-br from-slate-950 to-slate-800 p-6 text-white shadow-lg">
+                <div class="rounded-3xl bg-gradient-to-br from-slate-950 to-slate-800 p-6 text-white shadow-lg">
+                    <div class="flex flex-col gap-4">
                         <div class="flex items-center gap-4">
-                            <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-[#09C9D3] text-2xl font-semibold">{{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}{{ strtoupper(substr(explode(' ', $user->name ?? 'User')[1] ?? '', 0, 1)) }}</div>
+                            <div class="relative">
+                                <div id="previewAvatarContainer" class="h-20 w-20 overflow-hidden rounded-3xl border border-white/20 bg-white/10">
+                                    <img id="previewAvatar" src="{{ $profile?->photo ? asset('storage/' . $profile->photo) : '' }}" alt="Foto Profil"
+                                        class="h-full w-full object-cover {{ $profile?->photo ? '' : 'hidden' }}" />
+                                    <div id="previewInitials" class="h-full w-full grid place-items-center bg-white/10 text-2xl font-semibold text-white {{ $profile?->photo ? 'hidden' : '' }}">
+                                        {{ strtoupper(substr($user->name, 0, 2)) }}
+                                    </div>
+                                </div>
+                            </div>
                             <div>
-                                <p class="text-sm uppercase tracking-[0.24em] text-slate-300">{{ $user->name ?? 'User Name' }}</p>
-                                <h4 class="mt-2 text-xl font-semibold">{{ $profile?->posisi_kerja ?? 'Frontend Developer' }}</h4>
+                                <p class="text-sm uppercase tracking-[0.24em] text-slate-300">Akun</p>
+                                <h3 id="previewName" class="mt-2 text-xl font-semibold">{{ $user->name }}</h3>
+                                <p class="mt-1 text-sm text-slate-300">{{ ucfirst($user->role) }}</p>
                             </div>
                         </div>
-                        <div class="mt-6 space-y-3">
-                            <div class="rounded-3xl bg-white/10 p-4">
-                                <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Email</p>
-                                <p class="mt-1 font-semibold">{{ $user->email }}</p>
-                            </div>
-                            <div class="rounded-3xl bg-white/10 p-4">
-                                <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Telepon</p>
-                                <p class="mt-1 font-semibold">{{ $profile?->telepon ?? '+62 812 3456 7890' }}</p>
-                            </div>
-                            <div class="rounded-3xl bg-white/10 p-4">
-                                <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Lokasi</p>
-                                <p class="mt-1 font-semibold">{{ explode(',', $profile?->alamat ?? 'Jakarta')[0] ?? 'Jakarta' }}</p>
-                            </div>
+                        <div class="rounded-3xl bg-white/10 p-4">
+                            <p class="text-xs text-slate-300">Bio</p>
+                            <p id="previewBio" class="mt-1 text-sm leading-relaxed text-white">{{ $profile?->bio ?? '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 grid gap-3">
+                        <div class="rounded-3xl bg-white/10 p-4">
+                            <p class="text-xs text-slate-300">Email</p>
+                            <p id="previewEmail" class="mt-1 text-sm font-medium text-white">{{ $user->email }}</p>
+                        </div>
+                        <div class="rounded-3xl bg-white/10 p-4">
+                            <p class="text-xs text-slate-300">Telepon</p>
+                            <p id="previewPhone" class="mt-1 text-sm font-medium text-white">{{ $profile?->phone ?? '-' }}</p>
+                        </div>
+                        <div class="rounded-3xl bg-white/10 p-4">
+                            <p class="text-xs text-slate-300">Lokasi</p>
+                            <p id="previewLocation" class="mt-1 text-sm font-medium text-white">{{ $profile?->location ?? '-' }}</p>
                         </div>
                     </div>
                 </div>
+
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h4 class="text-lg font-semibold text-slate-950">Ringkasan</h4>
-                    <div class="mt-5 space-y-4 text-sm text-slate-600">
-                        @if ($profile?->institusi)
-                            <div>
-                                <p class="font-medium text-slate-700">Pendidikan</p>
-                                <p>{{ $profile->institusi }} • {{ $profile->jurusan ?? '-' }} • IPK {{ $profile->ipk ?? '-' }}</p>
-                            </div>
-                        @endif
-                        @if ($profile?->perusahaan)
-                            <div>
-                                <p class="font-medium text-slate-700">Pengalaman Terakhir</p>
-                                <p>{{ $profile->posisi_kerja ?? '-' }} • {{ $profile->perusahaan }}</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-                @if ($profile?->skills)
-                    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <h4 class="text-lg font-semibold text-slate-950">Skills</h4>
-                        <div class="mt-4 flex flex-wrap gap-2">
-                            @foreach (explode(',', $profile->skills) as $skill)
-                                <span class="rounded-full bg-[#09C9D3]/10 px-3 py-1 text-sm font-semibold text-[#09C9D3]">{{ trim($skill) }}</span>
-                            @endforeach
+                    <h3 class="text-lg font-semibold text-slate-950">Status Akun</h3>
+                    <div class="mt-4 space-y-3">
+                        <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                            <span class="text-sm text-slate-600">Role</span>
+                            <span class="text-sm font-semibold text-slate-900">{{ ucfirst($user->role) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                            <span class="text-sm text-slate-600">Status</span>
+                            <span class="text-sm font-semibold text-emerald-600">Aktif</span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                            <span class="text-sm text-slate-600">Bergabung</span>
+                            <span class="text-sm font-semibold text-slate-900">{{ $user->created_at->format('M Y') }}</span>
                         </div>
                     </div>
-                @endif
+                </div>
             </aside>
         </div>
     </form>
 </div>
+
+<script>
+    const previewName = document.getElementById('previewName');
+    const previewEmail = document.getElementById('previewEmail');
+    const previewPhone = document.getElementById('previewPhone');
+    const previewLocation = document.getElementById('previewLocation');
+    const previewBio = document.getElementById('previewBio');
+    const previewAvatar = document.getElementById('previewAvatar');
+    const previewInitials = document.getElementById('previewInitials');
+
+    const nameInput = document.getElementById('nameInput');
+    const emailInput = document.getElementById('emailInput');
+    const phoneInput = document.getElementById('phoneInput');
+    const locationInput = document.getElementById('locationInput');
+    const bioInput = document.getElementById('bioInput');
+    const photoInput = document.getElementById('photoInput');
+
+    function normalizeEmpty(value) {
+        return value?.trim() ? value.trim() : '-';
+    }
+
+    function updateInitials(value) {
+        const initials = value.trim() ? value.trim().slice(0, 2).toUpperCase() : '{{ strtoupper(substr($user->name, 0, 2)) }}';
+        previewInitials.textContent = initials;
+    }
+
+    function updatePreview() {
+        previewName.textContent = nameInput.value || '{{ $user->name }}';
+        previewEmail.textContent = emailInput.value || '{{ $user->email }}';
+        previewPhone.textContent = normalizeEmpty(phoneInput.value);
+        previewLocation.textContent = normalizeEmpty(locationInput.value);
+        previewBio.textContent = normalizeEmpty(bioInput.value === '' ? '{{ $profile?->bio ?? '' }}' : bioInput.value);
+        updateInitials(nameInput.value || '{{ $user->name }}');
+    }
+
+    nameInput.addEventListener('input', updatePreview);
+    emailInput.addEventListener('input', updatePreview);
+    phoneInput.addEventListener('input', updatePreview);
+    locationInput.addEventListener('input', updatePreview);
+    bioInput.addEventListener('input', updatePreview);
+
+    photoInput.addEventListener('change', function () {
+        const file = this.files?.[0];
+        if (!file) {
+            if (previewAvatar.src) {
+                if (previewAvatar.src.includes('data:')) {
+                    previewAvatar.classList.add('hidden');
+                    previewInitials.classList.remove('hidden');
+                } else {
+                    previewAvatar.classList.toggle('hidden', !previewAvatar.src);
+                    previewInitials.classList.toggle('hidden', !!previewAvatar.src);
+                }
+            }
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            previewAvatar.src = event.target.result;
+            previewAvatar.classList.remove('hidden');
+            previewInitials.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    const educationSection = document.getElementById('educationSection');
+    const experienceSection = document.getElementById('experienceSection');
+
+    const initialEducations = @json(old('pendidikan', $profile?->education ?? []));
+    const initialExperiences = @json(old('pengalaman', $profile?->experience ?? []));
+
+    let educationCount = 0;
+    let experienceCount = 0;
+
+    function escAttr(value) {
+        return String(value ?? '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function escHtml(value) {
+        return String(value ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function removeBlock(id) {
+        const block = document.getElementById(id);
+        if (block) {
+            block.remove();
+        }
+    }
+
+    function addEducation(data = {}) {
+        const index = educationCount++;
+        const wrapper = document.createElement('div');
+        wrapper.id = `education-${index}`;
+        wrapper.className = 'rounded-3xl border border-slate-200 bg-slate-50 p-4';
+        wrapper.innerHTML = `
+            <div class="flex items-start justify-between gap-3 mb-4">
+                <div>
+                    <div class="text-sm font-semibold text-slate-900">Pendidikan ${index + 1}</div>
+                    <div class="text-sm text-slate-500">Masukkan institusi, gelar, dan tahun kelulusan.</div>
+                </div>
+                <button type="button" class="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100" onclick="removeBlock('education-${index}')">Hapus</button>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                <label class="space-y-2 text-sm">
+                    <span class="text-slate-600">Institusi</span>
+                    <input name="pendidikan[${index}][institusi]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Universitas Indonesia" value="${escAttr(data.institusi || '')}" />
+                </label>
+                <label class="space-y-2 text-sm">
+                    <span class="text-slate-600">Gelar</span>
+                    <input name="pendidikan[${index}][gelar]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Sarjana Teknik Informatika" value="${escAttr(data.gelar || '')}" />
+                </label>
+            </div>
+            <label class="mt-4 space-y-2 text-sm block">
+                <span class="text-slate-600">Tahun / Periode</span>
+                <input name="pendidikan[${index}][tahun]" class="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="2019 - 2023" value="${escAttr(data.tahun || '')}" />
+            </label>
+        `;
+        educationSection.appendChild(wrapper);
+    }
+
+    function addExperience(data = {}) {
+        const index = experienceCount++;
+        const wrapper = document.createElement('div');
+        wrapper.id = `experience-${index}`;
+        wrapper.className = 'rounded-3xl border border-slate-200 bg-slate-50 p-4';
+        wrapper.innerHTML = `
+            <div class="flex items-start justify-between gap-3 mb-4">
+                <div>
+                    <div class="text-sm font-semibold text-slate-900">Pengalaman ${index + 1}</div>
+                    <div class="text-sm text-slate-500">Masukkan posisi, perusahaan, periode, dan deskripsi tugas.</div>
+                </div>
+                <button type="button" class="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100" onclick="removeBlock('experience-${index}')">Hapus</button>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                <label class="space-y-2 text-sm">
+                    <span class="text-slate-600">Posisi</span>
+                    <input name="pengalaman[${index}][posisi]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Frontend Developer" value="${escAttr(data.posisi || '')}" />
+                </label>
+                <label class="space-y-2 text-sm">
+                    <span class="text-slate-600">Perusahaan</span>
+                    <input name="pengalaman[${index}][perusahaan]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Tech Startup Indonesia" value="${escAttr(data.perusahaan || '')}" />
+                </label>
+            </div>
+            <label class="mt-4 space-y-2 text-sm block">
+                <span class="text-slate-600">Periode</span>
+                <input name="pengalaman[${index}][periode]" class="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Jun 2022 - Des 2022" value="${escAttr(data.periode || '')}" />
+            </label>
+            <label class="mt-4 space-y-2 text-sm block">
+                <span class="text-slate-600">Deskripsi Pekerjaan</span>
+                <textarea name="pengalaman[${index}][deskripsi]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" rows="3" placeholder="Tuliskan tanggung jawab dan pencapaian utama...">${escHtml(data.deskripsi || '')}</textarea>
+            </label>
+        `;
+        experienceSection.appendChild(wrapper);
+    }
+
+    function renderInitialCvSections() {
+        if (Array.isArray(initialEducations) && initialEducations.length) {
+            initialEducations.forEach(item => addEducation(item));
+        } else {
+            addEducation();
+        }
+
+        if (Array.isArray(initialExperiences) && initialExperiences.length) {
+            initialExperiences.forEach(item => addExperience(item));
+        } else {
+            addExperience();
+        }
+    }
+
+    renderInitialCvSections();
+</script>
 @endsection

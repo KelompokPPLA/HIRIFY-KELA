@@ -7,16 +7,40 @@ use App\Models\Cv;
 use App\Models\Education;
 use App\Models\Experience;
 use App\Models\Skill;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CvApiController extends Controller
 {
     private function authUser()
     {
-        return JWTAuth::parseToken()->authenticate();
+        // Attempt JWT token auth first if a token was provided.
+        try {
+            if (JWTAuth::getToken()) {
+                return JWTAuth::parseToken()->authenticate();
+            }
+        } catch (JWTException $e) {
+            // Ignore JWT token parse errors; fallback to session auth below.
+        }
+
+        // Fallback to standard session/web guard authentication.
+        if ($user = Auth::guard('web')->user()) {
+            return $user;
+        }
+
+        if ($user = Auth::user()) {
+            return $user;
+        }
+
+        throw new AuthenticationException('Unauthenticated.');
     }
 
     public function index(): JsonResponse
@@ -163,6 +187,71 @@ class CvApiController extends Controller
         return ResponseHelper::jsonResponse(true, 'CV berhasil diperbarui.', $this->formatCv($cv), 200);
     }
 
+    /**
+     * Handle file upload CV.
+     * Simpan file dan buat CV entry dengan data minimal.
+     */
+    public function uploadFile(Request $request): JsonResponse
+    {
+        try {
+            $user = $this->authUser();
+
+            // Validate file
+            $validated = $request->validate([
+                'file' => 'required|file|mimes:pdf,doc,docx|max:2048',
+            ]);
+
+            // Ensure cv directory exists
+            $cvDir = storage_path('app/public/cv');
+            if (!File::isDirectory($cvDir)) {
+                File::makeDirectory($cvDir, 0755, true);
+            }
+
+            // Simpan file ke storage/app/public/cv
+            $file = $validated['file'];
+            $filename = $file->getClientOriginalName();
+            
+            // Create unique filename
+            $uniqueName = time() . '_' . uniqid() . '_' . $filename;
+            $path = $file->storeAs('cv', $uniqueName, 'public');
+
+            if (!$path) {
+                return ResponseHelper::jsonResponse(false, 'Gagal menyimpan file CV.', null, 500);
+            }
+
+            // Extract nama dari filename (tanpa extension)
+            $namaLengkap = pathinfo($filename, PATHINFO_FILENAME);
+            
+            // Create CV dengan data minimal dan metadata file
+            $cv = Cv::create([
+                'user_id'      => $user->id,
+                'nama_lengkap' => $namaLengkap,
+                'email'        => $user->email,
+                'telepon'      => '-',
+                'alamat'       => null,
+                'linkedin'     => null,
+                'ringkasan'    => null,
+                'file_path'    => $path,
+                'file_name'    => $filename,
+                'file_type'    => $file->getClientMimeType(),
+                'file_size'    => $file->getSize(),
+            ]);
+
+            return ResponseHelper::jsonResponse(
+                true, 
+                'File CV berhasil diupload. Silakan lengkapi detail CV.', 
+                $this->formatCv($cv->load(['educations', 'experiences', 'technicalSkills', 'softSkills'])), 
+                201
+            );
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return ResponseHelper::jsonResponse(false, 'Validasi gagal: ' . implode(', ', array_map(fn($msg) => implode(', ', $msg), $e->errors())), null, 422);
+        } catch (\Exception $e) {
+            \Log::error('CV Upload Error: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
+            return ResponseHelper::jsonResponse(false, 'Gagal upload file: ' . $e->getMessage(), null, 500);
+        }
+    }
+
     public function destroy(string $id): JsonResponse
     {
         $user = $this->authUser();
@@ -184,6 +273,11 @@ class CvApiController extends Controller
             'alamat'          => $cv->alamat,
             'linkedin'        => $cv->linkedin,
             'ringkasan'       => $cv->ringkasan,
+            'file_path'       => $cv->file_path,
+            'file_name'       => $cv->file_name,
+            'file_type'       => $cv->file_type,
+            'file_size'       => $cv->file_size,
+            'file_url'        => $cv->file_path ? Storage::disk('public')->url($cv->file_path) : null,
             'pendidikan'      => $cv->educations->map(fn($e) => ['id' => $e->id, 'institusi' => $e->institusi, 'gelar' => $e->gelar, 'tahun' => $e->tahun]),
             'pengalaman'      => $cv->experiences->map(fn($e) => ['id' => $e->id, 'posisi' => $e->posisi, 'perusahaan' => $e->perusahaan, 'deskripsi' => $e->deskripsi, 'periode' => $e->periode]),
             'technical_skills'=> $cv->technicalSkills->pluck('nama_skill'),

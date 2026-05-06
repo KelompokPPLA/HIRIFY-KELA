@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="Hirify — Platform persiapan karier untuk mahasiswa dan pencari kerja di Indonesia.">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title')</title>
     <title>@yield('title', 'Hirify') — Hirify</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -132,6 +137,7 @@
                         ['url' => '/profile', 'label' => 'Profil', 'pattern' => 'profile', 'icon' => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>'],
                         ['url' => '/manajemen-cv', 'label' => 'Manajemen CV', 'pattern' => 'manajemen-cv', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line>'],
                         ['url' => '/buat-cv-ats', 'label' => 'Buat CV ATS', 'pattern' => 'buat-cv-ats', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line>'],
+                        ['url' => '/buat-cv-presentasi', 'label' => 'Buat CV Presentasi', 'pattern' => 'buat-cv-presentasi', 'icon' => '<path d="M4 6h16M4 12h16M4 18h16"></path><path d="M6 8.5a1.5 1.5 0 0 1 3 0M6 14.5a1.5 1.5 0 0 1 3 0M6 20.5a1.5 1.5 0 0 1 3 0"></path>', 'role' => 'jobseeker'],
                         ['url' => '/roadmap-karier', 'label' => 'Roadmap Karier', 'pattern' => 'roadmap-karier', 'icon' => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>'],
                         ['url' => '/self-assessment', 'label' => 'Self Assessment', 'pattern' => 'self-assessment', 'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>'],
                         ['url' => '/pelatihan', 'label' => 'Pelatihan', 'pattern' => 'pelatihan|skill-training', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>'],
@@ -143,11 +149,13 @@
                 @endphp
 
                 @foreach ($menuItems as $item)
-                    @php $isActive = request()->is(trim($item['pattern'], '|') . '*') || collect(explode('|', $item['pattern']))->contains(fn($p) => request()->is($p . '*')); @endphp
-                    <a href="{{ $item['url'] }}" class="sidebar-link {{ $isActive ? 'active' : '' }}">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $item['icon'] !!}</svg>
-                        <span>{{ $item['label'] }}</span>
-                    </a>
+                    @if(!isset($item['role']) || auth()->user()?->role === $item['role'])
+                        @php $isActive = request()->is(trim($item['pattern'], '|') . '*') || collect(explode('|', $item['pattern']))->contains(fn($p) => request()->is($p . '*')); @endphp
+                        <a href="{{ $item['url'] }}" class="sidebar-link {{ $isActive ? 'active' : '' }}">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $item['icon'] !!}</svg>
+                            <span>{{ $item['label'] }}</span>
+                        </a>
+                    @endif
                 @endforeach
             </nav>
 
