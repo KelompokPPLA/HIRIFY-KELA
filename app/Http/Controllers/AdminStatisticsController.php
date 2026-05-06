@@ -9,6 +9,7 @@ use App\Models\SkillCourse;
 use App\Models\SkillEnrollment;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -25,18 +26,22 @@ class AdminStatisticsController extends Controller
         return ResponseHelper::jsonResponse(true, 'Statistik platform berhasil dimuat.', $this->buildStats(), 200);
     }
 
-    public function show()
+    public function show(Request $request)
     {
         if (!auth()->check() || auth()->user()->role !== 'admin') {
             abort(403, 'Hanya admin yang dapat mengakses halaman ini.');
         }
 
-        $stats = $this->buildStats();
+        $months = (int) $request->query('months', 6);
+        $months = in_array($months, [3, 6, 12]) ? $months : 6;
+
+        $stats = $this->buildStats($months);
 
         return view('admin.statistics', [
-            'summary' => $stats['summary'],
-            'monthly' => $stats['monthly_activity'],
-            'recentUsers' => $stats['recent_users'],
+            'summary'        => $stats['summary'],
+            'monthly'        => $stats['monthly_activity'],
+            'recentUsers'    => $stats['recent_users'],
+            'selectedMonths' => $months,
         ]);
     }
 
@@ -79,7 +84,7 @@ class AdminStatisticsController extends Controller
         ]);
     }
 
-    private function buildStats(): array
+    private function buildStats(int $months = 6): array
     {
         $totalUsers = User::count();
         $usersByRole = User::select('role', DB::raw('count(*) as total'))
@@ -97,14 +102,14 @@ class AdminStatisticsController extends Controller
 
         $totalThreads = ForumThread::count();
 
-        $months = collect(range(5, 0))->map(fn ($i) => now()->subMonths($i)->format('Y-m'));
-        $monthLabels = collect(range(5, 0))->map(fn ($i) => now()->subMonths($i)->locale('id')->isoFormat('MMM YY'));
+        $monthKeys   = collect(range($months - 1, 0))->map(fn ($i) => now()->subMonths($i)->format('Y-m'));
+        $monthLabels = collect(range($months - 1, 0))->map(fn ($i) => now()->subMonths($i)->locale('id')->isoFormat('MMM YY'));
 
         $usersPerMonth = User::select(
                 DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
                 DB::raw('count(*) as total')
             )
-            ->where('created_at', '>=', now()->subMonths(6)->startOfMonth())
+            ->where('created_at', '>=', now()->subMonths($months)->startOfMonth())
             ->groupBy('month')
             ->pluck('total', 'month');
 
@@ -112,7 +117,7 @@ class AdminStatisticsController extends Controller
                 DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
                 DB::raw('count(*) as total')
             )
-            ->where('created_at', '>=', now()->subMonths(6)->startOfMonth())
+            ->where('created_at', '>=', now()->subMonths($months)->startOfMonth())
             ->groupBy('month')
             ->pluck('total', 'month');
 
@@ -120,15 +125,15 @@ class AdminStatisticsController extends Controller
                 DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
                 DB::raw('count(*) as total')
             )
-            ->where('created_at', '>=', now()->subMonths(6)->startOfMonth())
+            ->where('created_at', '>=', now()->subMonths($months)->startOfMonth())
             ->groupBy('month')
             ->pluck('total', 'month');
 
-        $monthlyData = $months->map(fn ($m, $i) => [
-            'month' => $m,
-            'label' => $monthLabels[$i],
-            'users' => (int) ($usersPerMonth[$m] ?? 0),
-            'bookings' => (int) ($bookingsPerMonth[$m] ?? 0),
+        $monthlyData = $monthKeys->map(fn ($m, $i) => [
+            'month'       => $m,
+            'label'       => $monthLabels[$i],
+            'users'       => (int) ($usersPerMonth[$m] ?? 0),
+            'bookings'    => (int) ($bookingsPerMonth[$m] ?? 0),
             'enrollments' => (int) ($enrollmentsPerMonth[$m] ?? 0),
         ])->values();
 

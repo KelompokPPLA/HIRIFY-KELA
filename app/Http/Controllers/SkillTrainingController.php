@@ -35,6 +35,37 @@ class SkillTrainingController extends Controller
             ->pluck('skill_course_id')
             ->toArray();
 
+        // Batch-compute progress for enrolled courses to avoid N+1
+        $progressByCourse = [];
+        if (!empty($enrolledIds)) {
+            $lessonsByCourse = SkillLesson::whereIn('skill_course_id', $enrolledIds)
+                ->select('id', 'skill_course_id')
+                ->get()
+                ->groupBy('skill_course_id');
+
+            $allLessonIds = $lessonsByCourse->flatten()->pluck('id');
+            $completedSet = array_flip(
+                SkillLessonProgress::where('user_id', $user->id)
+                    ->whereIn('skill_lesson_id', $allLessonIds)
+                    ->pluck('skill_lesson_id')
+                    ->toArray()
+            );
+            $completedAtByCourse = SkillEnrollment::where('user_id', $user->id)
+                ->whereIn('skill_course_id', $enrolledIds)
+                ->pluck('completed_at', 'skill_course_id');
+
+            foreach ($enrolledIds as $courseId) {
+                $lessons = $lessonsByCourse[$courseId] ?? collect();
+                $total   = $lessons->count();
+                $done    = $lessons->filter(fn ($l) => array_key_exists($l->id, $completedSet))->count();
+                $progressByCourse[$courseId] = [
+                    'progress_pct'    => $total > 0 ? (int) round(($done / $total) * 100) : 0,
+                    'completed_count' => $done,
+                    'course_completed'=> !is_null($completedAtByCourse[$courseId] ?? null),
+                ];
+            }
+        }
+
         $query = SkillCourse::withCount('lessons');
 
         match ($sort) {
@@ -61,21 +92,29 @@ class SkillTrainingController extends Controller
 
         $paginated = $query->paginate($perPage);
 
-        $items = collect($paginated->items())->map(fn ($c) => [
-            'id'              => $c->id,
-            'title'           => $c->title,
-            'description'     => $c->description,
-            'category'        => $c->category,
-            'level'           => $c->level,
-            'level_label'     => $this->levelLabel($c->level),
-            'thumbnail_emoji' => $c->thumbnail_emoji,
-            'instructor_name' => $c->instructor_name,
-            'estimated_hours' => $c->estimated_hours,
-            'is_free'         => $c->is_free,
-            'lessons_count'   => $c->lessons_count,
-            'is_enrolled'     => in_array($c->id, $enrolledIds),
-            'price_label'     => $c->is_free ? 'Gratis' : 'Berbayar',
-        ]);
+        $items = collect($paginated->items())->map(function ($c) use ($enrolledIds, $progressByCourse) {
+            $isEnrolled = in_array($c->id, $enrolledIds);
+            $prog       = $isEnrolled ? ($progressByCourse[$c->id] ?? []) : [];
+
+            return [
+                'id'              => $c->id,
+                'title'           => $c->title,
+                'description'     => $c->description,
+                'category'        => $c->category,
+                'level'           => $c->level,
+                'level_label'     => $this->levelLabel($c->level),
+                'thumbnail_emoji' => $c->thumbnail_emoji,
+                'instructor_name' => $c->instructor_name,
+                'estimated_hours' => $c->estimated_hours,
+                'is_free'         => $c->is_free,
+                'lessons_count'   => $c->lessons_count,
+                'is_enrolled'     => $isEnrolled,
+                'price_label'     => $c->is_free ? 'Gratis' : 'Berbayar',
+                'progress_pct'    => $isEnrolled ? ($prog['progress_pct']    ?? 0) : 0,
+                'completed_count' => $isEnrolled ? ($prog['completed_count'] ?? 0) : 0,
+                'course_completed'=> $isEnrolled ? ($prog['course_completed']?? false) : false,
+            ];
+        });
 
         $categories = SkillCourse::distinct()->pluck('category')->sort()->values();
         $levelCounts = SkillCourse::selectRaw('level, COUNT(*) as total')->groupBy('level')->pluck('total', 'level');
