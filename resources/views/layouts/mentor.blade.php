@@ -59,6 +59,7 @@
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
     <div class="flex min-h-screen">
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+        @include('components.auth.toast')
 
         <aside class="sidebar w-[280px] min-h-screen bg-white border-r-2 border-slate-200/90 shadow-[1px_0_15px_rgba(15,23,42,0.015)] flex flex-col" id="sidebar">
             <div class="px-6 py-5 border-b border-slate-100 flex flex-col gap-4">
