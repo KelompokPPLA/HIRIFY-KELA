@@ -6,13 +6,11 @@ use Illuminate\Support\Str;
 
 trait UUID
 {
-    protected static function boot()
+    protected static function bootUUID()
     {
-        parent::boot();
-
         static::creating(function ($model) {
-            if ($model->getKey() === null) {
-                $model->setAttribute($model->getKeyName(), Str::uuid()->toString());
+            if (!$model->getKey()) {
+                $model->{$model->getKeyName()} = (string) Str::uuid();
             }
         });
     }

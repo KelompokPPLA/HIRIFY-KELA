@@ -137,83 +137,119 @@
         .feedback-card {
             background: var(--card);
             border: 1px solid var(--line);
-            border-radius: 18px;
-            padding: 20px;
-            box-shadow: var(--shadow);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px -5px rgba(9, 20, 51, 0.05);
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            gap: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
         .feedback-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 25px 50px rgba(9, 20, 51, 0.12);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -10px rgba(9, 20, 51, 0.12);
+            border-color: var(--brand);
         }
         .fc-header {
             display: flex;
             justify-content: space-between;
-            align-items: start;
+            align-items: center;
         }
         .fc-mentor {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
         .fc-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(140deg, #046e93, #07cde7);
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #06cbe5, #04a9bf);
             color: #fff;
             display: grid;
             place-items: center;
             font-weight: 800;
-            font-size: 1.1rem;
+            font-size: 1.25rem;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(6, 203, 229, 0.2);
+        }
+        .fc-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .fc-mentor-info strong {
             display: block;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             color: #0c2553;
+            letter-spacing: -0.01em;
         }
         .fc-mentor-info small {
             color: var(--muted);
-            font-size: 0.85rem;
+            font-size: 0.88rem;
+            font-weight: 500;
+            display: block;
+            margin-top: 2px;
         }
         .fc-rating {
-            background: #fff8e1;
-            color: var(--warn);
-            padding: 4px 10px;
-            border-radius: 20px;
+            background: #fffbeb;
+            color: #b45309;
+            padding: 6px 12px;
+            border-radius: 12px;
             font-weight: 800;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            border: 1px solid #fef3c7;
+        }
+        .fc-body {
+            display: grid;
+            gap: 12px;
         }
         .fc-section {
-            background: #f8fafd;
-            border-radius: 12px;
-            padding: 14px;
-            border: 1px solid #eef2f7;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .fc-section:hover {
+            transform: scale(1.01);
         }
         .fc-section h4 {
-            margin: 0 0 6px 0;
-            font-size: 0.9rem;
-            color: #2a3a5a;
+            margin: 0 0 8px 0;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         .fc-section p {
             margin: 0;
-            font-size: 0.95rem;
-            color: #4a5a7a;
-            line-height: 1.5;
+            font-size: 1rem;
+            color: #334155;
+            line-height: 1.6;
         }
+        
+        .fc-strength { background: #f0f9ff; border-color: #e0f2fe; }
+        .fc-strength h4 { color: #0369a1; }
+        
+        .fc-improvement { background: #fff5f5; border-color: #fee2e2; }
+        .fc-improvement h4 { color: #b91c1c; }
+        
+        .fc-recommendation { background: #f0fdf4; border-color: #dcfce7; }
+        .fc-recommendation h4 { color: #15803d; }
+
         .fc-date {
             margin-top: auto;
-            padding-top: 10px;
-            border-top: 1px dashed var(--line);
-            font-size: 0.8rem;
+            padding-top: 16px;
+            border-top: 1px solid var(--line);
+            font-size: 0.82rem;
             color: var(--muted);
-            text-align: right;
+            font-weight: 500;
+            display: flex;
+            justify-content: flex-end;
         }
         .empty-state {
             background: var(--card);
@@ -222,6 +258,77 @@
             padding: 40px;
             text-align: center;
             color: var(--muted);
+        }
+        .filters {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            background: var(--card);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            box-shadow: 0 5px 15px rgba(9, 20, 51, 0.03);
+            flex-wrap: wrap;
+        }
+        .search-box {
+            display: flex;
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 12px 110px 12px 16px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--ink);
+            outline: none;
+            transition: all 0.2s;
+        }
+        .filter-input:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 4px rgba(6, 203, 229, 0.15);
+        }
+        .search-btn {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            bottom: 6px;
+            background: linear-gradient(135deg, #06cbe5, #04a9bf);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 16px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(6, 203, 229, 0.2);
+        }
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(6, 203, 229, 0.35);
+        }
+        .search-btn:active {
+            transform: translateY(1px);
+        }
+        .filter-select {
+            padding: 12px 16px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--ink);
+            outline: none;
+            background: #fff;
+            cursor: pointer;
+            min-width: 150px;
         }
         @media (max-width: 980px) {
             .layout { grid-template-columns: 1fr; }
@@ -265,45 +372,95 @@
                 <p>Lihat semua feedback dan penilaian yang diberikan oleh mentor Anda setelah sesi mentorship.</p>
             </section>
 
+            <div class="filters">
+                <div class="search-box">
+                    <input type="text" id="searchInput" class="filter-input" placeholder="Cari nama mentor atau nama sesi...">
+                    <button type="button" id="searchBtn" class="search-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        Cari
+                    </button>
+                </div>
+                <select id="ratingFilter" class="filter-select">
+                    <option value="all">Semua Rating</option>
+                    <option value="5">5 Bintang</option>
+                    <option value="4">4 Bintang</option>
+                    <option value="3">3 Bintang</option>
+                    <option value="2">2 Bintang</option>
+                    <option value="1">1 Bintang</option>
+                </select>
+            </div>
+
             @if($feedbacks->isEmpty())
                 <div class="empty-state">
                     <h3 style="font-size: 1.2rem; margin-bottom: 8px;">Belum Ada Feedback</h3>
                     <p>Anda belum menerima feedback apapun dari mentor. Selesaikan sesi mentorship terlebih dahulu.</p>
                 </div>
             @else
-                <div class="feedback-grid">
+
+                <div class="feedback-grid" id="feedbackGrid">
                     @foreach($feedbacks as $fb)
-                        <div class="feedback-card">
+                        @php
+                            $mentorName = $fb->mentor->name ?? 'Mentor';
+                            $mentorInitial = strtoupper(substr($mentorName, 0, 1));
+                            $avatarUrl = $fb->mentor->mentorProfile->profile_picture ?? null;
+                            $sessionTopic = $fb->session->topic ?? 'Jadwal Manual';
+                            $sessionDate = $fb->session?->scheduled_start ? \Carbon\Carbon::parse($fb->session->scheduled_start)->locale('id')->translatedFormat('d M Y') : null;
+                            $displaySession = $sessionDate ? $sessionTopic . ' (' . $sessionDate . ')' : $sessionTopic;
+                            
+                            $ratingLabels = [
+                                1 => 'Perlu Banyak Perbaikan',
+                                2 => 'Di Bawah Ekspektasi',
+                                3 => 'Cukup Memuaskan',
+                                4 => 'Berprestasi',
+                                5 => 'Sangat Berprestasi',
+                            ];
+                            $ratingText = $ratingLabels[$fb->mentee_rating] ?? '';
+                        @endphp
+                        <div class="feedback-card" data-mentor="{{ strtolower($mentorName) }}" data-rating="{{ $fb->mentee_rating }}" data-content="{{ strtolower($mentorName . ' ' . $sessionTopic) }}">
                             <div class="fc-header">
                                 <div class="fc-mentor">
-                                    <div class="fc-avatar">{{ strtoupper(substr($fb->mentor->name ?? 'M', 0, 1)) }}</div>
+                                    <div class="fc-avatar">
+                                        @if($avatarUrl)
+                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($avatarUrl) }}" alt="{{ $mentorName }}">
+                                        @else
+                                            {{ $mentorInitial }}
+                                        @endif
+                                    </div>
                                     <div class="fc-mentor-info">
-                                        <strong>{{ $fb->mentor->name ?? 'Mentor' }}</strong>
-                                        <small>Sesi: {{ $fb->session->scheduled_start ? \Carbon\Carbon::parse($fb->session->scheduled_start)->format('d M Y') : 'Jadwal Manual' }}</small>
+                                        <strong>{{ $mentorName }}</strong>
+                                        <small>Sesi: {{ $displaySession }}</small>
                                     </div>
                                 </div>
-                                <div class="fc-rating">
-                                    ⭐ {{ $fb->rating }}/5
+                                <div class="fc-rating-wrap" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                                    <div class="fc-rating">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color: #f59e0b;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        {{ $fb->mentee_rating }}/5
+                                    </div>
+                                    @if($ratingText)
+                                        <span style="font-size: 0.75rem; font-weight: 700; color: #b45309; text-transform: uppercase; letter-spacing: 0.02em;">{{ $ratingText }}</span>
+                                    @endif
                                 </div>
                             </div>
                             
-                            <div class="fc-section">
-                                <h4>Kekuatan (Strength)</h4>
-                                <p>{{ $fb->strength }}</p>
-                            </div>
-                            
-                            <div class="fc-section" style="background: #fff8f8; border-color: #ffeaea;">
-                                <h4>Area Peningkatan (Improvement)</h4>
-                                <p>{{ $fb->improvement }}</p>
-                            </div>
+                            <div class="fc-body">
+                                <div class="fc-section fc-strength">
+                                    <h4>Kekuatan (Strength)</h4>
+                                    <p>{{ $fb->strength }}</p>
+                                </div>
+                                
+                                <div class="fc-section fc-improvement">
+                                    <h4>Area Peningkatan (Improvement)</h4>
+                                    <p>{{ $fb->improvement }}</p>
+                                </div>
 
-                            <div class="fc-section" style="background: #f2fbf7; border-color: #e2f5ec;">
-                                <h4>Rekomendasi</h4>
-                                <p>{{ $fb->recommendation }}</p>
+                                <div class="fc-section fc-recommendation">
+                                    <h4>Rekomendasi</h4>
+                                    <p>{{ $fb->recommendation }}</p>
+                                </div>
                             </div>
                             
                             <div class="fc-date">
-                                Diberikan pada {{ $fb->created_at->format('d M Y, H:i') }}
+                                Diberikan pada {{ $fb->created_at->locale('id')->translatedFormat('d M Y') }}
                             </div>
                         </div>
                     @endforeach
@@ -311,5 +468,44 @@
             @endif
         </main>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const ratingFilter = document.getElementById('ratingFilter');
+            const cards = document.querySelectorAll('.feedback-card');
+
+            function filterCards() {
+                if(!searchInput || !ratingFilter) return;
+
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedRating = ratingFilter.value;
+
+                cards.forEach(card => {
+                    const mentor = card.getAttribute('data-mentor');
+                    const content = card.getAttribute('data-content');
+                    const rating = card.getAttribute('data-rating');
+
+                    const matchesSearch = mentor.includes(searchTerm) || content.includes(searchTerm);
+                    const matchesRating = selectedRating === 'all' || rating === selectedRating;
+
+                    if (matchesSearch && matchesRating) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            if(searchInput) {
+                searchInput.addEventListener('keypress', (e) => {
+                    if(e.key === 'Enter') filterCards();
+                });
+            }
+            if(searchBtn) searchBtn.addEventListener('click', filterCards);
+            if(ratingFilter) ratingFilter.addEventListener('change', filterCards);
+        });
+    </script>
 </body>
 </html>

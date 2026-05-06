@@ -28,4 +28,9 @@ class SkillEnrollment extends Model
     {
         return $this->belongsTo(SkillCourse::class, 'skill_course_id');
     }
+
+    public function getIsCompletedAttribute(): bool
+    {
+        return $this->completed_at !== null;
+    }
 }

@@ -9,7 +9,7 @@ class JobseekerFeedbackController extends Controller
 {
     public function index()
     {
-        $feedbacks = Feedback::with(['mentor', 'session'])
+        $feedbacks = Feedback::with(['mentor.mentorProfile', 'session'])
             ->where('mentee_id', auth()->id())
             ->orderByDesc('created_at')
             ->get();

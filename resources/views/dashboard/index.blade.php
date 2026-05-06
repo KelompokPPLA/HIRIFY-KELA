@@ -11,7 +11,11 @@
             <div class="space-y-5">
                 <div>
                     <p class="text-xs uppercase tracking-[0.24em] text-cyan-200/80 font-semibold">Selamat Datang Kembali</p>
-                    <h1 class="mt-2 text-2xl lg:text-3xl font-bold leading-tight text-white">Halo, {{ auth()->user()->name }}! 👋</h1>
+                    @php
+        $hour = now()->hour;
+        $greeting = $hour < 11 ? 'Selamat Pagi' : ($hour < 15 ? 'Selamat Siang' : ($hour < 18 ? 'Selamat Sore' : 'Selamat Malam'));
+    @endphp
+    <h1 class="mt-2 text-2xl lg:text-3xl font-bold leading-tight text-white">{{ $greeting }}, {{ auth()->user()->name }}! 👋</h1>
                     <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">Temukan rekomendasi terbaru untuk CV, pelatihan, dan mentorship yang sesuai dengan tujuan kariermu.</p>
                 </div>
 
@@ -27,8 +31,10 @@
                     <div class="rounded-2xl bg-white/[0.06] backdrop-blur-sm p-5 border border-white/10">
                         <p class="text-xs text-slate-400 font-medium">Sesi Mentorship</p>
                         <p class="mt-2 text-2xl font-bold text-white">{{ $mentorshipCompleted }}</p>
-                        @if ($mentorshipUpcoming > 0)
-                            <p class="mt-1 text-xs text-cyan-300 font-semibold">+{{ $mentorshipUpcoming }} mendatang</p>
+                        @if ($mentorshipPending > 0)
+                            <p class="mt-1 text-xs text-yellow-300 font-semibold">{{ $mentorshipPending }} menunggu konfirmasi</p>
+                        @elseif ($mentorshipUpcoming > 0)
+                            <p class="mt-1 text-xs text-cyan-300 font-semibold">+{{ $mentorshipUpcoming }} sesi mendatang</p>
                         @endif
                     </div>
                 </div>
@@ -51,14 +57,16 @@
                     'label' => 'Progress Pelatihan',
                     'value' => $trainingProgress . '%',
                     'progress' => $trainingProgress,
-                    'desc' => $trainingTotal === 0 ? 'Belum ada pelatihan terdaftar.' : ($trainingCompleted . ' dari ' . $trainingTotal . ' pelatihan selesai.'),
+                    'desc' => $trainingTotal === 0
+                        ? 'Belum ada pelatihan terdaftar. Mulai belajar!'
+                        : ($trainingCompleted . ' dari ' . $trainingTotal . ' kursus selesai' . ($trainingProgress > 0 && $trainingCompleted < $trainingTotal ? ' · ' . $trainingProgress . '% progres keseluruhan' : '') . '.'),
                     'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>',
                 ],
                 [
                     'label' => 'Kesiapan Karier',
                     'value' => $careerReadiness . '%',
                     'progress' => $careerReadiness,
-                    'desc' => !$hasAssessment ? 'Belum ada self assessment.' : 'Berdasarkan self assessment terakhir.',
+                    'desc' => !$hasAssessment ? 'Belum ada self assessment. Mulai sekarang!' : ($careerReadinessLabel . ' — ' . ($assessmentDate ?? 'baru saja')),
                     'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>',
                 ],
             ];
@@ -91,12 +99,13 @@
         <p class="mt-1 text-sm text-slate-500">Navigasi langsung ke fitur utama Hirify.</p>
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-3">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @php
             $quickActions = [
-                ['href' => '/skill-training', 'title' => 'Pelatihan Skill', 'desc' => 'Akses katalog kursus dan tingkatkan skill.', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>'],
-                ['href' => '/roadmap-karier', 'title' => 'Lihat Roadmap', 'desc' => 'Ikuti panduan karier sesuai bidangmu.', 'icon' => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>'],
-                ['href' => '/self-assessment', 'title' => 'Mulai Assessment', 'desc' => 'Evaluasi kesiapan kariermu sekarang.', 'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>'],
+                ['href' => '/skill-training', 'title' => 'Pelatihan Skill', 'desc' => 'Akses katalog kursus dan tingkatkan skill kariermu.', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>'],
+                ['href' => '/roadmap-karier', 'title' => 'Roadmap Karier', 'desc' => 'Ikuti panduan dan tahapan karier sesuai bidangmu.', 'icon' => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>'],
+                ['href' => '/self-assessment', 'title' => 'Self Assessment', 'desc' => 'Evaluasi dan ukur kesiapan kariermu sekarang.', 'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>'],
+                ['href' => '/mentorship', 'title' => 'Cari Mentor', 'desc' => 'Temukan mentor berpengalaman untuk membimbingmu.', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'],
             ];
         @endphp
 
@@ -132,7 +141,7 @@
                     ];
                     $palette = $colorMap[$activity['color']] ?? $colorMap['cyan'];
                 @endphp
-                <div class="flex items-center gap-3 rounded-2xl bg-slate-50/70 border border-slate-100 p-4 hover:bg-slate-50 transition">
+                <div class="flex items-center gap-3 rounded-2xl bg-slate-50/70 border border-slate-100 p-4 hover:bg-slate-50 transition" title="{{ $activity['time_full'] ?? '' }}">
                     <div class="flex h-10 w-10 items-center justify-center rounded-xl {{ $palette['bg'] }} {{ $palette['text'] }} font-bold text-sm flex-shrink-0">{{ $activity['icon'] }}</div>
                     <div class="flex-1 min-w-0">
                         <p class="font-semibold text-slate-900 text-sm truncate">{{ $activity['title'] }}</p>
@@ -141,8 +150,10 @@
                 </div>
             @empty
                 <div class="rounded-2xl bg-slate-50 border border-dashed border-slate-200 p-8 text-center">
-                    <div class="text-3xl mb-3">📋</div>
-                    <p class="text-sm font-medium text-slate-500">Belum ada aktivitas. Mulai dengan mengikuti pelatihan, mentorship, atau self assessment.</p>
+                    <div class="text-3xl mb-3">🚀</div>
+                    <p class="text-sm font-semibold text-slate-700 mb-1">Belum ada aktivitas tercatat</p>
+                    <p class="text-xs text-slate-500">Mulai perjalanan kariermu dengan mengikuti pelatihan, sesi mentorship, atau self assessment sekarang.</p>
+                    <a href="/skill-training" class="inline-block mt-4 px-4 py-2 rounded-xl text-xs font-bold text-white" style="background: linear-gradient(135deg, #0399b7, #06d8ee);">Mulai Pelatihan</a>
                 </div>
             @endforelse
         </div>

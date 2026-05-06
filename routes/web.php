@@ -4,6 +4,7 @@ use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\AdminStatisticsController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RoadmapController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MentorDashboardController;

@@ -6,6 +6,7 @@ use App\Models\MentorBooking;
 use App\Models\Profile;
 use App\Models\SelfAssessment;
 use App\Models\SkillEnrollment;
+use App\Models\SkillLesson;
 use App\Models\SkillLessonProgress;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -35,21 +36,38 @@ class DashboardController extends Controller
         $profile = $user->profile;
         $profileCompleteness = $this->profileCompleteness($profile);
 
-        $totalEnrolled = SkillEnrollment::where('user_id', $user->id)->count();
+        $enrolledCourseIds = SkillEnrollment::where('user_id', $user->id)->pluck('skill_course_id');
+        $totalEnrolled = $enrolledCourseIds->count();
         $completedEnrolled = SkillEnrollment::where('user_id', $user->id)
             ->whereNotNull('completed_at')
             ->count();
 
-        $trainingProgress = $totalEnrolled > 0
-            ? (int) round(($completedEnrolled / $totalEnrolled) * 100)
-            : 0;
+        if ($totalEnrolled > 0) {
+            $lessonIds = SkillLesson::whereIn('skill_course_id', $enrolledCourseIds)->pluck('id');
+            $totalLessons = $lessonIds->count();
+            $completedLessons = $totalLessons > 0
+                ? SkillLessonProgress::where('user_id', $user->id)
+                    ->whereIn('skill_lesson_id', $lessonIds)
+                    ->count()
+                : 0;
+            $trainingProgress = $totalLessons > 0
+                ? (int) round(($completedLessons / $totalLessons) * 100)
+                : 0;
+        } else {
+            $trainingProgress = 0;
+        }
 
-        $mentorshipTotal = MentorBooking::where('jobseeker_user_id', $user->id)->count();
+        $mentorshipTotal = MentorBooking::where('jobseeker_user_id', $user->id)
+            ->whereNotIn('status', ['cancelled', 'rejected'])
+            ->count();
         $mentorshipCompleted = MentorBooking::where('jobseeker_user_id', $user->id)
             ->where('status', 'completed')
             ->count();
         $mentorshipUpcoming = MentorBooking::where('jobseeker_user_id', $user->id)
             ->whereIn('status', ['pending', 'confirmed'])
+            ->count();
+        $mentorshipPending = MentorBooking::where('jobseeker_user_id', $user->id)
+            ->where('status', 'pending')
             ->count();
 
         $latestAssessment = SelfAssessment::where('user_id', $user->id)
@@ -57,16 +75,27 @@ class DashboardController extends Controller
             ->first();
         $careerReadiness = $latestAssessment ? (int) round($latestAssessment->score ?? 0) : 0;
 
+        $careerReadinessLabel = match (true) {
+            $careerReadiness >= 80 => 'Sangat Siap',
+            $careerReadiness >= 60 => 'Cukup Siap',
+            $careerReadiness >= 40 => 'Sedang Berkembang',
+            $careerReadiness > 0  => 'Perlu Peningkatan',
+            default               => 'Belum Dinilai',
+        };
+
         return [
-            'profileCompleteness' => $profileCompleteness,
-            'trainingCompleted' => $completedEnrolled,
-            'trainingTotal' => $totalEnrolled,
-            'trainingProgress' => $trainingProgress,
-            'mentorshipTotal' => $mentorshipTotal,
-            'mentorshipCompleted' => $mentorshipCompleted,
-            'mentorshipUpcoming' => $mentorshipUpcoming,
-            'careerReadiness' => $careerReadiness,
-            'hasAssessment' => $latestAssessment !== null,
+            'profileCompleteness'  => $profileCompleteness,
+            'trainingCompleted'    => $completedEnrolled,
+            'trainingTotal'        => $totalEnrolled,
+            'trainingProgress'     => $trainingProgress,
+            'mentorshipTotal'      => $mentorshipTotal,
+            'mentorshipCompleted'  => $mentorshipCompleted,
+            'mentorshipUpcoming'   => $mentorshipUpcoming,
+            'mentorshipPending'    => $mentorshipPending,
+            'careerReadiness'      => $careerReadiness,
+            'careerReadinessLabel' => $careerReadinessLabel,
+            'hasAssessment'        => $latestAssessment !== null,
+            'assessmentDate'       => $latestAssessment?->created_at?->diffForHumans(),
         ];
     }
 
@@ -76,17 +105,27 @@ class DashboardController extends Controller
             return 0;
         }
 
-        $fields = ['first_name', 'last_name', 'bio', 'phone', 'location', 'photo', 'career_path'];
-        $filled = 0;
+        $fields = [
+            'first_name'  => 1,
+            'last_name'   => 1,
+            'bio'         => 2,
+            'phone'       => 1,
+            'location'    => 1,
+            'photo'       => 2,
+            'career_path' => 2,
+        ];
 
-        foreach ($fields as $field) {
+        $totalWeight = array_sum($fields);
+        $filledWeight = 0;
+
+        foreach ($fields as $field => $weight) {
             $value = $profile->{$field} ?? null;
             if (!empty(trim((string) $value))) {
-                $filled++;
+                $filledWeight += $weight;
             }
         }
 
-        return (int) round(($filled / count($fields)) * 100);
+        return (int) round(($filledWeight / $totalWeight) * 100);
     }
 
     private function recentActivities(User $user): array
@@ -101,11 +140,11 @@ class DashboardController extends Controller
             ->get()
             ->each(function ($enrollment) use ($items) {
                 $items->push([
-                    'type' => 'training',
-                    'icon' => '✓',
+                    'type'  => 'training',
+                    'icon'  => '🎓',
                     'color' => 'cyan',
-                    'title' => 'Pelatihan "' . ($enrollment->course->title ?? 'Skill Course') . '" selesai',
-                    'time' => $enrollment->completed_at,
+                    'title' => 'Kursus "' . ($enrollment->course->title ?? 'Skill Course') . '" berhasil diselesaikan',
+                    'time'  => $enrollment->completed_at,
                 ]);
             });
 
@@ -116,13 +155,17 @@ class DashboardController extends Controller
             ->limit(5)
             ->get()
             ->each(function ($progress) use ($items) {
-                $title = $progress->lesson?->title ?? 'Lesson';
+                $lessonTitle  = $progress->lesson?->title ?? 'Materi';
+                $courseTitle  = $progress->lesson?->course?->title ?? '';
+                $title = $courseTitle
+                    ? 'Materi "' . $lessonTitle . '" pada kursus ' . $courseTitle . ' selesai'
+                    : 'Materi "' . $lessonTitle . '" selesai';
                 $items->push([
-                    'type' => 'lesson',
-                    'icon' => '◉',
+                    'type'  => 'lesson',
+                    'icon'  => '📖',
                     'color' => 'cyan',
-                    'title' => 'Lesson "' . $title . '" selesai',
-                    'time' => $progress->completed_at,
+                    'title' => $title,
+                    'time'  => $progress->completed_at,
                 ]);
             });
 
@@ -167,9 +210,11 @@ class DashboardController extends Controller
         return $items
             ->filter(fn ($item) => $item['time'] !== null)
             ->sortByDesc('time')
-            ->take(6)
+            ->take(8)
             ->map(function ($item) {
-                $item['time_label'] = Carbon::parse($item['time'])->diffForHumans();
+                $parsed = Carbon::parse($item['time']);
+                $item['time_label']   = $parsed->diffForHumans();
+                $item['time_full']    = $parsed->translatedFormat('d M Y, H:i');
                 return $item;
             })
             ->values()

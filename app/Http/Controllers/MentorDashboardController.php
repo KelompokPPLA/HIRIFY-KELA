@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
+use App\Models\SesiJadwal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,13 +16,15 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         $mentor = $user ? ($user->mentorProfile ?? null) : null;
 
-        $availabilities = collect();
+        $sessions = collect();
         $pendingBookings = collect();
         $acceptedBookings = collect();
 
         if ($mentor) {
-            $availabilities = MentorAvailability::where('mentor_id', $mentor->id)
-                ->orderBy('start_at')
+            $sessions = SesiJadwal::where('mentor_id', $user->id)
+                ->whereIn('status', ['Pending', 'Confirmed'])
+                ->orderBy('date', 'asc')
+                ->orderBy('time', 'asc')
                 ->get();
 
             $pendingBookings = MentorBooking::where('mentor_id', $mentor->id)
@@ -31,13 +34,13 @@ class MentorDashboardController extends Controller
                 ->get();
 
             $acceptedBookings = MentorBooking::where('mentor_id', $mentor->id)
-                ->where('status', 'accepted')
+                ->where('status', 'confirmed')
                 ->with('jobseeker', 'availability')
                 ->orderBy('scheduled_start')
                 ->get();
         }
 
-        return view('mentor.dashboard', compact('availabilities', 'pendingBookings', 'acceptedBookings'));
+        return view('mentor.dashboard', compact('sessions', 'pendingBookings', 'acceptedBookings'));
     }
 
     // Store a new availability slot
@@ -102,12 +105,18 @@ class MentorDashboardController extends Controller
     // Accept booking
     public function acceptBooking(Request $request, $id)
     {
-        $mentor = Auth::user()->mentor;
-        $booking = MentorBooking::where('mentor_id', $mentor->id)->findOrFail($id);
+        $mentor = Auth::user()->mentorProfile;
 
-        $booking->update(['status' => 'accepted']);
+        if (! $mentor) {
+            return back()->with('error', 'Profil mentor tidak ditemukan.');
+        }
 
-        // mark availability as booked
+        $booking = MentorBooking::where('mentor_id', $mentor->id)
+            ->where('status', 'pending')
+            ->findOrFail($id);
+
+        $booking->update(['status' => 'confirmed']);
+
         if ($booking->mentor_availability_id) {
             $availability = MentorAvailability::find($booking->mentor_availability_id);
             if ($availability) {
@@ -115,7 +124,14 @@ class MentorDashboardController extends Controller
             }
         }
 
-        return back()->with('success', 'Booking diterima.');
+        if ($booking->sesi_jadwal_id) {
+            $session = \App\Models\SesiJadwal::find($booking->sesi_jadwal_id);
+            if ($session) {
+                $session->update(['status' => 'Confirmed']);
+            }
+        }
+
+        return back()->with('success', 'Booking berhasil dikonfirmasi.');
     }
 
     // Reject booking
