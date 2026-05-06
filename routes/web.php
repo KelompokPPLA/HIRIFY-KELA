@@ -125,6 +125,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
         Route::view('/settings', 'mentor.settings')->name('settings');
+        Route::get('/mentee', [\App\Http\Controllers\MenteeSayaController::class, 'index'])->name('mentee.index');
 
         // Sesi & jadwal
         Route::resource('sesi-jadwal', SesiJadwalController::class)->names('sesi-jadwal');
