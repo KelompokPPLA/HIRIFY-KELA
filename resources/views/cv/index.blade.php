@@ -10,14 +10,15 @@
         *{box-sizing:border-box;margin:0}
         body{font-family:'Manrope',sans-serif;color:var(--ink);background:radial-gradient(circle at 5% 15%,rgba(6,203,229,.16),transparent 24%),radial-gradient(circle at 95% 5%,rgba(6,203,229,.12),transparent 20%),var(--bg)}
         .layout{min-height:100vh;display:grid;grid-template-columns:250px 1fr}
-        .sidebar{background:#fff;border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:18px}
+        .sidebar{background:#fff;border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:12px;height:100vh;overflow:hidden}
         .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:30px;letter-spacing:-.02em}
         .brand-mark{width:34px;height:34px;border-radius:12px;background:linear-gradient(145deg,#0399b7,#06d8ee);display:grid;place-items:center;color:#fff;font-size:17px;font-weight:800}
-        .menu{display:grid;gap:8px}
+        .menu{display:grid;gap:8px;flex:1;overflow-y:auto;padding-bottom:4px}
         .menu a,.menu button{border:0;background:transparent;color:#1a2a4c;font:inherit;text-align:left;border-radius:12px;padding:11px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;text-decoration:none}
         .menu a:hover,.menu button:hover{background:#f2f8ff}
         .menu .active{background:linear-gradient(145deg,#0a1632,#111f45);color:#f2fbff;box-shadow:0 10px 20px rgba(11,24,54,.22)}
-        .profile-mini{margin-top:auto;background:#f8fbff;border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px}
+        .profile-mini{flex-shrink:0;background:#f8fbff;border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px}
+        .logout-wrap{flex-shrink:0;padding-top:8px;border-top:1px solid var(--line)}.logout-btn{width:100%;background:transparent;border:0;color:var(--muted);font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;transition:color .15s}.logout-btn:hover{color:#b42318}
         .avatar-mini{width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#0499b3,#05d5ef);color:#fff;display:grid;place-items:center;font-weight:800}
         .profile-mini strong{display:block;font-size:.92rem}
         .profile-mini span{color:var(--muted);font-size:.82rem}
@@ -68,8 +69,17 @@
                 <a href="/notifikasi">Notifikasi</a>
             </div>
             <div class="profile-mini">
-                <div class="avatar-mini">U</div>
-                <div><strong>User Name</strong><span>user@email.com</span></div>
+                <div class="avatar-mini">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
+                <div style="min-width:0"><strong style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ auth()->user()->name ?? 'User' }}</strong><span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ auth()->user()->email ?? '' }}</span></div>
+            </div>
+            <div class="logout-wrap">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="logout-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Keluar
+                    </button>
+                </form>
             </div>
         </aside>
 

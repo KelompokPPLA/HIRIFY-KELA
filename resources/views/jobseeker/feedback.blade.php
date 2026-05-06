@@ -38,7 +38,9 @@
             padding: 22px 16px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 12px;
+            height: 100vh;
+            overflow: hidden;
         }
         .brand {
             display: flex;
@@ -62,6 +64,9 @@
         .menu {
             display: grid;
             gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 4px;
         }
         .menu button {
             border: 0;
@@ -86,7 +91,7 @@
             box-shadow: 0 10px 20px rgba(11, 24, 54, 0.22);
         }
         .profile-mini {
-            margin-top: auto;
+            flex-shrink: 0;
             background: #f8fbff;
             border: 1px solid var(--line);
             border-radius: 14px;
@@ -113,6 +118,9 @@
             color: var(--muted);
             font-size: .82rem;
         }
+        .logout-wrap { flex-shrink: 0; padding-top: 8px; border-top: 1px solid var(--line); }
+        .logout-btn { width: 100%; background: transparent; border: 0; color: var(--muted); font: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 12px; transition: color .15s; }
+        .logout-btn:hover { color: #b42318; }
         .content {
             padding: 24px;
             display: grid;
@@ -323,10 +331,19 @@
             </div>
             <div class="profile-mini">
                 <div class="avatar-mini">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
-                <div>
-                    <strong>{{ auth()->user()->name ?? 'User Name' }}</strong>
-                    <span>{{ auth()->user()->email ?? 'user@email.com' }}</span>
+                <div style="min-width:0">
+                    <strong style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ auth()->user()->name ?? 'User' }}</strong>
+                    <span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ auth()->user()->email ?? '' }}</span>
                 </div>
+            </div>
+            <div class="logout-wrap">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="logout-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Keluar
+                    </button>
+                </form>
             </div>
         </aside>
 
