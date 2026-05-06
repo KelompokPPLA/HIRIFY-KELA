@@ -23,19 +23,14 @@ class MenteeSayaController extends Controller
                 'mentees' => collect(),
                 'stats' => [
                     'total' => 0,
-                    'active' => 0,
-                    'inactive' => 0
+                    'confirmed' => 0,
+                    'rejected' => 0
                 ],
                 'search' => '',
                 'filterStatus' => 'all'
             ]);
         }
 
-        // Build query: get all bookings for this mentor grouped by mentee
-        $query = MentorBooking::with('jobseeker.profile')
-            ->where('mentor_id', $mentor->id);
-
-        // Apply status filter
         $filterStatus = $request->input('status', 'all');
         $search = $request->input('search', '');
 
@@ -74,11 +69,12 @@ class MenteeSayaController extends Controller
             $completedSessions= $data ? (int)$data->completed_sessions : 0;
             $progress         = $totalSessions > 0 ? round(($completedSessions / $totalSessions) * 100) : 0;
 
-            // Active: has booking that is confirmed or pending (in progress)
-            $isActive = MentorBooking::where('mentor_id', $mentorId)
+            // Get the latest booking status
+            $latestBooking = MentorBooking::where('mentor_id', $mentorId)
                             ->where('jobseeker_user_id', $user->id)
-                            ->whereIn('status', ['confirmed', 'pending'])
-                            ->exists();
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+            $latestStatus = $latestBooking ? strtolower($latestBooking->status) : 'pending';
 
             // Average mentee_rating given by this mentor for this mentee
             $avgMenteeRating = Feedback::where('mentor_id', $mentorUserId)
@@ -95,25 +91,35 @@ class MenteeSayaController extends Controller
                 'total_sessions'    => $totalSessions,
                 'completed_sessions'=> $completedSessions,
                 'progress'          => $progress,
-                'is_active'         => $isActive,
+                'latest_status'     => $latestStatus,
                 'started_at'        => $data ? $data->started_at : null,
                 'avg_mentee_rating' => $avgMenteeRating ? round($avgMenteeRating, 1) : null,
             ];
         });
 
         // Apply status filter on collection
-        if ($filterStatus === 'active') {
-            $mentees = $mentees->filter(fn($m) => $m['is_active']);
-        } elseif ($filterStatus === 'inactive') {
-            $mentees = $mentees->filter(fn($m) => !$m['is_active']);
+        if ($filterStatus === 'confirmed') {
+            $mentees = $mentees->filter(fn($m) => in_array($m['latest_status'], ['confirmed', 'completed']));
+        } elseif ($filterStatus === 'rejected') {
+            $mentees = $mentees->filter(fn($m) => $m['latest_status'] === 'rejected');
         }
 
         $mentees = $mentees->values();
 
+        // Stats calculation based on mapped list
+        $allMenteeUsers = User::whereIn('id', $menteeIds)->get();
+        $statsCalculated = $allMenteeUsers->map(function ($u) use ($mentorId) {
+            $latestBooking = MentorBooking::where('mentor_id', $mentorId)
+                            ->where('jobseeker_user_id', $u->id)
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+            return $latestBooking ? strtolower($latestBooking->status) : 'pending';
+        });
+
         $stats = [
-            'total'    => $mentees->count(),
-            'active'   => $mentees->where('is_active', true)->count(),
-            'inactive' => $mentees->where('is_active', false)->count(),
+            'total'     => $statsCalculated->count(),
+            'confirmed' => $statsCalculated->filter(fn($s) => in_array($s, ['confirmed', 'completed']))->count(),
+            'rejected'  => $statsCalculated->filter(fn($s) => $s === 'rejected')->count(),
         ];
 
         return view('mentor.mentee.index', compact('mentees', 'stats', 'search', 'filterStatus'));
