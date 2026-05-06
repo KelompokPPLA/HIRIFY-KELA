@@ -30,6 +30,7 @@ class FeedbackController extends Controller
         $mentees = User::whereIn('id', function ($query) use ($mentorProfileId) {
             $query->select('jobseeker_user_id')
                   ->from('mentor_bookings')
+                  ->whereIn('status', ['confirmed', 'completed'])
                   ->when($mentorProfileId, function ($q) use ($mentorProfileId) {
                       $q->where('mentor_id', $mentorProfileId);
                   });
@@ -66,6 +67,7 @@ class FeedbackController extends Controller
 
         $bookingExists = MentorBooking::where('mentor_id', $mentorProfileId)
             ->where('jobseeker_user_id', $data['mentee_id'])
+            ->whereIn('status', ['confirmed', 'completed'])
             ->exists();
 
         if (!$bookingExists) {
