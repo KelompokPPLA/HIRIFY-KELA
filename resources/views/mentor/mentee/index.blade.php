@@ -7,7 +7,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
         <div>
             <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Mentee Saya</h1>
-            <p class="text-slate-500 mt-1.5 font-medium">Pantau progres semua mentee yang aktif dalam sesi Anda</p>
+            <p class="text-slate-500 mt-1.5 font-medium">Pantau progres semua mentee yang mengambil sesi Anda</p>
         </div>
     </div>
 
@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <!-- Active Card -->
+        <!-- Accepted Card -->
         <div class="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.05)] hover:-translate-y-0.5 transition duration-300 flex items-center gap-5 border border-slate-200">
             <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/5">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -37,22 +37,22 @@
                 </svg>
             </div>
             <div>
-                <div class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $stats['active'] }}</div>
-                <div class="text-sm text-slate-400 font-bold mt-1">Sesi Aktif</div>
+                <div class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $stats['confirmed'] }}</div>
+                <div class="text-sm text-slate-400 font-bold mt-1">Mentee Diterima</div>
             </div>
         </div>
 
-        <!-- Inactive Card -->
+        <!-- Rejected Card -->
         <div class="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.05)] hover:-translate-y-0.5 transition duration-300 flex items-center gap-5 border border-slate-200">
-            <div class="w-14 h-14 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200">
+            <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0 border border-rose-100/50">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10"/>
                     <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
                 </svg>
             </div>
             <div>
-                <div class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $stats['inactive'] }}</div>
-                <div class="text-sm text-slate-400 font-bold mt-1">Selesai / Nonaktif</div>
+                <div class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $stats['rejected'] }}</div>
+                <div class="text-sm text-slate-400 font-bold mt-1">Mentee Ditolak</div>
             </div>
         </div>
     </div>
@@ -72,7 +72,7 @@
 
         <!-- Filter Selector Switcher -->
         <div class="flex items-center bg-white p-1 rounded-full border border-slate-200/80 shadow-sm gap-1 self-start lg:self-center">
-            @foreach(['all' => 'Semua', 'active' => 'Active', 'inactive' => 'Inactive'] as $val => $label)
+            @foreach(['all' => 'Semua', 'confirmed' => 'Diterima', 'rejected' => 'Ditolak'] as $val => $label)
                 <button type="submit" name="status" value="{{ $val }}"
                     class="px-6 py-2 rounded-full font-extrabold text-sm transition duration-200 {{ ($filterStatus ?? 'all') === $val ? 'bg-[#00bee4] text-white shadow-md shadow-cyan-500/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                     {{ $label }}
@@ -83,7 +83,7 @@
 
     <!-- Card Grid -->
     @if($mentees->isEmpty())
-        <div class="py-20 text-center bg-white rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+        <div class="py-20 text-center bg-white rounded-3xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
             <div class="w-20 h-20 mx-auto mb-5 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                     <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
@@ -126,13 +126,17 @@
                         </div>
 
                         <!-- Status Pill Badge -->
-                        @if($mentee['is_active'])
+                        @if($mentee['latest_status'] === 'confirmed' || $mentee['latest_status'] === 'completed')
                             <span class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-100/30">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Active
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Diterima
+                            </span>
+                        @elseif($mentee['latest_status'] === 'rejected')
+                            <span class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-rose-50 text-rose-600 border border-rose-100/30">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"></span> Ditolak
                             </span>
                         @else
-                            <span class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-slate-50 text-slate-400 border border-slate-100">
-                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block"></span> Inactive
+                            <span class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-amber-50 text-amber-600 border border-amber-100/30">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span> Pending
                             </span>
                         @endif
                     </div>
