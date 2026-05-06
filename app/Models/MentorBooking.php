@@ -15,6 +15,7 @@ class MentorBooking extends Model
         'mentor_id',
         'jobseeker_user_id',
         'mentor_availability_id',
+        'sesi_jadwal_id',
         'scheduled_start',
         'scheduled_end',
         'status',
@@ -43,6 +44,11 @@ class MentorBooking extends Model
     public function availability()
     {
         return $this->belongsTo(MentorAvailability::class, 'mentor_availability_id');
+    }
+
+    public function sesiJadwal()
+    {
+        return $this->belongsTo(SesiJadwal::class, 'sesi_jadwal_id');
     }
 
     public function getDurationMinutesAttribute(): int

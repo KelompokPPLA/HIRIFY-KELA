@@ -25,6 +25,7 @@
 
     <div class="grid gap-3 sm:grid-cols-4">
         @php
+            $unreadCount = $unreadCount ?? 0;
             $summaryCards = [
                 ['label' => 'Belum dibaca', 'value' => $unreadCount, 'class' => 'bg-slate-900 text-white'],
                 ['label' => 'Booking', 'value' => (int) ($typeCounts['booking'] ?? 0), 'class' => 'bg-cyan-50 text-cyan-700 border border-cyan-100'],

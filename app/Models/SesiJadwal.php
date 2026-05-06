@@ -32,4 +32,9 @@ class SesiJadwal extends Model
     {
         return $this->hasMany(Feedback::class, 'session_id');
     }
+
+    public function bookings()
+    {
+        return $this->hasMany(MentorBooking::class, 'sesi_jadwal_id');
+    }
 }

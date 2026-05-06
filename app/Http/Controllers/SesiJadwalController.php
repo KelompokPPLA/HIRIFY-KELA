@@ -16,7 +16,7 @@ class SesiJadwalController extends Controller
         $tab = request('tab', 'mendatang');
 
         if ($user) {
-            $query = SesiJadwal::where('mentor_id', $user->id);
+            $query = SesiJadwal::with(['bookings.jobseeker'])->where('mentor_id', $user->id);
             if ($tab === 'riwayat') {
                 $query->whereIn('status', ['Completed', 'Cancelled'])->orderBy('date', 'desc');
             } else {
@@ -60,7 +60,7 @@ class SesiJadwalController extends Controller
 
     public function show($id)
     {
-        $session = SesiJadwal::findOrFail($id);
+        $session = SesiJadwal::with(['bookings.jobseeker'])->findOrFail($id);
         if ($session->mentor_id !== auth()->id()) abort(403);
         return view('sesiJadwal.show', compact('session'));
     }
@@ -96,6 +96,15 @@ class SesiJadwalController extends Controller
         }
 
         $session->update($data);
+
+        // Sync status with related bookings (only for active bookings)
+        if ($session->status === 'Completed') {
+            $session->bookings()->whereIn('status', ['pending', 'confirmed'])
+                ->update(['status' => 'completed']);
+        } elseif ($session->status === 'Cancelled') {
+            $session->bookings()->whereIn('status', ['pending', 'confirmed'])
+                ->update(['status' => 'cancelled']);
+        }
 
         return redirect()->route('mentor.sesi-jadwal.show', $session->id)->with('success', 'Sesi diperbarui.');
     }

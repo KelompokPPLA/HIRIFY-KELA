@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
-use App\Models\UserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,13 +15,21 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         $mentor = $user ? ($user->mentorProfile ?? null) : null;
 
-        $availabilities = collect();
+        $sessions = collect();
         $pendingBookings = collect();
         $acceptedBookings = collect();
+        $totalMenteesCount = 0;
+        $sessionsThisMonthCount = 0;
+        $menteesThisMonthCount = 0;
+        $sessionsThisWeekCount = 0;
+        $avgRating = 0.0;
+        $earningsFormatted = 'Rp 0,0jt';
 
         if ($mentor) {
-            $availabilities = MentorAvailability::where('mentor_id', $mentor->id)
-                ->orderBy('start_at')
+            $sessions = SesiJadwal::with('bookings.jobseeker')->where('mentor_id', $user->id)
+                ->whereIn('status', ['Pending', 'Confirmed'])
+                ->orderBy('date', 'asc')
+                ->orderBy('time', 'asc')
                 ->get();
 
             $pendingBookings = MentorBooking::where('mentor_id', $mentor->id)
@@ -36,9 +43,45 @@ class MentorDashboardController extends Controller
                 ->with('jobseeker', 'availability')
                 ->orderBy('scheduled_start')
                 ->get();
+
+            $totalMenteesCount = MentorBooking::where('mentor_id', $mentor->id)
+                ->whereNotNull('jobseeker_user_id')
+                ->distinct('jobseeker_user_id')
+                ->count('jobseeker_user_id');
+
+            $sessionsThisMonthCount = SesiJadwal::where('mentor_id', $user->id)
+                ->whereMonth('date', now()->month)
+                ->whereYear('date', now()->year)
+                ->count();
+
+            $menteesThisMonthCount = MentorBooking::where('mentor_id', $mentor->id)
+                ->whereNotNull('jobseeker_user_id')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->distinct('jobseeker_user_id')
+                ->count('jobseeker_user_id');
+
+            $sessionsThisWeekCount = SesiJadwal::where('mentor_id', $user->id)
+                ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
+                ->count();
+
+            $dbRating = \App\Models\Feedback::where('mentor_id', $user->id)->avg('rating');
+            $avgRating = $dbRating ? round($dbRating, 1) : 0.0;
+
+            $earningsFormatted = 'Rp ' . number_format(($totalMenteesCount * 200000) / 1000000, 1, ',', '.') . 'jt';
         }
 
-        return view('mentor.dashboard', compact('availabilities', 'pendingBookings', 'acceptedBookings'));
+        return view('mentor.dashboard', compact(
+            'sessions',
+            'pendingBookings',
+            'acceptedBookings',
+            'totalMenteesCount',
+            'sessionsThisMonthCount',
+            'menteesThisMonthCount',
+            'sessionsThisWeekCount',
+            'avgRating',
+            'earningsFormatted'
+        ));
     }
 
     // Store a new availability slot
@@ -122,15 +165,6 @@ class MentorDashboardController extends Controller
             }
         }
 
-        UserNotification::create([
-            'user_id' => $booking->jobseeker_user_id,
-            'type' => 'booking',
-            'title' => 'Booking mentorship dikonfirmasi',
-            'message' => 'Booking sesi mentorship Anda telah dikonfirmasi oleh mentor.',
-            'action_url' => '/mentorship',
-            'data' => ['booking_id' => $booking->id, 'status' => 'confirmed'],
-        ]);
-
         return back()->with('success', 'Booking berhasil dikonfirmasi.');
     }
 
@@ -152,21 +186,6 @@ class MentorDashboardController extends Controller
         $booking->update([
             'status' => 'rejected',
             'rejection_reason' => $request->rejection_reason,
-        ]);
-
-        if ($booking->mentor_availability_id) {
-            MentorAvailability::where('id', $booking->mentor_availability_id)->update(['is_booked' => false]);
-        }
-
-        UserNotification::create([
-            'user_id' => $booking->jobseeker_user_id,
-            'type' => 'booking',
-            'title' => 'Booking mentorship ditolak',
-            'message' => $request->rejection_reason
-                ? 'Booking sesi Anda ditolak. Alasan: ' . $request->rejection_reason
-                : 'Booking sesi Anda ditolak oleh mentor.',
-            'action_url' => '/mentorship',
-            'data' => ['booking_id' => $booking->id, 'status' => 'rejected'],
         ]);
 
         return back()->with('success', 'Booking ditolak.');

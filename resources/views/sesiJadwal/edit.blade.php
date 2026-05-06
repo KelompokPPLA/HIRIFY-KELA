@@ -2,18 +2,30 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    <header class="mb-6 flex items-center justify-between">
+    <!-- Header Section -->
+    <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold">Edit Sesi</h1>
-            <p class="text-gray-500 mt-1">Perbarui rincian sesi mentoring</p>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Edit Sesi</h1>
+            <p class="text-slate-500 mt-1.5 font-medium">Perbarui rincian sesi mentoring Anda</p>
         </div>
-        <a href="{{ route('mentor.sesi-jadwal.index') }}" class="text-gray-500 hover:text-gray-700 font-medium transition">← Kembali</a>
+        <a href="{{ route('mentor.sesi-jadwal.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-200 bg-white text-xs font-extrabold uppercase tracking-wider text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm transition duration-200 self-start sm:self-center">
+            ← Kembali ke Jadwal
+        </a>
     </header>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8">
+    <!-- Main Form Container -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
         @if($errors->any())
-            <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-lg">
-                <ul class="list-disc pl-5 space-y-1">
+            <div class="mb-8 p-5 bg-rose-50 text-rose-700 border border-rose-100/80 rounded-2xl">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span class="font-extrabold text-sm uppercase tracking-wide">Terjadi Kesalahan:</span>
+                </div>
+                <ul class="list-disc pl-5 space-y-1 text-xs font-bold text-rose-600/90">
                     @foreach($errors->all() as $e)
                         <li>{{ $e }}</li>
                     @endforeach
@@ -25,63 +37,94 @@
             @csrf
             @method('PUT')
             
-            <div class="space-y-5">
+            <div class="space-y-6">
+                <!-- Topic -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Topik Sesi</label>
-                    <input type="text" name="topic" value="{{ old('topic', $session->topic) }}" required class="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:ring-sky-200 focus:border-sky-500 transition">
+                    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Topik Sesi</label>
+                    <input type="text" name="topic" value="{{ old('topic', $session->topic) }}" required 
+                        class="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00bee4] outline-none transition duration-200 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-100/50" 
+                        placeholder="Misal: CV Review & Interview Preparation">
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Date & Time Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Tanggal</label>
-                        <input type="date" name="date" value="{{ old('date', $session->date) }}" required class="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:ring-sky-200 focus:border-sky-500 transition">
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Tanggal</label>
+                        <input type="date" name="date" value="{{ old('date', $session->date) }}" required 
+                            class="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00bee4] outline-none transition duration-200 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-100/50">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Waktu (WIB)</label>
-                        <input type="time" name="time" value="{{ old('time', $session->time) }}" required class="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:ring-sky-200 focus:border-sky-500 transition">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Durasi (Menit)</label>
-                        <input type="number" name="duration" value="{{ old('duration', $session->duration) }}" required class="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:ring-sky-200 focus:border-sky-500 transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Platform / Tautan</label>
-                        <input type="text" name="platform" value="{{ old('platform', $session->platform) }}" class="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:ring-sky-200 focus:border-sky-500 transition">
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Waktu (WIB)</label>
+                        <input type="time" name="time" value="{{ old('time', $session->time) }}" required 
+                            class="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00bee4] outline-none transition duration-200 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-100/50">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Duration & Platform Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Status</label>
-                        <select name="status" class="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:ring-sky-200 focus:border-sky-500 transition">
-                            <option value="Pending" {{ old('status', $session->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="Confirmed" {{ old('status', $session->status) == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
-                            <option value="Completed" {{ old('status', $session->status) == 'Completed' ? 'selected' : '' }}>Completed</option>
-                            <option value="Cancelled" {{ old('status', $session->status) == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
-                        </select>
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Durasi (Menit)</label>
+                        <input type="number" name="duration" value="{{ old('duration', $session->duration) }}" required 
+                            class="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00bee4] outline-none transition duration-200 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-100/50">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Update File Materi (PDF/Video)</label>
-                        <input type="file" name="material_file" accept=".pdf,video/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 transition border border-gray-200 rounded-lg py-1.5 px-3">
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Platform / Tautan</label>
+                        <input type="text" name="platform" value="{{ old('platform', $session->platform) }}" 
+                            class="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00bee4] outline-none transition duration-200 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-100/50" 
+                            placeholder="Misal: Google Meet link atau Zoom">
+                    </div>
+                </div>
+
+                <!-- Status & Material Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Status Sesi</label>
+                        <div class="relative">
+                            <select name="status" 
+                                class="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00bee4] outline-none transition duration-200 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-100/50 appearance-none">
+                                <option value="Pending" {{ old('status', $session->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="Confirmed" {{ old('status', $session->status) == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                <option value="Completed" {{ old('status', $session->status) == 'Completed' ? 'selected' : '' }}>Completed</option>
+                                <option value="Cancelled" {{ old('status', $session->status) == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            </select>
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Update File Materi (PDF/Video)</label>
+                        <input type="file" name="material_file" accept=".pdf,video/*" 
+                            class="w-full text-xs font-extrabold text-slate-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-full file:border-0 file:text-xs file:font-extrabold file:uppercase file:tracking-wide file:bg-cyan-50 file:text-[#00bee4] hover:file:bg-cyan-100/80 file:transition file:duration-200 border border-slate-200 rounded-2xl py-1.5 px-3 bg-white shadow-sm shadow-slate-100/50 focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00bee4] outline-none transition duration-200">
+                        
                         @if($session->material_file)
-                            <div class="mt-2 text-xs text-gray-500 flex items-center gap-1.5">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-                                <span class="font-medium">File saat ini:</span>
-                                <a href="{{ Storage::url($session->material_file) }}" target="_blank" class="text-sky-600 hover:underline">Lihat Materi</a>
+                            <div class="mt-3 flex items-center gap-2">
+                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">File saat ini:</span>
+                                <a href="{{ Storage::url($session->material_file) }}" target="_blank" 
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-1 bg-cyan-50 text-cyan-600 rounded-full text-[10px] font-extrabold uppercase tracking-wider border border-cyan-100/50 hover:bg-cyan-100/80 transition duration-200">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                    Lihat Materi
+                                </a>
                             </div>
                         @else
-                            <p class="mt-1 text-xs text-gray-400">PDF atau Video (Maks. 50MB)</p>
+                            <p class="mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">PDF atau Video (Maks. 50MB)</p>
                         @endif
                     </div>
                 </div>
             </div>
 
-            <div class="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
-                <a href="{{ route('mentor.sesi-jadwal.index') }}" class="px-5 py-2.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium transition">Batal</a>
-                <button type="submit" class="px-6 py-2.5 rounded-lg bg-slate-900 text-white font-medium hover:bg-slate-800 transition shadow-sm">Perbarui Sesi</button>
+            <!-- Action Buttons -->
+            <div class="mt-10 flex items-center justify-end gap-4 pt-8 border-t border-slate-100">
+                <a href="{{ route('mentor.sesi-jadwal.index') }}" 
+                    class="px-6 py-3 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-extrabold uppercase tracking-wider transition duration-200">
+                    Batal
+                </a>
+                <button type="submit" 
+                    class="px-8 py-3 rounded-full bg-[#00bee4] hover:bg-[#00a3c4] text-white text-xs font-extrabold uppercase tracking-wider shadow-lg shadow-cyan-500/15 transition duration-200 hover:scale-[1.02] active:scale-[0.98]">
+                    Perbarui Sesi
+                </button>
             </div>
         </form>
     </div>

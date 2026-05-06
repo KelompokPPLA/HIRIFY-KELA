@@ -14,12 +14,12 @@ class MentorProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|min:10|max:60',
             'email' => 'required|email|max:255|unique:users,email,' . $this->user()->id,
-            'phone_number' => 'nullable|string|max:30',
+            'phone_number' => 'required|string|min:10|max:13',
             'expertise' => 'required|string|max:255',
-            'experience_years' => 'nullable|integer|min:0|max:60',
-            'bio' => 'nullable|string|max:2000',
+            'experience_years' => 'nullable|integer|min:0|max:50',
+            'bio' => 'nullable|string|max:150',
             'education' => 'nullable|string|max:255',
 
             'skills' => 'nullable|array|max:30',
