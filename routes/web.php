@@ -1,36 +1,39 @@
 <?php
 
-use App\Http\Controllers\Web\AuthController;
-use App\Http\Controllers\AdminStatisticsController;
-use App\Http\Controllers\CvController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\RoadmapController;
 use Illuminate\Support\Facades\Route;
+
+/* ================= CONTROLLERS ================= */
+use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CvController;
+use App\Http\Controllers\RoadmapController;
+use App\Http\Controllers\SelfAssessmentController;
 use App\Http\Controllers\MentorDashboardController;
 use App\Http\Controllers\SesiJadwalController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\AdminStatisticsController;
 use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\DownloadController;
 
 /* ============================================================
-   WELCOME
+   ROOT
 ============================================================ */
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn() => redirect()->route('dashboard'));
 
 /* ============================================================
-   PUBLIC ROUTES (guests only)
+   PUBLIC ROUTES (GUEST ONLY)
 ============================================================ */
 Route::middleware('guest')->group(function () {
 
+    // AUTH
     Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
     Route::get('/register',  [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
+    // PASSWORD RESET
     Route::get('/forgot-password',  [AuthController::class, 'showForgotPassword'])->name('password.request');
     Route::post('/forgot-password', [AuthController::class, 'sendOtp'])->name('password.send-otp');
 
@@ -41,7 +44,7 @@ Route::middleware('guest')->group(function () {
 });
 
 /* ============================================================
-   PROTECTED ROUTES (auth required)
+   PROTECTED ROUTES (AUTH REQUIRED)
 ============================================================ */
 Route::middleware('auth')->group(function () {
 
@@ -53,66 +56,54 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/edit',  [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile',      [ProfileController::class, 'update'])->name('profile.update');
 
-    /* ---------- CV Management ----------
-     *
-     * FIX: Route::resource('cv', CvController::class) was defined AFTER an
-     * explicit Route::get('/buat-cv-ats', ...) that also maps to
-     * CvController@create. This caused a duplicate-action conflict and the
-     * named route 'buat-cv-ats.index' (used throughout blade templates)
-     * could be shadowed by the resource's 'cv.create' route.
-     *
-     * Resolution:
-     *  - Keep the explicit named route for the ATS creation view so blade
-     *    templates continue to use route('buat-cv-ats.index') without change.
-     *  - Exclude 'create' from the resource so there is only ONE route that
-     *    points to CvController@create (/buat-cv-ats).
-     *  - The resource still provides: index, store, show, edit, update, destroy.
-     */
-    Route::get('/manajemen-cv', function () {
-        return view('jobseeker.manajemen-cv');
-    })->name('manajemen-cv.index');
+    /* ---------- CV MANAGEMENT ---------- */
 
-    // Explicit ATS creation page (keeps the 'buat-cv-ats.index' name used in blades)
+    // halaman list CV
+    Route::view('/manajemen-cv', 'jobseeker.manajemen-cv')->name('manajemen-cv.index');
+
+    // halaman buat CV ATS
     Route::get('/buat-cv-ats', [CvController::class, 'create'])->name('buat-cv-ats.index');
 
-    // Resource routes — 'create' excluded to avoid conflict with the route above
-    Route::resource('cv', CvController::class)->except(['create']);
-
-    Route::view('/buat-cv-presentasi', 'jobseeker.buat-cv-presentasi')->name('buat-cv-presentasi.index');
-    Route::get('/cv/{id}/download', [DownloadController::class, 'downloadPdf']);
+    // generate CV
     Route::post('/cv', [GenerateController::class, 'store'])->name('cv.store');
 
-    /* ---------- Roadmap & Assessment ---------- */
+    // download CV
+    Route::get('/cv/{id}/download', [DownloadController::class, 'downloadPdf'])->name('cv.download');
+
+    // resource CV TANPA create (biar ga conflict)
+    Route::resource('cv', CvController::class)->except(['create']);
+
+    // CV presentasi
+    Route::view('/buat-cv-presentasi', 'jobseeker.buat-cv-presentasi')->name('buat-cv-presentasi.index');
+
+
+    /* ---------- ROADMAP KARIER ---------- */
     Route::get('/roadmap-karier', [RoadmapController::class, 'index'])->name('roadmap-karier');
     Route::post('/roadmap-karier', [RoadmapController::class, 'store'])->name('roadmap-karier.store');
     Route::patch('/roadmap-karier/{id}', [RoadmapController::class, 'update'])->name('roadmap-karier.update');
-    Route::view('/self-assessment', 'self-assessment.index')->name('self-assessment.index');
 
-    /* ---------- Skill Training ---------- */
-    // FIX: redirect('/pelatihan', '/skill-training') is a permanent (301) redirect
-    // by default. Using ->redirect() with status 302 is safer to avoid browsers
-    // caching a redirect that might change.
-    Route::redirect('/pelatihan', '/skill-training', 302)->name('pelatihan.index');
+
+    /* ---------- SELF ASSESSMENT ---------- */
+    Route::get('/self-assessment',   [SelfAssessmentController::class, 'index'])->name('self-assessment');
+    Route::post('/self-assessment',  [SelfAssessmentController::class, 'store'])->name('assessment.store');
+    Route::get('/assessment/result', [SelfAssessmentController::class, 'result'])->name('assessment.result');
+
+
+    /* ---------- STATIC PAGES ---------- */
+    Route::view('/pelatihan', 'jobseeker.skill-training')->name('pelatihan.index');
     Route::view('/skill-training', 'jobseeker.skill-training')->name('skill-training.index');
-
-    /* ---------- Forum ---------- */
     Route::view('/forum', 'forum.index')->name('forum.index');
-
-    /* ---------- Notifikasi ---------- */
     Route::view('/notifikasi', 'notifikasi.index')->name('notifikasi.index');
-
-    /* ---------- Mentorship ---------- */
     Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
 
-    Route::get('/riwayat-feedback', [\App\Http\Controllers\JobseekerFeedbackController::class, 'index'])
-         ->name('jobseeker.feedback.index');
 
-    /* ---------- Auth Actions ---------- */
+    /* ---------- AUTH ACTION ---------- */
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/me',      [AuthController::class, 'me'])->name('auth.me');
+    Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
+
 
     /* ==========================================================
-       ADMIN ROUTES
+       ADMIN
     ========================================================== */
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         Route::get('/statistics', [AdminStatisticsController::class, 'show'])->name('admin.statistics');
@@ -120,30 +111,33 @@ Route::middleware('auth')->group(function () {
         Route::get('/activity',   [AdminStatisticsController::class, 'activity'])->name('admin.activity');
     });
 
+
     /* ==========================================================
-       MENTOR ROUTES
+       MENTOR
     ========================================================== */
     Route::prefix('mentor')->name('mentor.')->group(function () {
 
         Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
         Route::view('/settings', 'mentor.settings')->name('settings');
+
         Route::get('/mentee', [\App\Http\Controllers\MenteeSayaController::class, 'index'])->name('mentee.index');
         Route::get('/mentee/{id}', [\App\Http\Controllers\MenteeSayaController::class, 'show'])->name('mentee.show');
 
-        // Sesi & jadwal
+        // sesi
         Route::resource('sesi-jadwal', SesiJadwalController::class)->names('sesi-jadwal');
         Route::post('sesi-jadwal/{id}/notes', [SesiJadwalController::class, 'addNotes'])->name('sesi-jadwal.notes');
 
-        // Feedback
+        // feedback
         Route::resource('feedback', FeedbackController::class)->names('feedback');
 
-        // Availability management
+        // availability
         Route::post('/availability',        [MentorDashboardController::class, 'storeAvailability'])->name('availability.store');
         Route::put('/availability/{id}',    [MentorDashboardController::class, 'updateAvailability'])->name('availability.update');
         Route::delete('/availability/{id}', [MentorDashboardController::class, 'destroyAvailability'])->name('availability.destroy');
 
-        // Booking actions
+        // booking
         Route::post('/bookings/{id}/accept', [MentorDashboardController::class, 'acceptBooking'])->name('bookings.accept');
         Route::post('/bookings/{id}/reject', [MentorDashboardController::class, 'rejectBooking'])->name('bookings.reject');
     });
+
 });
