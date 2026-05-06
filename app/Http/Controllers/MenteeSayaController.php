@@ -124,4 +124,33 @@ class MenteeSayaController extends Controller
 
         return view('mentor.mentee.index', compact('mentees', 'stats', 'search', 'filterStatus'));
     }
+
+    public function show($id)
+    {
+        $user = Auth::user();
+        $mentor = Mentor::where('user_id', $user->id)->first();
+
+        if (!$mentor) {
+            return redirect()->route('mentor.mentee.index')->with('error', 'Profil mentor tidak ditemukan.');
+        }
+
+        // Verify the mentee has a booking with this mentor
+        $hasBooking = MentorBooking::where('mentor_id', $mentor->id)
+            ->where('jobseeker_user_id', $id)
+            ->exists();
+
+        if (!$hasBooking) {
+            return redirect()->route('mentor.mentee.index')->with('error', 'Mentee tidak terasosiasi dengan sesi Anda.');
+        }
+
+        $mentee = User::with('profile')->findOrFail($id);
+
+        // Fetch bookings/sessions for this mentee under this mentor
+        $bookings = MentorBooking::where('mentor_id', $mentor->id)
+            ->where('jobseeker_user_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('mentor.mentee.show', compact('mentee', 'bookings'));
+    }
 }
