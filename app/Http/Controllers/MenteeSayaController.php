@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Mentor;
 use App\Models\MentorBooking;
 use App\Models\Feedback;
+use App\Models\Roadmap;
+use App\Models\SelfAssessment;
+use App\Models\SkillEnrollment;
+use App\Models\SkillLessonProgress;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,18 +23,14 @@ class MenteeSayaController extends Controller
         $mentor = Mentor::where('user_id', $user->id)->first();
 
         if (!$mentor) {
-            return view('mentor.mentee.index', [
-                'mentees' => collect(),
-                'stats' => [
-                    'total' => 0,
-                    'confirmed' => 0,
-                    'rejected' => 0
-                ],
-                'search' => '',
-                'filterStatus' => 'all'
-            ]);
+            return view('mentor.mentee.index', ['mentees' => collect(), 'stats' => []]);
         }
 
+        // Build query: get all bookings for this mentor grouped by mentee
+        $query = MentorBooking::with('jobseeker.profile')
+            ->where('mentor_id', $mentor->id);
+
+        // Apply status filter
         $filterStatus = $request->input('status', 'all');
         $search = $request->input('search', '');
 
@@ -123,34 +123,5 @@ class MenteeSayaController extends Controller
         ];
 
         return view('mentor.mentee.index', compact('mentees', 'stats', 'search', 'filterStatus'));
-    }
-
-    public function show($id)
-    {
-        $user = Auth::user();
-        $mentor = Mentor::where('user_id', $user->id)->first();
-
-        if (!$mentor) {
-            return redirect()->route('mentor.mentee.index')->with('error', 'Profil mentor tidak ditemukan.');
-        }
-
-        // Verify the mentee has a booking with this mentor
-        $hasBooking = MentorBooking::where('mentor_id', $mentor->id)
-            ->where('jobseeker_user_id', $id)
-            ->exists();
-
-        if (!$hasBooking) {
-            return redirect()->route('mentor.mentee.index')->with('error', 'Mentee tidak terasosiasi dengan sesi Anda.');
-        }
-
-        $mentee = User::with('profile')->findOrFail($id);
-
-        // Fetch bookings/sessions for this mentee under this mentor
-        $bookings = MentorBooking::where('mentor_id', $mentor->id)
-            ->where('jobseeker_user_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('mentor.mentee.show', compact('mentee', 'bookings'));
     }
 }

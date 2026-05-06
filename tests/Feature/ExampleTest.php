@@ -1,7 +1,8 @@
 <?php
 
-test('the application redirects the root URL to the dashboard', function () {
+test('the application shows the public landing page at the root URL', function () {
     $response = $this->get('/');
 
-    $response->assertRedirect('/dashboard');
+    $response->assertOk()
+        ->assertSee('Hirify');
 });

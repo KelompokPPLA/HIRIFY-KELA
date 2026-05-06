@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('profiles')) {
+            return;
+        }
+
         Schema::create('profiles', function (Blueprint $table) {
 
             // UUID FK (HARUS SAMA DENGAN users.id)

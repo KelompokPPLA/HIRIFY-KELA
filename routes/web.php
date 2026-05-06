@@ -4,7 +4,8 @@ use Illuminate\Support\Facades\Route;
 
 /* ================= CONTROLLERS ================= */
 use App\Http\Controllers\Web\AuthController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminStatisticsController;
+use App\Http\Controllers\CvController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\RoadmapController;
@@ -12,14 +13,11 @@ use App\Http\Controllers\SelfAssessmentController;
 use App\Http\Controllers\MentorDashboardController;
 use App\Http\Controllers\SesiJadwalController;
 use App\Http\Controllers\FeedbackController;
-use App\Http\Controllers\AdminStatisticsController;
-use App\Http\Controllers\GenerateController;
-use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\MenteeSayaController;
 
-/* ============================================================
-   ROOT
-============================================================ */
-Route::get('/', fn() => redirect()->route('dashboard'));
+Route::get('/', function () {
+    return view('welcome');
+});
 
 /* ============================================================
    PUBLIC ROUTES (GUEST ONLY)
@@ -93,7 +91,11 @@ Route::middleware('auth')->group(function () {
     Route::view('/pelatihan', 'jobseeker.skill-training')->name('pelatihan.index');
     Route::view('/skill-training', 'jobseeker.skill-training')->name('skill-training.index');
     Route::view('/forum', 'forum.index')->name('forum.index');
+
+    // Notifikasi
     Route::view('/notifikasi', 'notifikasi.index')->name('notifikasi.index');
+
+    // Mentorship
     Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
 
 
@@ -101,34 +103,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
 
-
-    /* ==========================================================
-       ADMIN
-    ========================================================== */
-    Route::middleware('role:admin')->prefix('admin')->group(function () {
-        Route::get('/statistics', [AdminStatisticsController::class, 'show'])->name('admin.statistics');
-        Route::get('/users',      [AdminStatisticsController::class, 'users'])->name('admin.users');
-        Route::get('/activity',   [AdminStatisticsController::class, 'activity'])->name('admin.activity');
+    // ---- Admin Routes ----
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/admin/statistics', [AdminStatisticsController::class, 'show'])->name('admin.statistics');
+        Route::get('/admin/users', [AdminStatisticsController::class, 'users'])->name('admin.users');
+        Route::get('/admin/activity', [AdminStatisticsController::class, 'activity'])->name('admin.activity');
     });
 
 
-    /* ==========================================================
-       MENTOR
-    ========================================================== */
-    Route::prefix('mentor')->name('mentor.')->group(function () {
-
-        Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
-        Route::view('/settings', 'mentor.settings')->name('settings');
-
-        Route::get('/mentee', [\App\Http\Controllers\MenteeSayaController::class, 'index'])->name('mentee.index');
-        Route::get('/mentee/{id}', [\App\Http\Controllers\MenteeSayaController::class, 'show'])->name('mentee.show');
-
-        // sesi
-        Route::resource('sesi-jadwal', SesiJadwalController::class)->names('sesi-jadwal');
-        Route::post('sesi-jadwal/{id}/notes', [SesiJadwalController::class, 'addNotes'])->name('sesi-jadwal.notes');
-
-        // feedback
-        Route::resource('feedback', FeedbackController::class)->names('feedback');
+    // ---- Mentor Routes ----
+    Route::prefix('mentor')->group(function () {
+        Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('mentor.dashboard');
+        Route::view('/settings', 'mentor.settings')->name('mentor.settings');
+        Route::resource('sesi-jadwal', SesiJadwalController::class)->names('mentor.sesi-jadwal');
+        Route::post('sesi-jadwal/{id}/notes', [SesiJadwalController::class, 'addNotes'])->name('mentor.sesi-jadwal.notes');
+        Route::resource('feedback', FeedbackController::class)->names('mentor.feedback');
+        Route::get('/mentee', [MenteeSayaController::class, 'index'])->name('mentor.mentee.index');
 
         // availability
         Route::post('/availability',        [MentorDashboardController::class, 'storeAvailability'])->name('availability.store');

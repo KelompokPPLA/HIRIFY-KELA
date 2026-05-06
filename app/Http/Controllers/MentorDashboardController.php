@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
-use App\Models\SesiJadwal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -73,14 +72,14 @@ class MentorDashboardController extends Controller
         }
 
         return view('mentor.dashboard', compact(
-            'sessions', 
-            'pendingBookings', 
-            'acceptedBookings', 
-            'totalMenteesCount', 
-            'sessionsThisMonthCount', 
+            'sessions',
+            'pendingBookings',
+            'acceptedBookings',
+            'totalMenteesCount',
+            'sessionsThisMonthCount',
             'menteesThisMonthCount',
             'sessionsThisWeekCount',
-            'avgRating', 
+            'avgRating',
             'earningsFormatted'
         ));
     }
@@ -166,13 +165,6 @@ class MentorDashboardController extends Controller
             }
         }
 
-        if ($booking->sesi_jadwal_id) {
-            $session = \App\Models\SesiJadwal::find($booking->sesi_jadwal_id);
-            if ($session) {
-                $session->update(['status' => 'Confirmed']);
-            }
-        }
-
         return back()->with('success', 'Booking berhasil dikonfirmasi.');
     }
 
@@ -191,19 +183,10 @@ class MentorDashboardController extends Controller
 
         $booking = MentorBooking::where('mentor_id', $mentor->id)->findOrFail($id);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($booking, $request) {
-            $booking->update([
-                'status' => 'rejected',
-                'rejection_reason' => $request->rejection_reason,
-            ]);
-
-            if ($booking->mentor_availability_id) {
-                $availability = MentorAvailability::find($booking->mentor_availability_id);
-                if ($availability) {
-                    $availability->update(['is_booked' => false]);
-                }
-            }
-        });
+        $booking->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason,
+        ]);
 
         return back()->with('success', 'Booking ditolak.');
     }
