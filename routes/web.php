@@ -83,7 +83,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/cv', [GenerateController::class, 'store'])->name('cv.store');
 
     /* ---------- Roadmap & Assessment ---------- */
-    Route::view('/roadmap-karier',  'roadmap-karier.index')->name('roadmap-karier.index');
+    Route::get('/roadmap-karier', [RoadmapController::class, 'index'])->name('roadmap-karier');
+    Route::post('/roadmap-karier', [RoadmapController::class, 'store'])->name('roadmap-karier.store');
+    Route::patch('/roadmap-karier/{id}', [RoadmapController::class, 'update'])->name('roadmap-karier.update');
     Route::view('/self-assessment', 'self-assessment.index')->name('self-assessment.index');
 
     /* ---------- Skill Training ---------- */
