@@ -16,7 +16,7 @@ class SesiJadwalController extends Controller
         $tab = request('tab', 'mendatang');
 
         if ($user) {
-            $query = SesiJadwal::where('mentor_id', $user->id);
+            $query = SesiJadwal::with(['bookings.jobseeker'])->where('mentor_id', $user->id);
             if ($tab === 'riwayat') {
                 $query->whereIn('status', ['Completed', 'Cancelled'])->orderBy('date', 'desc');
             } else {
