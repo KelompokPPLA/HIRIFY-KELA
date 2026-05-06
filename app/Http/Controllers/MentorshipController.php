@@ -138,7 +138,7 @@ class MentorshipController extends Controller
 
         // Also fetch from SesiJadwal (manual slots created by mentor)
         $manualSessions = SesiJadwal::where('mentor_id', $mentor->user_id)
-            ->where('status', 'Pending')
+            ->whereIn('status', ['Pending', 'Confirmed'])
             ->where('date', '>=', now()->toDateString())
             ->whereNotExists(function ($query) use ($user) {
                 $query->select(DB::raw(1))
@@ -249,7 +249,7 @@ class MentorshipController extends Controller
                         throw new \RuntimeException('Sesi jadwal tidak ditemukan.');
                     }
 
-                    if ($session->status !== 'Pending') {
+                    if (!in_array($session->status, ['Pending', 'Confirmed'])) {
                         throw new \RuntimeException('Sesi jadwal sudah tidak tersedia untuk dibooking.');
                     }
 
