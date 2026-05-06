@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\RoadmapController;
+use App\Http\Controllers\SelfAssessmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MentorDashboardController;
@@ -32,7 +33,6 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/manajemen-cv', fn() => view('manajemen-cv.index'))->name('manajemen-cv');
 Route::get('/buat-cv-ats', fn() => view('buat-cv-ats.index'))->name('buat-cv-ats');
 Route::get('/roadmap-karier', fn() => view('roadmap-karier.index'))->name('roadmap-karier');
-Route::get('/self-assessment', fn() => view('self-assessment.index'))->name('self-assessment');
 Route::get('/pelatihan', fn() => view('pelatihan.index'))->name('pelatihan');
 Route::get('/notifikasi', fn() => view('notifikasi.index'))->name('notifikasi');
 
@@ -71,9 +71,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/roadmap-karier/{id}', [RoadmapController::class, 'update'])->name('roadmap-karier.update');
 
     // Self Assessment — PBI 5 (placeholder)
-    Route::get('/assessment', function () {
-        return view('self-assessment.index');
-    })->name('assessment.index');
+    Route::get('/self-assessment',   [SelfAssessmentController::class, 'index'])->name('self-assessment');
+    Route::post('/self-assessment',  [SelfAssessmentController::class, 'store'])->name('assessment.store');
+    Route::get('/assessment/result', [SelfAssessmentController::class, 'result'])->name('assessment.result');
 
     // Mentor
     Route::view('/mentor/settings', 'mentor.settings')->name('mentor.settings');
