@@ -75,6 +75,9 @@
         .menu {
             display: grid;
             gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 4px;
         }
 
         .menu button {
@@ -103,7 +106,7 @@
         }
 
         .profile-mini {
-            margin-top: auto;
+            flex-shrink: 0;
             background: #f8fbff;
             border: 1px solid var(--line);
             border-radius: 14px;
@@ -112,6 +115,9 @@
             align-items: center;
             gap: 10px;
         }
+        .logout-wrap { border-top: 1px solid var(--line); padding-top: 12px; flex-shrink: 0; }
+        .logout-btn { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: .88rem; font-weight: 600; color: #6c7a93; cursor: pointer; padding: 6px 0; transition: color .15s; width: 100%; }
+        .logout-btn:hover { color: #b42318; }
 
         .avatar-mini {
             width: 34px;
@@ -787,6 +793,19 @@
                     <strong id="miniName">{{ auth()->user()->name ?? 'User Name' }}</strong>
                     <span id="miniEmail">{{ auth()->user()->email ?? 'user@email.com' }}</span>
                 </div>
+            </div>
+            <div class="logout-wrap">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="logout-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Keluar
+                    </button>
+                </form>
             </div>
         </aside>
 

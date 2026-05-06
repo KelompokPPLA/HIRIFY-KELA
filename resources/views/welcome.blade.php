@@ -673,7 +673,7 @@
 
                         <div class="hero-actions">
                             <a class="btn btn-primary" href="{{ route('register') }}">Mulai Sekarang</a>
-                            <a class="btn btn-ghost" href="#fitur" style="color: white; border-color: rgba(255,255,255,0.25);">Lihat Fitur</a>
+                            <a class="btn btn-ghost" href="#fitur" style="color: white; border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.1);">Lihat Fitur</a>
                         </div>
 
                         <div class="hero-badge">Siap untuk mahasiswa, fresh graduate, dan job seeker</div>
@@ -842,7 +842,7 @@
                     <p>Bergabunglah dengan ribuan mahasiswa dan pencari kerja yang sedang membangun persiapan karier lebih matang bersama Hirify.</p>
                     <div class="cta-actions">
                         <a class="btn btn-primary" href="{{ route('register') }}">Daftar Gratis Sekarang</a>
-                        <a class="btn btn-ghost" href="{{ route('login') }}" style="color: white; border-color: rgba(255,255,255,0.25);">Sudah Punya Akun</a>
+                        <a class="btn btn-ghost" href="{{ route('login') }}" style="color: white; border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.1);">Sudah Punya Akun</a>
                     </div>
                 </div>
             </div>
