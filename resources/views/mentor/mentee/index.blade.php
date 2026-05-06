@@ -188,7 +188,7 @@
                             @endif
                         </span>
                         
-                        <a href="#" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-extrabold rounded-full bg-slate-900 hover:bg-slate-800 text-white transition duration-200 group">
+                        <a href="{{ route('mentor.mentee.show', $mentee['id']) }}" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-extrabold rounded-full bg-slate-900 hover:bg-slate-800 text-white transition duration-200 group">
                             Detail Mentee
                             <svg class="w-3.5 h-3.5 transform group-hover:translate-x-1 transition duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                 <path d="m9 18 6-6-6-6"/>
