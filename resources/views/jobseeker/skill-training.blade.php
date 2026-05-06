@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hirify | Pelatihan Skill</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
         :root {
             --bg: #f4f8fd;
@@ -188,13 +190,15 @@
         </div>
         <div class="menu">
             <button type="button" data-goto="/dashboard">Dashboard</button>
-            <button type="button">Profil</button>
-            <button type="button">Manajemen CV</button>
-            <button type="button">Roadmap Karier</button>
-            <button type="button" data-goto="/mentorship">Mentorship</button>
+            <button type="button" data-goto="/profile">Profil</button>
+            <button type="button" data-goto="/manajemen-cv">Manajemen CV</button>
+            <button type="button" data-goto="/roadmap-karier">Roadmap Karier</button>
+            <button type="button" data-goto="/self-assessment">Self Assessment</button>
             <button type="button" class="active">Pelatihan Skill</button>
             <button type="button" data-goto="/forum">Forum Diskusi</button>
-            <button type="button">Notifikasi</button>
+            <button type="button" data-goto="/mentorship">Mentorship</button>
+            <button type="button" data-goto="/riwayat-feedback">Riwayat Feedback</button>
+            <button type="button" data-goto="/notifikasi">Notifikasi</button>
             <button type="button" id="logoutBtn">Logout</button>
         </div>
         <div class="profile-mini">
@@ -313,10 +317,13 @@
     </div>
 </div>
 
+<script src="/js/hirify-api.js"></script>
 <script>
 const showToast = window.hirifyShowToast;
 
-let token = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
+hirifyInitToken('{{ session("jwt_token") }}');
+const api = window.hirifyApi;
+const esc = window.hirifyEsc;
 let currentUser = null;
 let activeCourse = null;
 let activeLessons = [];
@@ -324,33 +331,6 @@ let activeLesson  = null;
 let activeLessonIdx = 0;
 let activeTab = 'catalog';
 
-if (!token) { window.location.href = '/login'; }
-
-function activeStorage() { return localStorage.getItem('hirify_token') ? localStorage : sessionStorage; }
-function clearAuth() { ['hirify_token','hirify_user','hirify_remember'].forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); }); }
-
-async function refreshToken() {
-    try {
-        const res = await fetch('/api/auth/refresh', { method:'POST', headers:{ 'Accept':'application/json','Authorization':`Bearer ${token}` } });
-        const d   = await res.json();
-        if (!res.ok || !d?.data?.token) return false;
-        token = d.data.token;
-        activeStorage().setItem('hirify_token', token);
-        return true;
-    } catch { return false; }
-}
-
-async function api(path, opts={}, retry=true) {
-    const headers = { 'Accept':'application/json','Authorization':`Bearer ${token}`, ...(opts.body instanceof FormData ? {} : {'Content-Type':'application/json'}), ...(opts.headers||{}) };
-    const res  = await fetch(path, { ...opts, headers });
-    let   data = {};
-    try { data = await res.json(); } catch {}
-    if (res.status===401 && retry) { if (await refreshToken()) return api(path,opts,false); clearAuth(); window.location.href='/login'; return; }
-    if (!res.ok || data.success===false) throw new Error(data.message || 'Terjadi kesalahan.');
-    return data;
-}
-
-function esc(str) { return String(str??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function initial(name) { return (String(name||'U').trim()[0]||'U').toUpperCase(); }
 
 /* ── Load me ── */
@@ -651,7 +631,7 @@ function switchTab(tab) {
 async function doLogout() {
     try { await api('/api/auth/logout', { method:'POST' }); } catch {}
     showToast('Sampai jumpa! 👋', 'info', 900);
-    setTimeout(() => { clearAuth(); window.location.href = '/login'; }, 900);
+    setTimeout(() => { hirifyClearAuth(); window.location.href = '/login'; }, 900);
 }
 
 /* ── Events ── */
@@ -701,7 +681,7 @@ async function boot() {
         await loadCatalog();
     } catch (err) {
         if (String(err.message).toLowerCase().includes('unauthenticated')) {
-            clearAuth(); window.location.href = '/login'; return;
+            hirifyClearAuth(); window.location.href = '/login'; return;
         }
         showToast(err.message || 'Gagal memuat halaman.', 'error');
     }

@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\LoginRequest;
 use App\Http\Requests\Web\RegisterRequest;
+use App\Models\PasswordOtp;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -35,17 +37,29 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
+            // Generate JWT token for API calls (mentorship, etc.)
+            try {
+                $jwtToken = JWTAuth::fromUser(Auth::user());
+                $request->session()->put('jwt_token', $jwtToken);
+            } catch (\Exception $e) {
+                // JWT generation failed, proceed without it
+            }
+
+            $redirectRoute = Auth::user()->role === 'admin'
+                ? route('admin.statistics')
+                : route('dashboard');
+
             // Jika request JSON (fetch dari JS), kirim JSON
             if ($request->expectsJson() || $request->wantsJson()) {
                 return response()->json([
                     'success'  => true,
                     'message'  => 'Login berhasil.',
-                    'redirect' => route('dashboard'),
+                    'redirect' => $redirectRoute,
                 ], 200);
             }
 
             // Fallback: redirect langsung (form POST biasa)
-            return redirect()->intended(route('dashboard'));
+            return redirect()->intended($redirectRoute);
         }
 
         if ($request->expectsJson() || $request->wantsJson()) {
@@ -89,6 +103,14 @@ class AuthController extends Controller
 
             Auth::login($user);
             $request->session()->regenerate();
+
+            // Generate JWT token for API-backed pages after registration.
+            try {
+                $jwtToken = JWTAuth::fromUser($user);
+                $request->session()->put('jwt_token', $jwtToken);
+            } catch (\Exception $e) {
+                // JWT generation failed, proceed with the web session.
+            }
 
             if ($request->expectsJson() || $request->wantsJson()) {
                 return response()->json([
@@ -137,6 +159,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
+        $request->session()->forget('jwt_token');
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -167,5 +190,106 @@ class AuthController extends Controller
             'token' => $request->query('token'),
             'email' => $request->query('email'),
         ]);
+    }
+
+    /**
+     * Generate OTP for password reset and redirect to OTP page.
+     */
+    public function sendOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $email = $request->input('email');
+
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return back()
+                ->withErrors(['email' => 'Email tidak terdaftar di sistem.'])
+                ->withInput();
+        }
+
+        $otp = (string) random_int(100000, 999999);
+
+        PasswordOtp::where('email', $email)->whereNull('used_at')->delete();
+
+        PasswordOtp::create([
+            'email' => $email,
+            'otp' => $otp,
+            'expires_at' => now()->addMinutes(10),
+        ]);
+
+        return redirect()
+            ->route('password.otp.show', ['email' => $email])
+            ->with('otp_code', $otp)
+            ->with('success', 'Kode OTP berhasil dibuat. Gunakan kode di bawah untuk reset password.');
+    }
+
+    /**
+     * Show the OTP verification + new password form.
+     */
+    public function showOtpReset(Request $request)
+    {
+        $email = $request->query('email');
+
+        if (!$email) {
+            return redirect()->route('password.request');
+        }
+
+        $latestOtp = PasswordOtp::where('email', $email)
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        return view('auth.reset-password-otp', [
+            'email' => $email,
+            'otpCode' => session('otp_code') ?? optional($latestOtp)->otp,
+        ]);
+    }
+
+    /**
+     * Verify OTP and reset password.
+     */
+    public function resetWithOtp(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string|size:6',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $otpRecord = PasswordOtp::where('email', $validated['email'])
+            ->where('otp', $validated['otp'])
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        if (!$otpRecord) {
+            return back()
+                ->withErrors(['otp' => 'Kode OTP tidak valid atau sudah kadaluarsa.'])
+                ->withInput($request->only('email'));
+        }
+
+        $user = User::where('email', $validated['email'])->first();
+
+        if (!$user) {
+            return back()
+                ->withErrors(['email' => 'Email tidak terdaftar.'])
+                ->withInput($request->only('email'));
+        }
+
+        $user->forceFill([
+            'password' => Hash::make($validated['password']),
+        ])->save();
+
+        $otpRecord->update(['used_at' => now()]);
+
+        return redirect()
+            ->route('login')
+            ->with('success', 'Password berhasil diubah. Silakan login dengan password baru.');
     }
 }

@@ -82,14 +82,16 @@
         }
 
         .brand-mark {
-            width: 38px;
-            height: 38px;
-            border-radius: 14px;
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
             display: grid;
             place-items: center;
             color: white;
-            background: linear-gradient(135deg, #0e7490, #2dd4bf);
-            box-shadow: 0 10px 30px rgba(14, 116, 144, 0.25);
+            font-size: 17px;
+            font-weight: 800;
+            background: linear-gradient(145deg, #0399b7, #06d8ee);
+            box-shadow: 0 10px 30px rgba(3, 153, 183, 0.25);
         }
 
         .nav-links {
@@ -671,7 +673,7 @@
 
                         <div class="hero-actions">
                             <a class="btn btn-primary" href="{{ route('register') }}">Mulai Sekarang</a>
-                            <a class="btn btn-ghost" href="#fitur">Lihat Fitur</a>
+                            <a class="btn btn-ghost" href="#fitur" style="color: white; border-color: rgba(255,255,255,0.25);">Lihat Fitur</a>
                         </div>
 
                         <div class="hero-badge">Siap untuk mahasiswa, fresh graduate, dan job seeker</div>
@@ -840,7 +842,7 @@
                     <p>Bergabunglah dengan ribuan mahasiswa dan pencari kerja yang sedang membangun persiapan karier lebih matang bersama Hirify.</p>
                     <div class="cta-actions">
                         <a class="btn btn-primary" href="{{ route('register') }}">Daftar Gratis Sekarang</a>
-                        <a class="btn btn-ghost" href="{{ route('login') }}">Sudah Punya Akun</a>
+                        <a class="btn btn-ghost" href="{{ route('login') }}" style="color: white; border-color: rgba(255,255,255,0.25);">Sudah Punya Akun</a>
                     </div>
                 </div>
             </div>

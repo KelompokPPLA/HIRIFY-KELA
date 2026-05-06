@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
+use App\Models\SesiJadwal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,13 +16,21 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         $mentor = $user ? ($user->mentorProfile ?? null) : null;
 
-        $availabilities = collect();
+        $sessions = collect();
         $pendingBookings = collect();
         $acceptedBookings = collect();
+        $totalMenteesCount = 0;
+        $sessionsThisMonthCount = 0;
+        $menteesThisMonthCount = 0;
+        $sessionsThisWeekCount = 0;
+        $avgRating = 0.0;
+        $earningsFormatted = 'Rp 0,0jt';
 
         if ($mentor) {
-            $availabilities = MentorAvailability::where('mentor_id', $mentor->id)
-                ->orderBy('start_at')
+            $sessions = SesiJadwal::with('bookings.jobseeker')->where('mentor_id', $user->id)
+                ->whereIn('status', ['Pending', 'Confirmed'])
+                ->orderBy('date', 'asc')
+                ->orderBy('time', 'asc')
                 ->get();
 
             $pendingBookings = MentorBooking::where('mentor_id', $mentor->id)
@@ -31,13 +40,49 @@ class MentorDashboardController extends Controller
                 ->get();
 
             $acceptedBookings = MentorBooking::where('mentor_id', $mentor->id)
-                ->where('status', 'accepted')
+                ->where('status', 'confirmed')
                 ->with('jobseeker', 'availability')
                 ->orderBy('scheduled_start')
                 ->get();
+
+            $totalMenteesCount = MentorBooking::where('mentor_id', $mentor->id)
+                ->whereNotNull('jobseeker_user_id')
+                ->distinct('jobseeker_user_id')
+                ->count('jobseeker_user_id');
+
+            $sessionsThisMonthCount = SesiJadwal::where('mentor_id', $user->id)
+                ->whereMonth('date', now()->month)
+                ->whereYear('date', now()->year)
+                ->count();
+
+            $menteesThisMonthCount = MentorBooking::where('mentor_id', $mentor->id)
+                ->whereNotNull('jobseeker_user_id')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->distinct('jobseeker_user_id')
+                ->count('jobseeker_user_id');
+
+            $sessionsThisWeekCount = SesiJadwal::where('mentor_id', $user->id)
+                ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
+                ->count();
+
+            $dbRating = \App\Models\Feedback::where('mentor_id', $user->id)->avg('rating');
+            $avgRating = $dbRating ? round($dbRating, 1) : 0.0;
+
+            $earningsFormatted = 'Rp ' . number_format(($totalMenteesCount * 200000) / 1000000, 1, ',', '.') . 'jt';
         }
 
-        return view('mentor.dashboard', compact('availabilities', 'pendingBookings', 'acceptedBookings'));
+        return view('mentor.dashboard', compact(
+            'sessions', 
+            'pendingBookings', 
+            'acceptedBookings', 
+            'totalMenteesCount', 
+            'sessionsThisMonthCount', 
+            'menteesThisMonthCount',
+            'sessionsThisWeekCount',
+            'avgRating', 
+            'earningsFormatted'
+        ));
     }
 
     // Store a new availability slot
@@ -102,12 +147,18 @@ class MentorDashboardController extends Controller
     // Accept booking
     public function acceptBooking(Request $request, $id)
     {
-        $mentor = Auth::user()->mentor;
-        $booking = MentorBooking::where('mentor_id', $mentor->id)->findOrFail($id);
+        $mentor = Auth::user()->mentorProfile;
 
-        $booking->update(['status' => 'accepted']);
+        if (! $mentor) {
+            return back()->with('error', 'Profil mentor tidak ditemukan.');
+        }
 
-        // mark availability as booked
+        $booking = MentorBooking::where('mentor_id', $mentor->id)
+            ->where('status', 'pending')
+            ->findOrFail($id);
+
+        $booking->update(['status' => 'confirmed']);
+
         if ($booking->mentor_availability_id) {
             $availability = MentorAvailability::find($booking->mentor_availability_id);
             if ($availability) {
@@ -115,7 +166,14 @@ class MentorDashboardController extends Controller
             }
         }
 
-        return back()->with('success', 'Booking diterima.');
+        if ($booking->sesi_jadwal_id) {
+            $session = \App\Models\SesiJadwal::find($booking->sesi_jadwal_id);
+            if ($session) {
+                $session->update(['status' => 'Confirmed']);
+            }
+        }
+
+        return back()->with('success', 'Booking berhasil dikonfirmasi.');
     }
 
     // Reject booking
@@ -125,13 +183,27 @@ class MentorDashboardController extends Controller
             'rejection_reason' => 'nullable|string|max:500',
         ]);
 
-        $mentor = Auth::user()->mentor;
+        $mentor = Auth::user()->mentorProfile;
+
+        if (! $mentor) {
+            return back()->with('error', 'Profil mentor tidak ditemukan.');
+        }
+
         $booking = MentorBooking::where('mentor_id', $mentor->id)->findOrFail($id);
 
-        $booking->update([
-            'status' => 'rejected',
-            'rejection_reason' => $request->rejection_reason,
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($booking, $request) {
+            $booking->update([
+                'status' => 'rejected',
+                'rejection_reason' => $request->rejection_reason,
+            ]);
+
+            if ($booking->mentor_availability_id) {
+                $availability = MentorAvailability::find($booking->mentor_availability_id);
+                if ($availability) {
+                    $availability->update(['is_booked' => false]);
+                }
+            }
+        });
 
         return back()->with('success', 'Booking ditolak.');
     }

@@ -30,6 +30,7 @@ class FeedbackController extends Controller
         $mentees = User::whereIn('id', function ($query) use ($mentorProfileId) {
             $query->select('jobseeker_user_id')
                   ->from('mentor_bookings')
+                  ->whereIn('status', ['confirmed', 'completed'])
                   ->when($mentorProfileId, function ($q) use ($mentorProfileId) {
                       $q->where('mentor_id', $mentorProfileId);
                   });
@@ -48,12 +49,12 @@ class FeedbackController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'mentee_id' => ['required'],
-            'session_id' => ['required'],
-            'rating' => ['required','integer','between:1,5'],
-            'strength' => ['required','string'],
-            'improvement' => ['required','string'],
-            'recommendation' => ['required','string'],
+            'mentee_id'     => ['required'],
+            'session_id'    => ['required'],
+            'mentee_rating' => ['required','integer','between:1,5'],
+            'strength'      => ['required','string'],
+            'improvement'   => ['required','string'],
+            'recommendation'=> ['required','string'],
         ]);
 
         $session = SesiJadwal::find($data['session_id']);
@@ -66,6 +67,7 @@ class FeedbackController extends Controller
 
         $bookingExists = MentorBooking::where('mentor_id', $mentorProfileId)
             ->where('jobseeker_user_id', $data['mentee_id'])
+            ->whereIn('status', ['confirmed', 'completed'])
             ->exists();
 
         if (!$bookingExists) {
@@ -73,12 +75,13 @@ class FeedbackController extends Controller
         }
 
         Feedback::create([
-            'mentor_id' => auth()->id(),
-            'mentee_id' => $data['mentee_id'],
-            'session_id' => $data['session_id'],
-            'rating' => $data['rating'],
-            'strength' => $data['strength'],
-            'improvement' => $data['improvement'],
+            'mentor_id'      => auth()->id(),
+            'mentee_id'      => $data['mentee_id'],
+            'session_id'     => $data['session_id'],
+            'rating'         => null,
+            'mentee_rating'  => $data['mentee_rating'],
+            'strength'       => $data['strength'],
+            'improvement'    => $data['improvement'],
             'recommendation' => $data['recommendation'],
         ]);
 

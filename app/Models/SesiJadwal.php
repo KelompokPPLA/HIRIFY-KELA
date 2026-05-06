@@ -20,6 +20,7 @@ class SesiJadwal extends Model
         'platform',
         'status',
         'notes',
+        'material_file',
     ];
 
     public function mentor()
@@ -30,5 +31,10 @@ class SesiJadwal extends Model
     public function feedbacks()
     {
         return $this->hasMany(Feedback::class, 'session_id');
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(MentorBooking::class, 'sesi_jadwal_id');
     }
 }

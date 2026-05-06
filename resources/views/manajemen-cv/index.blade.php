@@ -3,105 +3,273 @@
 @section('title', 'Manajemen CV')
 
 @section('content')
-<div class="space-y-8">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Manajemen</p>
-            <h1 class="text-3xl font-semibold text-slate-950">Manajemen CV</h1>
-            <p class="mt-2 text-sm text-slate-600 max-w-2xl">Kelola dokumen CV Anda dengan cepat, unggah versi terbaru, dan lihat riwayat perubahan.</p>
+<div class="p-6">
+    <h1 class="text-2xl font-bold mb-6">Manajemen CV</h1>
+
+    <!-- Upload Section -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <h2 class="text-lg font-semibold mb-4">Upload CV</h2>
+
+        <!-- Drag Drop -->
+        <div id="dropArea"
+             class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition">
+
+            <p id="fileText" class="text-gray-500">
+                Drag & drop atau klik untuk pilih file
+            </p>
+
+            <p class="text-xs text-gray-400 mt-2">
+                PDF, DOC, DOCX (max 2MB)
+            </p>
         </div>
-        <button class="inline-flex items-center rounded-2xl bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary-foreground)] transition hover:bg-[var(--color-primary)]/90">Unggah CV Baru</button>
+
+        <!-- Upload Button -->
+        <button id="uploadBtn"
+                class="mt-4 bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed"
+                disabled>
+            Upload File
+        </button>
+
+        <p id="errorText" class="text-red-500 text-sm mt-2"></p>
     </div>
 
-    <div class="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-        <section class="rounded-3xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] p-8 text-[var(--color-primary-foreground)] shadow-lg">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm uppercase tracking-[0.24em] text-cyan-100/80">Riwayat Dokumen</p>
-                    <h2 class="mt-3 text-3xl font-semibold">CV terbaik untuk Lamaranmu</h2>
-                </div>
-                <div class="rounded-3xl bg-white/10 px-4 py-3 text-sm font-semibold text-white">4 CV Aktif</div>
-            </div>
-            <div class="mt-8 grid gap-4 sm:grid-cols-3">
-                <div class="rounded-3xl bg-white/10 p-5">
-                    <p class="text-sm text-cyan-100/80">Terakhir diperbarui</p>
-                    <p class="mt-3 text-2xl font-semibold">14 Apr 2026</p>
-                </div>
-                <div class="rounded-3xl bg-white/10 p-5">
-                    <p class="text-sm text-cyan-100/80">Format CV</p>
-                    <p class="mt-3 text-2xl font-semibold">PDF</p>
-                </div>
-                <div class="rounded-3xl bg-white/10 p-5">
-                    <p class="text-sm text-cyan-100/80">Rekomendasi</p>
-                    <p class="mt-3 text-2xl font-semibold">ATS Ready</p>
-                </div>
-            </div>
-        </section>
+    <!-- List CV -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-lg font-semibold mb-4">Daftar CV</h2>
 
-        <aside class="space-y-6">
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div class="flex items-center justify-between gap-4">
-                    <div>
-                        <p class="text-xs uppercase tracking-[0.24em] text-slate-500">Status</p>
-                        <h3 class="mt-2 text-xl font-semibold text-slate-950">Dokumen Aktif</h3>
-                    </div>
-                    <span class="rounded-2xl bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">Siap Kirim</span>
-                </div>
-                <p class="mt-4 text-sm text-slate-600">Pastikan CV Anda menggunakan struktur yang mudah dibaca oleh perekrut dan ATS.</p>
-            </div>
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 class="text-lg font-semibold text-slate-950">Tips Cepat</h3>
-                <ul class="mt-4 space-y-3 text-sm text-slate-600">
-                    <li class="rounded-2xl bg-slate-50 px-4 py-3">1. Simpan versi terbaru setiap minggu.</li>
-                    <li class="rounded-2xl bg-slate-50 px-4 py-3">2. Gunakan kata kunci yang sesuai pekerjaan.</li>
-                </ul>
-            </div>
-        </aside>
-    </div>
+        <div id="cvList" class="space-y-4"></div>
 
-    <div class="grid gap-6 lg:grid-cols-3">
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <p class="text-xs uppercase tracking-[0.24em] text-slate-500">CV Profesional</p>
-                    <h3 class="mt-3 text-xl font-semibold text-slate-950">Hirify Growth</h3>
-                </div>
-                <span class="rounded-2xl bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">PDF</span>
-            </div>
-            <p class="mt-4 text-sm text-slate-600">Resume lengkap dengan ringkasan karier dan pengalaman terbaik Anda.</p>
-            <div class="mt-6 flex items-center justify-between">
-                <span class="text-sm font-medium text-slate-900">Aktif sejak 2026</span>
-                <button class="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">Unduh</button>
-            </div>
-        </article>
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <p class="text-xs uppercase tracking-[0.24em] text-slate-500">CV Ringkas</p>
-                    <h3 class="mt-3 text-xl font-semibold text-slate-950">ATS Friendly</h3>
-                </div>
-                <span class="rounded-2xl bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">ATS</span>
-            </div>
-            <p class="mt-4 text-sm text-slate-600">Desain format yang mudah terbaca sistem dan recruiter.</p>
-            <div class="mt-6 flex items-center justify-between">
-                <span class="text-sm font-medium text-slate-900">Rekomendasi</span>
-                <button class="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">Lihat</button>
-            </div>
-        </article>
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <p class="text-xs uppercase tracking-[0.24em] text-slate-500">CV Khusus</p>
-                    <h3 class="mt-3 text-xl font-semibold text-slate-950">Lamaran Marketing</h3>
-                </div>
-                <span class="rounded-2xl bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">Draft</span>
-            </div>
-            <p class="mt-4 text-sm text-slate-600">Template khusus untuk posisi marketing dan business development.</p>
-            <div class="mt-6 flex items-center justify-between">
-                <span class="text-sm font-medium text-slate-900">Draf</span>
-                <button class="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">Edit</button>
-            </div>
-        </article>
+        <div id="emptyState" class="text-center text-gray-500 hidden">
+            Belum ada CV
+        </div>
     </div>
 </div>
 @endsection
+
+
+@push('scripts')
+<script>
+const API_BASE = '/api';
+
+let selectedFile = null;
+
+/* ================= TOKEN ================= */
+function getToken() {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        alert('Session habis, login ulang');
+        window.location.href = '/login';
+        return null;
+    }
+
+    return token;
+}
+
+/* ================= FETCH ================= */
+async function apiFetch(url, options = {}) {
+    const token = getToken();
+    if (!token) return;
+
+    options.headers = {
+        ...(options.headers || {}),
+        'Authorization': `Bearer ${token}`,
+    };
+
+    const res = await fetch(url, options);
+
+    if (res.status === 401) {
+        localStorage.removeItem('token');
+        alert('Session expired');
+        window.location.href = '/login';
+        return;
+    }
+
+    return res;
+}
+
+/* ================= ELEMENT ================= */
+const dropArea = document.getElementById('dropArea');
+const uploadBtn = document.getElementById('uploadBtn');
+const fileText = document.getElementById('fileText');
+const errorText = document.getElementById('errorText');
+
+/* ================= INPUT HIDDEN ================= */
+const fileInput = document.createElement('input');
+fileInput.type = 'file';
+fileInput.accept = '.pdf,.doc,.docx';
+fileInput.style.display = 'none';
+document.body.appendChild(fileInput);
+
+/* ================= EVENT ================= */
+
+// click pilih file
+dropArea.addEventListener('click', () => fileInput.click());
+
+// file dipilih
+fileInput.addEventListener('change', (e) => {
+    handleFile(e.target.files[0]);
+});
+
+// drag over
+dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropArea.classList.add('border-blue-500');
+});
+
+// drag leave
+dropArea.addEventListener('dragleave', () => {
+    dropArea.classList.remove('border-blue-500');
+});
+
+// drop file
+dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('border-blue-500');
+    handleFile(e.dataTransfer.files[0]);
+});
+
+/* ================= HANDLE FILE ================= */
+function handleFile(file) {
+    if (!file) return;
+
+    const allowed = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
+    if (!allowed.includes(file.type)) {
+        errorText.textContent = 'Format harus PDF/DOC/DOCX';
+        return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+        errorText.textContent = 'Maksimal 2MB';
+        return;
+    }
+
+    errorText.textContent = '';
+    selectedFile = file;
+
+    fileText.innerText = file.name;
+
+    // enable button
+    uploadBtn.disabled = false;
+    uploadBtn.classList.remove('bg-gray-400','cursor-not-allowed');
+    uploadBtn.classList.add('bg-blue-600');
+}
+
+/* ================= UPLOAD ================= */
+uploadBtn.addEventListener('click', async () => {
+    if (!selectedFile) {
+        errorText.textContent = 'Pilih file dulu';
+        return;
+    }
+
+    const formData = new FormData();
+
+    // ⚠️ sesuaikan dengan backend lo
+    formData.append('file', selectedFile);
+
+    try {
+        uploadBtn.innerText = 'Uploading...';
+
+        const res = await apiFetch(`${API_BASE}/cv`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || 'Upload gagal');
+
+        alert('Upload berhasil');
+
+        // reset
+        selectedFile = null;
+        fileText.innerText = 'Drag & drop atau klik untuk pilih file';
+        uploadBtn.disabled = true;
+        uploadBtn.classList.remove('bg-blue-600');
+        uploadBtn.classList.add('bg-gray-400','cursor-not-allowed');
+
+        loadCV();
+
+    } catch (err) {
+        errorText.textContent = err.message;
+    } finally {
+        uploadBtn.innerText = 'Upload File';
+    }
+});
+
+/* ================= LOAD ================= */
+async function loadCV() {
+    try {
+        const res = await apiFetch(`${API_BASE}/cv`);
+        const result = await res.json();
+
+        const data = result.data || result;
+
+        const list = document.getElementById('cvList');
+        const empty = document.getElementById('emptyState');
+
+        list.innerHTML = '';
+
+        if (!data.length) {
+            empty.classList.remove('hidden');
+            return;
+        }
+
+        empty.classList.add('hidden');
+
+        data.forEach(cv => {
+            list.innerHTML += `
+            <div class="border p-4 rounded flex justify-between items-center">
+                <div>
+                    <p class="font-semibold">${cv.nama_lengkap || 'CV'}</p>
+                    <p class="text-sm text-gray-500">
+                        ${new Date(cv.created_at).toLocaleDateString()}
+                    </p>
+                </div>
+
+                <div class="flex gap-2">
+                    <a href="/cv/${cv.id}" class="bg-blue-200 px-3 py-1 rounded">
+                        View
+                    </a>
+
+                    <button onclick="deleteCV('${cv.id}')"
+                        class="bg-red-500 text-white px-3 py-1 rounded">
+                        Delete
+                    </button>
+                </div>
+            </div>
+            `;
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+/* ================= DELETE ================= */
+async function deleteCV(id) {
+    if (!confirm('Hapus CV?')) return;
+
+    try {
+        const res = await apiFetch(`${API_BASE}/cv/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (!res.ok) throw new Error('Gagal delete');
+
+        loadCV();
+
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+/* ================= INIT ================= */
+loadCV();
+</script>
+@endpush

@@ -1,445 +1,292 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hirify | Statistik Platform</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@extends('layouts.admin')
 
-        :root {
-            --bg: #f4f8fd;
-            --card: #ffffff;
-            --ink: #0d1b3d;
-            --muted: #6c7a93;
-            --line: #e5edf6;
-            --brand: #06cbe5;
-            --shadow: 0 20px 45px rgba(9,20,51,.08);
-            --ok: #0b7f53;
-            --warn: #b98007;
-            --danger: #b42318;
-        }
+@section('title', 'Hirify | Statistik Platform')
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+@section('content')
+<div class="space-y-8">
+    {{-- Header --}}
+    <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Admin Dashboard</p>
+        <h1 class="text-3xl font-semibold text-slate-950">Statistik Platform</h1>
+        <p class="mt-2 text-sm text-slate-600 max-w-2xl">Pantau jumlah pengguna aktif, sesi mentorship, pelatihan, dan aktivitas platform per periode untuk mengambil keputusan berbasis data.</p>
+    </div>
 
-        body {
-            font-family: 'Manrope', sans-serif;
-            color: var(--ink);
-            background:
-                radial-gradient(circle at 5% 15%, rgba(6,203,229,.16), transparent 24%),
-                radial-gradient(circle at 95% 5%, rgba(6,203,229,.12), transparent 20%),
-                var(--bg);
-            min-height: 100vh;
-        }
-
-        .layout { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
-
-        /* ── Sidebar ── */
-        .sidebar {
-            background: #fff;
-            border-right: 1px solid var(--line);
-            padding: 22px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-        }
-
-        .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 28px; letter-spacing: -0.02em; }
-        .brand-mark { width: 34px; height: 34px; border-radius: 12px; background: linear-gradient(145deg,#0399b7,#06d8ee); display: grid; place-items: center; color: #fff; font-size: 17px; font-weight: 800; flex-shrink: 0; }
-
-        .menu { display: grid; gap: 8px; }
-        .menu button { border: 0; background: transparent; color: #1a2a4c; font: inherit; font-size: .93rem; text-align: left; border-radius: 12px; padding: 11px 13px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; transition: background .15s; width: 100%; }
-        .menu button:hover { background: #f2f8ff; }
-        .menu button.active { background: linear-gradient(145deg,#0a1632,#111f45); color: #f2fbff; box-shadow: 0 8px 20px rgba(11,24,54,.2); }
-
-        .profile-mini { margin-top: auto; background: #f8fbff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 10px; }
-        .avatar-mini { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(140deg,#0499b3,#05d5ef); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: .9rem; flex-shrink: 0; }
-        .profile-mini strong { display: block; font-size: .88rem; }
-        .profile-mini span { color: var(--muted); font-size: .78rem; }
-
-        /* ── Content ── */
-        .content { padding: 28px 28px 48px; display: flex; flex-direction: column; gap: 22px; }
-
-        .page-header h1 { font-size: clamp(26px,3.5vw,36px); letter-spacing: -0.03em; }
-        .page-header p { color: var(--muted); font-weight: 500; margin-top: 5px; font-size: .95rem; }
-
-        /* ── Summary cards ── */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 14px; }
-
-        .stat-card {
-            background: #fff;
-            border: 1.5px solid var(--line);
-            border-radius: 18px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: var(--shadow);
-        }
-
-        .stat-icon { font-size: 1.8rem; line-height: 1; }
-        .stat-label { font-size: .8rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-        .stat-value { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); }
-        .stat-sub { font-size: .78rem; color: var(--muted); font-weight: 600; }
-
-        /* ── Charts ── */
-        .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
-        .chart-card { background: #fff; border: 1.5px solid var(--line); border-radius: 18px; padding: 22px; box-shadow: var(--shadow); }
-        .chart-card h3 { font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 16px; }
-        .chart-wrap { position: relative; }
-
-        .charts-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-        /* ── Table ── */
-        .table-card { background: #fff; border: 1.5px solid var(--line); border-radius: 18px; padding: 22px; box-shadow: var(--shadow); }
-        .table-card h3 { font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 16px; }
-
-        table { width: 100%; border-collapse: collapse; font-size: .88rem; }
-        th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; }
-        th { color: var(--muted); font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
-        tr:last-child td { border-bottom: 0; }
-        tr:hover td { background: #f9fcff; }
-
-        .role-badge { display: inline-flex; padding: 3px 9px; border-radius: 999px; font-size: .72rem; font-weight: 700; }
-        .role-badge.jobseeker { background: #edfcff; color: #0494ab; }
-        .role-badge.mentor { background: #eafff5; color: #0b7f53; }
-        .role-badge.admin { background: #fff3e0; color: #e65100; }
-
-        /* ── Spinner ── */
-        .loading-row { display: flex; justify-content: center; align-items: center; padding: 60px; }
-        .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(6,203,229,.2); border-top-color: var(--brand); border-radius: 50%; animation: spin .7s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ── Responsive ── */
-        @media (max-width: 980px) {
-            .layout { grid-template-columns: 1fr; }
-            .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
-            .charts-row, .charts-row-2 { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 640px) {
-            .content { padding: 14px 14px 32px; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-        }
-    </style>
-</head>
-<body>
-@include('components.auth.toast')
-
-<div class="layout">
-    {{-- Sidebar --}}
-    <aside class="sidebar">
-        <div class="brand">
-            <span class="brand-mark">H</span>
-            <span>Hirify!</span>
+    {{-- Summary cards --}}
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 rounded-full opacity-5 -translate-y-4 translate-x-4" style="background:#06d8ee;"></div>
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-slate-500">Total Pengguna</p>
+                    <p class="mt-2 text-3xl font-semibold text-slate-950">{{ number_format($summary['total_users']) }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-2xl grid place-items-center flex-shrink-0" style="background:rgba(6,216,238,.12);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06d8ee" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">
+                Jobseeker: <span class="font-semibold text-slate-700">{{ $summary['users_by_role']['jobseeker'] }}</span> ·
+                Mentor: <span class="font-semibold text-slate-700">{{ $summary['users_by_role']['mentor'] }}</span> ·
+                Admin: <span class="font-semibold text-slate-700">{{ $summary['users_by_role']['admin'] }}</span>
+            </p>
         </div>
-        <div class="menu">
-            <button type="button" data-goto="/dashboard">Dashboard</button>
-            <button type="button" class="active">Statistik Platform</button>
-            <button type="button" data-goto="/dashboard">Manajemen User</button>
-            <button type="button" id="logoutBtn">Logout</button>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 rounded-full opacity-5 -translate-y-4 translate-x-4" style="background:#7c3aed;"></div>
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-slate-500">Sesi Mentorship</p>
+                    <p class="mt-2 text-3xl font-semibold text-slate-950">{{ number_format($summary['total_bookings']) }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-2xl grid place-items-center flex-shrink-0" style="background:rgba(124,58,237,.12);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">
+                Selesai: <span class="font-semibold text-slate-700">{{ $summary['bookings_by_status']['completed'] }}</span> ·
+                Aktif: <span class="font-semibold text-slate-700">{{ $summary['bookings_by_status']['confirmed'] + $summary['bookings_by_status']['pending'] }}</span>
+            </p>
         </div>
-        <div class="profile-mini">
-            <div class="avatar-mini" id="miniAvatar">A</div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 rounded-full opacity-5 -translate-y-4 translate-x-4" style="background:#10b981;"></div>
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-slate-500">Pendaftaran Pelatihan</p>
+                    <p class="mt-2 text-3xl font-semibold text-slate-950">{{ number_format($summary['total_enrollments']) }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-2xl grid place-items-center flex-shrink-0" style="background:rgba(16,185,129,.12);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">
+                Selesai: <span class="font-semibold text-slate-700">{{ $summary['completed_enrollments'] }}</span> dari
+                <span class="font-semibold text-slate-700">{{ $summary['total_courses'] }}</span> kursus
+            </p>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 rounded-full opacity-5 -translate-y-4 translate-x-4" style="background:#f59e0b;"></div>
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-sm text-slate-500">Thread Forum</p>
+                    <p class="mt-2 text-3xl font-semibold text-slate-950">{{ number_format($summary['total_forum_threads']) }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-2xl grid place-items-center flex-shrink-0" style="background:rgba(245,158,11,.12);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">Total diskusi aktif pengguna</p>
+        </div>
+    </div>
+
+    {{-- Activity chart --}}
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
             <div>
-                <strong id="miniName">Loading…</strong>
-                <span id="miniEmail">-</span>
+                <h2 class="text-xl font-semibold text-slate-950">Aktivitas Per Periode (6 Bulan Terakhir)</h2>
+                <p class="mt-1 text-sm text-slate-500">Perkembangan pengguna baru, sesi mentorship, dan pendaftaran pelatihan per bulan.</p>
+            </div>
+            <div class="flex items-center gap-4 text-xs">
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#06d8ee"></span> Pengguna Baru</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#0F172A"></span> Sesi Mentorship</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#94a3b8"></span> Pendaftaran Pelatihan</span>
             </div>
         </div>
-    </aside>
 
-    {{-- Main --}}
-    <main class="content">
+        @php
+            $maxValue = 1;
+            foreach ($monthly as $m) {
+                $maxValue = max($maxValue, $m['users'], $m['bookings'], $m['enrollments']);
+            }
+            $totalActivity = array_sum(array_column($monthly, 'users'))
+                + array_sum(array_column($monthly, 'bookings'))
+                + array_sum(array_column($monthly, 'enrollments'));
+        @endphp
 
-        <div class="page-header">
-            <h1>Statistik Platform</h1>
-            <p>Pantau perkembangan platform Hirify secara real-time berdasarkan data pengguna, sesi, dan aktivitas.</p>
+        <div class="grid grid-cols-6 gap-4 items-end" style="height: 220px;">
+            @foreach ($monthly as $m)
+                @php
+                    $usersHeight = $m['users'] > 0 ? max(4, ($m['users'] / $maxValue) * 180) : 2;
+                    $bookingsHeight = $m['bookings'] > 0 ? max(4, ($m['bookings'] / $maxValue) * 180) : 2;
+                    $enrollHeight = $m['enrollments'] > 0 ? max(4, ($m['enrollments'] / $maxValue) * 180) : 2;
+                    $monthTotal = $m['users'] + $m['bookings'] + $m['enrollments'];
+                @endphp
+                <div class="flex flex-col items-center gap-1 group">
+                    <div class="flex items-end gap-1 w-full justify-center relative" style="height: 180px;">
+                        {{-- Tooltip on hover --}}
+                        <div class="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs rounded-xl px-2.5 py-1.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10 shadow-lg">
+                            Total: {{ $monthTotal }}
+                        </div>
+                        <div class="rounded-t flex-1 transition-all duration-300 hover:opacity-80" style="background:#06d8ee; height: {{ $usersHeight }}px;" title="Pengguna baru: {{ $m['users'] }}"></div>
+                        <div class="rounded-t flex-1 transition-all duration-300 hover:opacity-80" style="background:#0F172A; height: {{ $bookingsHeight }}px;" title="Sesi mentorship: {{ $m['bookings'] }}"></div>
+                        <div class="rounded-t flex-1 transition-all duration-300 hover:opacity-80" style="background:#94a3b8; height: {{ $enrollHeight }}px;" title="Pelatihan: {{ $m['enrollments'] }}"></div>
+                    </div>
+                    <p class="text-xs font-medium text-slate-600 mt-2">{{ $m['label'] }}</p>
+                </div>
+            @endforeach
         </div>
 
-        {{-- Summary cards --}}
-        <div class="stats-grid" id="statsGrid">
-            <div class="loading-row" style="grid-column:1/-1;"><span class="spinner"></span></div>
+        @if ($totalActivity === 0)
+            <div class="mt-4 rounded-2xl bg-slate-50 border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">
+                Belum ada aktivitas tercatat dalam 6 bulan terakhir.
+            </div>
+        @endif
+    </div>
+
+    {{-- Activity table + breakdown side by side --}}
+    <div class="grid gap-6 lg:grid-cols-2">
+        {{-- Tabel aktivitas --}}
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 class="text-xl font-semibold text-slate-950 mb-1">Tabel Aktivitas Per Periode</h2>
+            <p class="text-sm text-slate-500 mb-5">Rincian numerik dari grafik di atas.</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                            <th class="py-3 pr-4">Periode</th>
+                            <th class="py-3 pr-4 text-center">Pengguna</th>
+                            <th class="py-3 pr-4 text-center">Mentorship</th>
+                            <th class="py-3 pr-4 text-center">Pelatihan</th>
+                            <th class="py-3 pr-4 text-center">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($monthly as $m)
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                                <td class="py-3 pr-4 font-medium text-slate-900">{{ $m['label'] }}</td>
+                                <td class="py-3 pr-4 text-center text-slate-700">{{ $m['users'] }}</td>
+                                <td class="py-3 pr-4 text-center text-slate-700">{{ $m['bookings'] }}</td>
+                                <td class="py-3 pr-4 text-center text-slate-700">{{ $m['enrollments'] }}</td>
+                                <td class="py-3 pr-4 text-center font-semibold text-slate-900">{{ $m['users'] + $m['bookings'] + $m['enrollments'] }}</td>
+                            </tr>
+                        @endforeach
+                        <tr class="bg-slate-50">
+                            <td class="py-3 pr-4 font-semibold text-slate-700">Total</td>
+                            <td class="py-3 pr-4 text-center font-semibold text-slate-900">{{ array_sum(array_column($monthly, 'users')) }}</td>
+                            <td class="py-3 pr-4 text-center font-semibold text-slate-900">{{ array_sum(array_column($monthly, 'bookings')) }}</td>
+                            <td class="py-3 pr-4 text-center font-semibold text-slate-900">{{ array_sum(array_column($monthly, 'enrollments')) }}</td>
+                            <td class="py-3 pr-4 text-center font-semibold text-cyan-600">{{ $totalActivity }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        {{-- Bar chart + Donut role --}}
-        <div class="charts-row">
-            <div class="chart-card">
-                <h3>Aktivitas Bulanan (6 Bulan Terakhir)</h3>
-                <div class="chart-wrap" style="height:260px;">
-                    <canvas id="activityChart"></canvas>
+        {{-- Distributions --}}
+        <div class="space-y-6">
+            {{-- Mentorship breakdown --}}
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 class="text-lg font-semibold text-slate-950 mb-4">Status Sesi Mentorship</h3>
+                @php
+                    $statusLabels = [
+                        'pending'   => ['Menunggu',      '#fbbf24'],
+                        'confirmed' => ['Dikonfirmasi',  '#06d8ee'],
+                        'completed' => ['Selesai',       '#10b981'],
+                        'cancelled' => ['Dibatalkan',    '#ef4444'],
+                    ];
+                    $totalBooking = max(1, $summary['total_bookings']);
+                @endphp
+                <div class="space-y-3">
+                    @foreach ($statusLabels as $status => $info)
+                        @php $count = $summary['bookings_by_status'][$status]; $pct = ($count / $totalBooking) * 100; @endphp
+                        <div>
+                            <div class="flex items-center justify-between text-sm mb-1">
+                                <span class="font-medium text-slate-700">{{ $info[0] }}</span>
+                                <span class="text-slate-500">{{ $count }} ({{ round($pct, 1) }}%)</span>
+                            </div>
+                            <div class="h-2 rounded-full bg-slate-100">
+                                <div class="h-2 rounded-full transition-all" style="background: {{ $info[1] }}; width: {{ $pct }}%;"></div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
-            <div class="chart-card">
-                <h3>Distribusi Pengguna per Role</h3>
-                <div class="chart-wrap" style="height:260px;">
-                    <canvas id="roleChart"></canvas>
+
+            {{-- User roles --}}
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 class="text-lg font-semibold text-slate-950 mb-4">Distribusi Role Pengguna</h3>
+                @php
+                    $roleLabels = [
+                        'jobseeker' => ['Pencari Kerja', '#06d8ee'],
+                        'mentor'    => ['Mentor',        '#7c3aed'],
+                        'admin'     => ['Admin',         '#0F172A'],
+                    ];
+                    $totalUsersDisplay = max(1, $summary['total_users']);
+                @endphp
+                <div class="space-y-3">
+                    @foreach ($roleLabels as $role => $info)
+                        @php $count = $summary['users_by_role'][$role]; $pct = ($count / $totalUsersDisplay) * 100; @endphp
+                        <div>
+                            <div class="flex items-center justify-between text-sm mb-1">
+                                <span class="font-medium text-slate-700">{{ $info[0] }}</span>
+                                <span class="text-slate-500">{{ $count }} ({{ round($pct, 1) }}%)</span>
+                            </div>
+                            <div class="h-2 rounded-full bg-slate-100">
+                                <div class="h-2 rounded-full transition-all" style="background: {{ $info[1] }}; width: {{ $pct }}%;"></div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>
+    </div>
 
-        {{-- Donut booking status + course enrollment --}}
-        <div class="charts-row-2">
-            <div class="chart-card">
-                <h3>Status Sesi Mentorship</h3>
-                <div class="chart-wrap" style="height:220px;">
-                    <canvas id="bookingChart"></canvas>
-                </div>
+    {{-- Recent users table --}}
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-5">
+            <div>
+                <h2 class="text-xl font-semibold text-slate-950">Pengguna Terbaru</h2>
+                <p class="mt-1 text-sm text-slate-500">10 pengguna yang baru-baru ini bergabung di platform.</p>
             </div>
-            <div class="chart-card">
-                <h3>Progress Enrollment Kursus</h3>
-                <div class="chart-wrap" style="height:220px;">
-                    <canvas id="enrollChart"></canvas>
-                </div>
-            </div>
+            <a href="/admin/users" class="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                Lihat semua pengguna →
+            </a>
         </div>
 
-        {{-- Recent users table --}}
-        <div class="table-card">
-            <h3>Pengguna Terbaru</h3>
-            <div id="recentUsersWrap">
-                <div class="loading-row"><span class="spinner"></span></div>
-            </div>
-        </div>
-
-    </main>
-</div>
-
-<script>
-const showToast = window.hirifyShowToast;
-
-let token = localStorage.getItem('hirify_token') || sessionStorage.getItem('hirify_token');
-if (!token) { window.location.href = '/login'; }
-
-function activeStorage() { return localStorage.getItem('hirify_token') ? localStorage : sessionStorage; }
-function clearAuth() { ['hirify_token','hirify_user','hirify_remember'].forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); }); }
-
-async function refreshToken() {
-    try {
-        const res = await fetch('/api/auth/refresh', { method:'POST', headers:{ 'Accept':'application/json','Authorization':`Bearer ${token}` } });
-        const d   = await res.json();
-        if (!res.ok || !d?.data?.token) return false;
-        token = d.data.token;
-        activeStorage().setItem('hirify_token', token);
-        return true;
-    } catch { return false; }
-}
-
-async function api(path, opts={}, retry=true) {
-    const headers = { 'Accept':'application/json','Authorization':`Bearer ${token}`,'Content-Type':'application/json', ...(opts.headers||{}) };
-    const res  = await fetch(path, { ...opts, headers });
-    let   data = {};
-    try { data = await res.json(); } catch {}
-    if (res.status===401 && retry) { if (await refreshToken()) return api(path,opts,false); clearAuth(); window.location.href='/login'; return; }
-    if (!res.ok || data.success===false) throw new Error(data.message || 'Terjadi kesalahan.');
-    return data;
-}
-
-function esc(str) { return String(str??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-function initial(name) { return (String(name||'A').trim()[0]||'A').toUpperCase(); }
-
-const MONTH_LABELS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-function monthLabel(ym) {
-    const [y, m] = ym.split('-');
-    return `${MONTH_LABELS[parseInt(m,10)-1]} ${y}`;
-}
-
-/* ── Load me ── */
-async function loadMe() {
-    const res = await api('/api/auth/me');
-    const user = res.data;
-    if (user.role !== 'admin') {
-        showToast('Halaman ini khusus untuk admin.', 'error');
-        setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
-        return;
-    }
-    document.getElementById('miniName').textContent   = user.name  || 'Admin';
-    document.getElementById('miniEmail').textContent  = user.email || '-';
-    document.getElementById('miniAvatar').textContent = initial(user.name);
-}
-
-/* ── Render summary cards ── */
-function renderSummaryCards(s) {
-    const cards = [
-        { icon:'👥', label:'Total Pengguna', value: s.total_users, sub: `${s.users_by_role.jobseeker} pencari · ${s.users_by_role.mentor} mentor · ${s.users_by_role.admin} admin` },
-        { icon:'🎓', label:'Sesi Mentorship', value: s.total_bookings, sub: `${s.bookings_by_status.completed} selesai · ${s.bookings_by_status.pending} menunggu` },
-        { icon:'📚', label:'Kursus Tersedia', value: s.total_courses, sub: `${s.total_enrollments} total enrollment` },
-        { icon:'🎯', label:'Enrollment Selesai', value: s.completed_enrollments, sub: `dari ${s.total_enrollments} enrollment` },
-        { icon:'💬', label:'Thread Forum', value: s.total_forum_threads, sub: 'diskusi aktif komunitas' },
-    ];
-
-    document.getElementById('statsGrid').innerHTML = cards.map(c => `
-        <div class="stat-card">
-            <div class="stat-icon">${c.icon}</div>
-            <div class="stat-label">${esc(c.label)}</div>
-            <div class="stat-value">${esc(String(c.value))}</div>
-            <div class="stat-sub">${esc(c.sub)}</div>
-        </div>
-    `).join('');
-}
-
-/* ── Charts ── */
-let chartActivity, chartRole, chartBooking, chartEnroll;
-
-function destroyChart(c) { if (c) { try { c.destroy(); } catch {} } }
-
-function renderCharts(data) {
-    const summary = data.summary;
-    const monthly = data.monthly_activity || [];
-
-    const labels = monthly.map(m => monthLabel(m.month));
-    const usersData       = monthly.map(m => m.users);
-    const bookingsData    = monthly.map(m => m.bookings);
-    const enrollmentsData = monthly.map(m => m.enrollments);
-
-    /* Bar: aktivitas bulanan */
-    destroyChart(chartActivity);
-    chartActivity = new Chart(document.getElementById('activityChart'), {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [
-                { label:'Pengguna Baru', data: usersData, backgroundColor:'rgba(6,203,229,.75)', borderRadius: 6 },
-                { label:'Sesi Mentorship', data: bookingsData, backgroundColor:'rgba(11,127,83,.75)', borderRadius: 6 },
-                { label:'Enrollment Kursus', data: enrollmentsData, backgroundColor:'rgba(180,35,24,.65)', borderRadius: 6 },
-            ],
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position:'bottom', labels:{ font:{ family:'Manrope', weight:'600' }, boxRadius:6 } } },
-            scales: {
-                x: { grid:{ display:false }, ticks:{ font:{ family:'Manrope', weight:'600' } } },
-                y: { beginAtZero:true, grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{ family:'Manrope', weight:'600' }, precision:0 } },
-            },
-        },
-    });
-
-    /* Donut: role */
-    destroyChart(chartRole);
-    const r = summary.users_by_role;
-    chartRole = new Chart(document.getElementById('roleChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Pencari Kerja','Mentor','Admin'],
-            datasets: [{ data:[r.jobseeker, r.mentor, r.admin], backgroundColor:['#06cbe5','#0b7f53','#e65100'], borderWidth:0 }],
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: { legend: { position:'bottom', labels:{ font:{ family:'Manrope', weight:'600' }, boxRadius:4 } } },
-        },
-    });
-
-    /* Donut: booking status */
-    destroyChart(chartBooking);
-    const bs = summary.bookings_by_status;
-    chartBooking = new Chart(document.getElementById('bookingChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Menunggu','Dikonfirmasi','Selesai','Dibatalkan'],
-            datasets: [{ data:[bs.pending, bs.confirmed, bs.completed, bs.cancelled], backgroundColor:['#b98007','#0494ab','#0b7f53','#b42318'], borderWidth:0 }],
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: { legend: { position:'bottom', labels:{ font:{ family:'Manrope', weight:'600' }, boxRadius:4 } } },
-        },
-    });
-
-    /* Donut: enrollment progress */
-    destroyChart(chartEnroll);
-    const done = summary.completed_enrollments;
-    const ongoing = summary.total_enrollments - done;
-    chartEnroll = new Chart(document.getElementById('enrollChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Selesai','Sedang Berjalan'],
-            datasets: [{ data:[done, ongoing], backgroundColor:['#0b7f53','#e5edf6'], borderWidth:0 }],
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: { legend: { position:'bottom', labels:{ font:{ family:'Manrope', weight:'600' }, boxRadius:4 } } },
-        },
-    });
-}
-
-/* ── Table: recent users ── */
-function renderRecentUsers(users) {
-    if (!users || !users.length) {
-        document.getElementById('recentUsersWrap').innerHTML = '<p style="color:var(--muted);font-weight:600;padding:12px 0;">Belum ada data pengguna.</p>';
-        return;
-    }
-
-    document.getElementById('recentUsersWrap').innerHTML = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Nama</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Bergabung</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${users.map(u => `
-                    <tr>
-                        <td><strong>${esc(u.name)}</strong></td>
-                        <td style="color:var(--muted);">${esc(u.email)}</td>
-                        <td><span class="role-badge ${esc(u.role)}">${esc(u.role)}</span></td>
-                        <td style="color:var(--muted); font-size:.82rem;">${esc(u.created_at ? new Date(u.created_at).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}) : '-')}</td>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                        <th class="py-3 pr-4">Nama</th>
+                        <th class="py-3 pr-4">Email</th>
+                        <th class="py-3 pr-4">Role</th>
+                        <th class="py-3 pr-4">Tanggal Daftar</th>
                     </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
-}
-
-/* ── Load statistics ── */
-async function loadStatistics() {
-    try {
-        const res  = await api('/api/admin/statistics');
-        const data = res.data;
-
-        renderSummaryCards(data.summary);
-        renderCharts(data);
-        renderRecentUsers(data.recent_users);
-    } catch (err) {
-        showToast(err.message || 'Gagal memuat statistik.', 'error');
-    }
-}
-
-/* ── Events ── */
-function bindEvents() {
-    document.querySelectorAll('[data-goto]').forEach(btn => {
-        btn.addEventListener('click', () => { window.location.href = btn.dataset.goto; });
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-        try { await api('/api/auth/logout', { method:'POST' }); } catch {}
-        showToast('Sampai jumpa! 👋', 'info', 900);
-        setTimeout(() => { clearAuth(); window.location.href = '/login'; }, 900);
-    });
-}
-
-/* ── Boot ── */
-async function boot() {
-    try {
-        await loadMe();
-        bindEvents();
-        await loadStatistics();
-    } catch (err) {
-        if (String(err.message).toLowerCase().includes('unauthenticated')) {
-            clearAuth(); window.location.href = '/login'; return;
-        }
-        showToast(err.message || 'Gagal memuat halaman.', 'error');
-    }
-}
-
-boot();
-</script>
-</body>
-</html>
+                </thead>
+                <tbody>
+                    @forelse ($recentUsers as $u)
+                        @php
+                            $roleColor = match($u->role) {
+                                'mentor' => 'bg-purple-100 text-purple-700',
+                                'admin'  => 'bg-slate-900 text-white',
+                                default  => 'bg-cyan-100 text-cyan-700',
+                            };
+                            $initial = strtoupper(substr($u->name ?? 'U', 0, 1));
+                        @endphp
+                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                            <td class="py-3 pr-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-2xl bg-[#0F172A] text-white grid place-items-center text-sm font-semibold flex-shrink-0">{{ $initial }}</div>
+                                    <span class="font-medium text-slate-900">{{ $u->name }}</span>
+                                </div>
+                            </td>
+                            <td class="py-3 pr-4 text-slate-600">{{ $u->email }}</td>
+                            <td class="py-3 pr-4">
+                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold {{ $roleColor }}">
+                                    {{ ucfirst($u->role) }}
+                                </span>
+                            </td>
+                            <td class="py-3 pr-4 text-slate-600">{{ $u->created_at?->format('d M Y, H:i') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-sm text-slate-500">Belum ada pengguna.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endsection
