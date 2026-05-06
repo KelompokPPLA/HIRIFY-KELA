@@ -141,13 +141,27 @@ class MentorDashboardController extends Controller
             'rejection_reason' => 'nullable|string|max:500',
         ]);
 
-        $mentor = Auth::user()->mentor;
+        $mentor = Auth::user()->mentorProfile;
+
+        if (! $mentor) {
+            return back()->with('error', 'Profil mentor tidak ditemukan.');
+        }
+
         $booking = MentorBooking::where('mentor_id', $mentor->id)->findOrFail($id);
 
-        $booking->update([
-            'status' => 'rejected',
-            'rejection_reason' => $request->rejection_reason,
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($booking, $request) {
+            $booking->update([
+                'status' => 'rejected',
+                'rejection_reason' => $request->rejection_reason,
+            ]);
+
+            if ($booking->mentor_availability_id) {
+                $availability = MentorAvailability::find($booking->mentor_availability_id);
+                if ($availability) {
+                    $availability->update(['is_booked' => false]);
+                }
+            }
+        });
 
         return back()->with('success', 'Booking ditolak.');
     }
