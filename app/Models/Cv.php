@@ -20,6 +20,10 @@ class Cv extends Model
         'alamat',
         'linkedin',
         'ringkasan',
+        'file_path',
+        'file_name',
+        'file_type',
+        'file_size',
         // Kolom 'skills' dihapus — skills kini disimpan di tabel 'skills' (relasi hasMany)
     ];
 

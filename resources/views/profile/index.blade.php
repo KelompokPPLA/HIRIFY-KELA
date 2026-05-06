@@ -20,16 +20,13 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('profile.update') }}">
-        @csrf
-
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Profil</p>
                 <h1 class="text-3xl font-semibold text-slate-950">Profil Saya</h1>
-                <p class="mt-2 text-sm text-slate-600 max-w-2xl">Perbarui data pribadi, pendidikan, dan pengalaman Anda untuk memperkuat profil karier.</p>
+                <p class="mt-2 text-sm text-slate-600 max-w-2xl">Lihat data pribadi Anda. Klik Edit Profile untuk memperbarui informasi.</p>
             </div>
-            <button type="submit" class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">Simpan Perubahan</button>
+            <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">Edit Profile</a>
         </div>
 
         <div class="grid gap-6 xl:grid-cols-[0.72fr_0.28fr]">
@@ -44,42 +41,62 @@
                     </div>
 
                     <div class="mt-6 grid gap-4 sm:grid-cols-2">
-                        <label class="space-y-2 text-sm">
+                        <div class="space-y-2 text-sm">
                             <span class="text-slate-600">Nama Lengkap</span>
-                            <input type="text" name="name" value="{{ old('name', $user->name) }}"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required />
-                        </label>
-                        <label class="space-y-2 text-sm">
+                            <div class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900">{{ $user->name }}</div>
+                        </div>
+                        <div class="space-y-2 text-sm">
                             <span class="text-slate-600">Email</span>
-                            <input type="email" name="email" value="{{ old('email', $user->email) }}"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required />
-                        </label>
-                        <label class="space-y-2 text-sm">
+                            <div class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900">{{ $user->email }}</div>
+                        </div>
+                        <div class="space-y-2 text-sm">
                             <span class="text-slate-600">Telepon</span>
-                            <input type="text" name="phone" value="{{ old('phone', $profile?->phone ?? '') }}"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
-                        </label>
-                        <label class="space-y-2 text-sm">
+                            <div class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900">{{ $profile?->phone ?? '-' }}</div>
+                        </div>
+                        <div class="space-y-2 text-sm">
                             <span class="text-slate-600">Lokasi</span>
-                            <input type="text" name="location" value="{{ old('location', $profile?->location ?? '') }}"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
-                        </label>
-                        <label class="space-y-2 text-sm sm:col-span-2">
+                            <div class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900">{{ $profile?->location ?? '-' }}</div>
+                        </div>
+                        <div class="space-y-2 text-sm sm:col-span-2">
                             <span class="text-slate-600">Bio</span>
-                            <textarea name="bio" rows="3"
-                                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 resize-none">{{ old('bio', $profile?->bio ?? '') }}</textarea>
-                        </label>
+                            <div class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 min-h-[80px]">{{ $profile?->bio ?? '-' }}</div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <h2 class="text-lg font-semibold text-slate-950">Pendidikan</h2>
-                    <p class="mt-3 text-sm text-slate-500">Informasi pendidikan akan segera tersedia di versi berikutnya.</p>
+                    @if($profile?->education && count($profile->education))
+                        <div class="mt-4 space-y-3 text-sm text-slate-700">
+                            @foreach($profile->education as $edu)
+                                <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                                    <div class="font-semibold text-slate-900">{{ $edu['gelar'] ?? '-' }} — {{ $edu['institusi'] ?? '-' }}</div>
+                                    <div class="text-slate-500">{{ $edu['tahun'] ?? '-' }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="mt-3 text-sm text-slate-500">Informasi pendidikan akan segera tersedia di versi berikutnya.</p>
+                    @endif
                 </div>
 
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <h2 class="text-lg font-semibold text-slate-950">Pengalaman Kerja</h2>
-                    <p class="mt-3 text-sm text-slate-500">Informasi pengalaman kerja akan segera tersedia di versi berikutnya.</p>
+                    @if($profile?->experience && count($profile->experience))
+                        <div class="mt-4 space-y-3 text-sm text-slate-700">
+                            @foreach($profile->experience as $exp)
+                                <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                                    <div class="font-semibold text-slate-900">{{ $exp['posisi'] ?? '-' }} — {{ $exp['perusahaan'] ?? '-' }}</div>
+                                    <div class="text-slate-500">{{ $exp['periode'] ?? '-' }}</div>
+                                    @if(!empty($exp['deskripsi']))
+                                        <p class="mt-2 text-slate-600">{{ $exp['deskripsi'] }}</p>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="mt-3 text-sm text-slate-500">Informasi pengalaman kerja akan segera tersedia di versi berikutnya.</p>
+                    @endif
                 </div>
             </div>
 
@@ -130,6 +147,6 @@
                 </div>
             </aside>
         </div>
-    </form>
+    </div>
 </div>
 @endsection

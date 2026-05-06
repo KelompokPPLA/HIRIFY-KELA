@@ -18,6 +18,13 @@ class Profile extends Model
         'location',
         'photo',
         'career_path',
+        'education',
+        'experience',
+    ];
+
+    protected $casts = [
+        'education' => 'array',
+        'experience' => 'array',
     ];
 
     public function user()

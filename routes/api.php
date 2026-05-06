@@ -11,6 +11,7 @@ use App\Http\Controllers\RoadmapController;
 use App\Http\Controllers\SelfAssessmentController;
 use App\Http\Controllers\SkillTrainingController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\GenerateController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -93,11 +94,18 @@ Route::middleware(['auth:api', 'role:jobseeker'])->prefix('mentorship')->group(f
     Route::patch('bookings/{id}/cancel', [MentorshipController::class, 'cancelBooking']);
 });
 
-// ============= CV ROUTES (JWT) =============
-Route::middleware(['auth:api'])->group(function () {
+// ============= CV ROUTES (JWT + web session supported) =============
+Route::middleware(['web', 'auth:api,web'])->group(function () {
     Route::get('cv', [CvApiController::class, 'index']);
+    Route::post('cv/upload-file', [CvApiController::class, 'uploadFile']);  // Specific route BEFORE general
     Route::post('cv', [CvApiController::class, 'store']);
     Route::get('cv/{id}', [CvApiController::class, 'show']);
     Route::put('cv/{id}', [CvApiController::class, 'update']);
     Route::delete('cv/{id}', [CvApiController::class, 'destroy']);
+    Route::post('/cv', [GenerateController::class, 'store']);
 });
+
+
+// ============= Download CV =============
+
+
