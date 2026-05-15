@@ -1,0 +1,101 @@
+services:
+  # ── Nginx Web Server
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    ports:
+      - "${APP_PORT:-8080}:80"
+    depends_on:
+      app:
+        condition: service_started
+    networks:
+      - hirify
+    restart: unless-stopped
+
+  # ── PHP-FPM Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    volumes:
+      - storage:/var/www/html/storage
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hirify
+    restart: unless-stopped
+
+  # ── Queue Worker (same app image, zero extra build) 
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - storage:/var/www/html/storage
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hirify
+    restart: unless-stopped
+
+  # ── Scheduler (cron via artisan)
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    command: sh -c "while true; do php artisan schedule:run --no-interaction; sleep 60; done"
+    volumes:
+      - storage:/var/www/html/storage
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hirify
+    restart: unless-stopped
+
+  # ── MySQL 8
+  db:
+    image: mysql:8.0-oracle
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-secret}"
+      MYSQL_DATABASE: "${DB_DATABASE:-hirify_kela}"
+      MYSQL_USER: "${DB_USERNAME:-hirify}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-secret}"
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "${DB_EXTERNAL_PORT:-3306}:3306"
+    networks:
+      - hirify
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  dbdata:
+    driver: local
+  storage:
+    driver: local
+
+networks:
+  hirify:
+    driver: bridge
