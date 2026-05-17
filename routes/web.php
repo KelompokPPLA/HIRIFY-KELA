@@ -94,10 +94,15 @@ Route::middleware('auth')->group(function () {
     Route::view('/forum', 'forum.index')->name('forum.index');
 
     // Notifikasi
-    Route::get('/notifikasi', [NotificationController::class, 'index']);
-    Route::view('/notifikasi', 'notifikasi.index')->name('notifikasi.index');
-    Route::post('/notifikasi/read-all', [NotifikasiController::class, 'readAll'])
+    // Notifikasi
+Route::get('/notifikasi', [NotificationController::class, 'index'])
+    ->name('notifikasi.index');
+
+Route::post('/notifikasi/read-all', [NotificationController::class, 'markAllAsRead'])
     ->name('notifikasi.read-all');
+
+Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 'markAsRead'])
+    ->name('notifikasi.read');
 
     // Mentorship
     Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
