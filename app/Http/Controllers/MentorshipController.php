@@ -10,6 +10,7 @@ use App\Http\Resources\MentorMarketplaceResource;
 use App\Models\Mentor;
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
+use App\Models\SesiJadwal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

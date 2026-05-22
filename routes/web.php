@@ -15,6 +15,8 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\MenteeSayaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\GenerateController;
+use App\Http\Controllers\DownloadController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -128,6 +130,7 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
         Route::post('sesi-jadwal/{id}/notes', [SesiJadwalController::class, 'addNotes'])->name('mentor.sesi-jadwal.notes');
         Route::resource('feedback', FeedbackController::class)->names('mentor.feedback');
         Route::get('/mentee', [MenteeSayaController::class, 'index'])->name('mentor.mentee.index');
+        Route::get('/mentee/{id}', [MenteeSayaController::class, 'show'])->name('mentor.mentee.show');
 
         // availability
         Route::post('/availability',        [MentorDashboardController::class, 'storeAvailability'])->name('availability.store');
@@ -135,8 +138,8 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
         Route::delete('/availability/{id}', [MentorDashboardController::class, 'destroyAvailability'])->name('availability.destroy');
 
         // booking
-        Route::post('/bookings/{id}/accept', [MentorDashboardController::class, 'acceptBooking'])->name('bookings.accept');
-        Route::post('/bookings/{id}/reject', [MentorDashboardController::class, 'rejectBooking'])->name('bookings.reject');
+        Route::post('/bookings/{id}/accept', [MentorDashboardController::class, 'acceptBooking'])->name('mentor.bookings.accept');
+        Route::post('/bookings/{id}/reject', [MentorDashboardController::class, 'rejectBooking'])->name('mentor.bookings.reject');
     });
 
 });
