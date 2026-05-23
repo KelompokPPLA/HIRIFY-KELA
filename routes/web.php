@@ -12,6 +12,7 @@ use App\Http\Controllers\SesiJadwalController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\PortofolioController;
 
 /* ============================================================
    WELCOME
@@ -81,6 +82,9 @@ Route::middleware('auth')->group(function () {
     Route::view('/buat-cv-presentasi', 'jobseeker.buat-cv-presentasi')->name('buat-cv-presentasi.index');
     Route::get('/cv/{id}/download', [DownloadController::class, 'downloadPdf']);
     Route::post('/cv', [GenerateController::class, 'store'])->name('cv.store');
+
+    /* ---------- Portofolio Management ---------- */
+    Route::resource('portofolio', PortofolioController::class);
 
     /* ---------- Roadmap & Assessment ---------- */
     Route::view('/roadmap-karier',  'roadmap-karier.index')->name('roadmap-karier.index');
