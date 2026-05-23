@@ -17,6 +17,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\PortofolioController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -77,6 +78,12 @@ Route::middleware('auth')->group(function () {
     // CV presentasi
     Route::view('/buat-cv-presentasi', 'jobseeker.buat-cv-presentasi')->name('buat-cv-presentasi.index');
 
+    /* ---------- Portofolio Management ---------- */
+    Route::resource('portofolio', PortofolioController::class);
+
+    /* ---------- Roadmap & Assessment ---------- */
+    Route::view('/roadmap-karier',  'roadmap-karier.index')->name('roadmap-karier.index');
+    Route::view('/self-assessment', 'self-assessment.index')->name('self-assessment.index');
 
     /* ---------- ROADMAP KARIER ---------- */
     Route::get('/roadmap-karier', [RoadmapController::class, 'index'])->name('roadmap-karier');
