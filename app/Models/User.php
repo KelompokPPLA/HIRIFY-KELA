@@ -90,4 +90,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Portofolio::class);
     }
+  
+    public function userNotifications()
+    {
+        return $this->hasMany(UserNotification::class);
+    }
 }

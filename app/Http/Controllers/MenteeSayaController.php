@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Mentor;
 use App\Models\MentorBooking;
 use App\Models\Feedback;
+use App\Models\Roadmap;
+use App\Models\SelfAssessment;
+use App\Models\SkillEnrollment;
+use App\Models\SkillLessonProgress;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,13 +28,18 @@ class MenteeSayaController extends Controller
                 'stats' => [
                     'total' => 0,
                     'confirmed' => 0,
-                    'rejected' => 0
+                    'rejected' => 0,
                 ],
                 'search' => '',
-                'filterStatus' => 'all'
+                'filterStatus' => 'all',
             ]);
         }
 
+        // Build query: get all bookings for this mentor grouped by mentee
+        $query = MentorBooking::with('jobseeker.profile')
+            ->where('mentor_id', $mentor->id);
+
+        // Apply status filter
         $filterStatus = $request->input('status', 'all');
         $search = $request->input('search', '');
 
@@ -128,29 +137,100 @@ class MenteeSayaController extends Controller
     public function show($id)
     {
         $user = Auth::user();
-        $mentor = Mentor::where('user_id', $user->id)->first();
+        $mentor = Mentor::where('user_id', $user->id)->firstOrFail();
 
-        if (!$mentor) {
-            return redirect()->route('mentor.mentee.index')->with('error', 'Profil mentor tidak ditemukan.');
-        }
-
-        // Verify the mentee has a booking with this mentor
-        $hasBooking = MentorBooking::where('mentor_id', $mentor->id)
-            ->where('jobseeker_user_id', $id)
-            ->exists();
-
-        if (!$hasBooking) {
-            return redirect()->route('mentor.mentee.index')->with('error', 'Mentee tidak terasosiasi dengan sesi Anda.');
-        }
-
+        // Get the mentee User
         $mentee = User::with('profile')->findOrFail($id);
 
-        // Fetch bookings/sessions for this mentee under this mentor
+        // 1. Roadmap Progress
+        $roadmap = Roadmap::where('user_id', $mentee->id)->orderBy('step_order')->get();
+        $roadmapTotal = $roadmap->count();
+        $roadmapCompleted = $roadmap->where('is_completed', true)->count();
+        $roadmapProgress = $roadmapTotal > 0 ? (int)round(($roadmapCompleted / $roadmapTotal) * 100) : 0;
+
+        // 2. Self Assessment
+        $latestAssessment = SelfAssessment::where('user_id', $mentee->id)->latest()->first();
+        $assessmentScore = $latestAssessment ? (int)$latestAssessment->score : 0;
+        $assessmentScores = [];
+        if ($latestAssessment) {
+            $assessmentScores = json_decode($latestAssessment->category_scores_json, true) ?? [];
+        }
+
+        // 3. Pelatihan (Skill Enrollments)
+        $userEnrollments = SkillEnrollment::where('user_id', $mentee->id)->with('course.lessons')->get();
+        $enrollments = $userEnrollments->map(function ($enrollment) use ($mentee) {
+            $course = $enrollment->course;
+            if (!$course) return null;
+            $lessons = $course->lessons;
+            $totalLessons = $lessons->count();
+            $lessonIds = $lessons->pluck('id');
+            $completedLessons = SkillLessonProgress::where('user_id', $mentee->id)
+                ->whereIn('skill_lesson_id', $lessonIds)
+                ->whereNotNull('completed_at')
+                ->count();
+            $progress = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0;
+            return [
+                'title' => $course->title,
+                'category' => $course->category,
+                'completed_lessons' => $completedLessons,
+                'total_lessons' => $totalLessons,
+                'progress' => $progress,
+            ];
+        })->filter()->values();
+
+        $avgCourseProgress = $enrollments->count() > 0 ? (int)round($enrollments->avg('progress')) : 0;
+
+        // 4. Mentorship Bookings
         $bookings = MentorBooking::where('mentor_id', $mentor->id)
-            ->where('jobseeker_user_id', $id)
+            ->where('jobseeker_user_id', $mentee->id)
+            ->orderBy('scheduled_start', 'desc')
+            ->get();
+
+        $completedSessions = $bookings->where('status', 'completed')->count();
+        $totalSessions = $bookings->count();
+        $sessionProgress = $totalSessions > 0 ? (int)round(($completedSessions / $totalSessions) * 100) : 0;
+
+        // 5. Feedbacks
+        $feedbacks = Feedback::where('mentor_id', $user->id)
+            ->where('mentee_id', $mentee->id)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('mentor.mentee.show', compact('mentee', 'bookings'));
+        $avgMenteeRating = $feedbacks->whereNotNull('mentee_rating')->avg('mentee_rating');
+        $ratingProgress = $avgMenteeRating ? (int)round($avgMenteeRating * 20) : 0;
+
+        // 6. Success Score Calculation
+        $components = [
+            'Roadmap Progres' => $roadmapProgress,
+            'Self Assessment' => $assessmentScore,
+            'Pelatihan Selesai' => $avgCourseProgress,
+            'Sesi Mentorship' => $sessionProgress,
+            'Average Rating' => $ratingProgress,
+        ];
+
+        $successScore = (int)round(collect($components)->avg());
+
+        // 7. Latest CV
+        $cv = \App\Models\Cv::where('user_id', $mentee->id)
+            ->with(['educations', 'experiences', 'skills'])
+            ->latest()
+            ->first();
+
+        return view('mentor.mentee.show', compact(
+            'mentee',
+            'successScore',
+            'components',
+            'roadmapCompleted',
+            'roadmapTotal',
+            'roadmapProgress',
+            'roadmap',
+            'latestAssessment',
+            'assessmentScore',
+            'assessmentScores',
+            'feedbacks',
+            'enrollments',
+            'bookings',
+            'cv'
+        ));
     }
 }
