@@ -85,4 +85,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Cv::class);
     }
+
+    public function portofolios()
+    {
+        return $this->hasMany(Portofolio::class);
+    }
 }
