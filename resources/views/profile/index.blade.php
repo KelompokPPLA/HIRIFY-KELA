@@ -98,6 +98,80 @@
                         <p class="mt-3 text-sm text-slate-500">Informasi pengalaman kerja akan segera tersedia di versi berikutnya.</p>
                     @endif
                 </div>
+
+                {{-- Portofolio Section --}}
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-slate-950">Portofolio</h2>
+                        <a href="{{ route('portofolio.index') }}" class="text-xs font-bold text-navy hover:underline">Kelola Portofolio</a>
+                    </div>
+                    @if($user->portofolios && $user->portofolios->count())
+                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                            @foreach($user->portofolios->sortByDesc('created_at')->take(4) as $portfolio)
+                                <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 flex flex-col justify-between hover:border-slate-200 transition-all">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase {{ $portfolio->type === 'project' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-purple-50 text-purple-600 border border-purple-100' }}">
+                                                {{ $portfolio->type === 'project' ? 'Proyek' : 'Sertifikat' }}
+                                            </span>
+                                            <span class="text-[10px] text-slate-400 font-medium">
+                                                @if($portfolio->start_date)
+                                                    {{ $portfolio->start_date->translatedFormat('M Y') }}
+                                                @endif
+                                            </span>
+                                        </div>
+                                        <h3 class="font-bold text-slate-900 text-sm line-clamp-1" title="{{ $portfolio->title }}">{{ $portfolio->title }}</h3>
+                                        @if($portfolio->description)
+                                            <p class="text-xs text-slate-500 mt-1 line-clamp-2">{{ $portfolio->description }}</p>
+                                        @endif
+                                        
+                                        @if($portfolio->skills)
+                                            <div class="flex flex-wrap gap-1 mt-2">
+                                                @foreach(array_slice(array_filter(array_map('trim', explode(',', $portfolio->skills))), 0, 3) as $skill)
+                                                    <span class="px-1.5 py-0.5 bg-white text-slate-600 rounded text-[9px] font-semibold border border-slate-200">
+                                                        {{ $skill }}
+                                                    </span>
+                                                @endforeach
+                                                @if(count(array_filter(array_map('trim', explode(',', $portfolio->skills)))) > 3)
+                                                    <span class="px-1.5 py-0.5 bg-white text-slate-400 rounded text-[9px] font-semibold border border-slate-100">
+                                                        +{{ count(array_filter(array_map('trim', explode(',', $portfolio->skills)))) - 3 }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center justify-between border-t border-slate-100 pt-3 mt-3">
+                                        @if($portfolio->link)
+                                            <a href="{{ $portfolio->link }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-navy hover:underline inline-flex items-center gap-1">
+                                                Lihat Link
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                                </svg>
+                                            </a>
+                                        @else
+                                            <span></span>
+                                        @endif
+                                        
+                                        @if($portfolio->file_path)
+                                            <a href="{{ asset('storage/' . $portfolio->file_path) }}" download class="text-[10px] text-slate-400 hover:text-navy transition-colors inline-flex items-center gap-1">
+                                                📁 Unduh File
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="mt-4 p-6 border-2 border-dashed border-slate-100 rounded-2xl text-center">
+                            <p class="text-sm text-slate-500">Anda belum mengunggah hasil proyek atau sertifikat apa pun.</p>
+                            <a href="{{ route('portofolio.create') }}" class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-slate-900 px-3.5 py-2 rounded-xl hover:bg-slate-800 transition-colors">
+                                + Tambah Portofolio
+                            </a>
+                        </div>
+                    @endif
+                </div>
             </div>
 
             <aside class="space-y-6">
