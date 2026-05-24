@@ -346,7 +346,7 @@ class MentorshipController extends Controller
             'data' => ['booking_id' => $booking->id, 'status' => 'pending'],
         ]);
 
-        // ─── Career Streak: catat aktivitas mentorship ───
+        // Career Streak: catat aktivitas mentorship
         app(StreakService::class)->recordActivity(
             $user,
             'mentorship',

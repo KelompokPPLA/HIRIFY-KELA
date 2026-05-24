@@ -26,11 +26,11 @@
                     <p class="text-xs uppercase tracking-[0.24em] text-orange-300/80 font-semibold">Career Streak Harian</p>
                     <h1 class="mt-2 text-2xl lg:text-3xl font-bold text-white">
                         @if($isActiveToday)
-                            🔥 Streak Aktif Hari Ini!
+                            Streak Aktif Hari Ini!
                         @elseif($isStreakAlive)
-                            ⚡ Jangan Putus Hari Ini!
+                            Jangan Putus Hari Ini!
                         @else
-                            🚀 Mulai Streak Barumu!
+                            Mulai Streak Barumu!
                         @endif
                     </h1>
                     <p class="mt-2 text-sm text-slate-300 max-w-lg">
@@ -83,7 +83,7 @@
                 </div>
                 @else
                 <div class="rounded-2xl bg-white/[0.06] border border-white/10 p-4">
-                    <p class="text-sm font-semibold text-yellow-400">👑 Semua badge telah diperoleh! Kamu luar biasa!</p>
+                    <p class="text-sm font-semibold text-yellow-400">Semua badge telah diperoleh! Kamu luar biasa!</p>
                 </div>
                 @endif
             </div>

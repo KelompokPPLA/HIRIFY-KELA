@@ -12,17 +12,16 @@ use Illuminate\Support\Facades\DB;
 
 class StreakService
 {
-    // ─── Public API ─────────────────────────────────────────
 
     /**
      * Catat aktivitas pengguna dan perbarui streak.
      *
      * Dipanggil setelah user menyelesaikan: pelatihan, assessment, atau mentorship.
      *
-     * @param  User        $user
-     * @param  string      $type         'training' | 'assessment' | 'mentorship'
-     * @param  string|null $referenceId  UUID entitas terkait (lesson id, assessment id, booking id)
-     * @param  string|null $description  Deskripsi aktivitas
+     * @param  User 
+     * @param  string      $training, assessment, mentorship
+     * @param  string|null $UUID entitas terkait (lesson id, assessment id, booking id)
+     * @param  string|null $Deskripsi aktivitas
      */
     public function recordActivity(
         User $user,
@@ -33,13 +32,11 @@ class StreakService
         $today = now()->toDateString();
 
         DB::transaction(function () use ($user, $type, $referenceId, $description, $today) {
-            // 1. Catat activity log (deduplikasi: 1 tipe per hari sudah cukup untuk streak)
             $alreadyLoggedToday = ActivityLog::where('user_id', $user->id)
                 ->where('activity_type', $type)
                 ->where('activity_date', $today)
                 ->exists();
 
-            // Selalu catat log detail, tapi update streak hanya jika hari baru
             ActivityLog::create([
                 'user_id'       => $user->id,
                 'activity_type' => $type,
@@ -48,7 +45,6 @@ class StreakService
                 'description'   => $description,
             ]);
 
-            // 2. Update streak hanya jika belum ada aktivitas APAPUN hari ini
             $anyActivityToday = ActivityLog::where('user_id', $user->id)
                 ->where('activity_date', $today)
                 ->where('id', '!=', ActivityLog::where('user_id', $user->id)
@@ -58,7 +54,6 @@ class StreakService
                     ->value('id') ?? '00000000-0000-0000-0000-000000000000')
                 ->exists();
 
-            // Ambil atau buat record streak
             $streak = UserStreak::firstOrCreate(
                 ['user_id' => $user->id],
                 [
@@ -69,14 +64,12 @@ class StreakService
                 ]
             );
 
-            // Hanya update streak counter jika ini hari baru
             $lastDate = $streak->last_activity_date;
 
             if ($lastDate === null || $lastDate->toDateString() !== $today) {
                 $this->updateStreakCounter($streak, $today, $lastDate);
             }
 
-            // 3. Cek dan award badge baru
             $this->checkAndAwardBadges($user, $streak->fresh());
         });
     }
@@ -96,7 +89,6 @@ class StreakService
             ]
         );
 
-        // Badge yang sudah diperoleh
         $earnedBadges = UserStreakBadge::where('user_id', $user->id)
             ->with('badge')
             ->orderBy('earned_at', 'desc')
@@ -104,15 +96,12 @@ class StreakService
 
         $earnedBadgeIds = $earnedBadges->pluck('streak_badge_id')->toArray();
 
-        // Semua badge (untuk tampilkan yang belum diperoleh juga)
         $allBadges = StreakBadge::orderBy('milestone_days')->get();
 
-        // Badge berikutnya yang belum diperoleh
         $nextBadge = $allBadges
             ->whereNotIn('id', $earnedBadgeIds)
             ->first();
 
-        // Progress menuju badge berikutnya
         $nextBadgeProgress = 0;
         if ($nextBadge) {
             $nextBadgeProgress = $streak->current_streak > 0
@@ -120,17 +109,14 @@ class StreakService
                 : 0;
         }
 
-        // Kalender heatmap 30 hari terakhir
         $heatmapData = $this->buildHeatmapData($user, 30);
 
-        // Statistik per tipe aktivitas
         $activityStats = ActivityLog::where('user_id', $user->id)
             ->selectRaw('activity_type, COUNT(DISTINCT activity_date) as active_days, COUNT(*) as total_count')
             ->groupBy('activity_type')
             ->get()
             ->keyBy('activity_type');
 
-        // Riwayat aktivitas terbaru (10 item)
         $recentActivities = ActivityLog::where('user_id', $user->id)
             ->orderByDesc('activity_date')
             ->orderByDesc('created_at')
@@ -151,8 +137,6 @@ class StreakService
             'recentActivities'    => $recentActivities,
         ];
     }
-
-    // ─── Private Helpers ────────────────────────────────────
 
     /**
      * Kalkulasi dan perbarui counter streak berdasarkan tanggal aktivitas terakhir.
@@ -175,7 +159,6 @@ class StreakService
             $streak->total_activity_days++;
         }
 
-        // Update rekor terpanjang
         if ($streak->current_streak > $streak->longest_streak) {
             $streak->longest_streak = $streak->current_streak;
         }
@@ -195,10 +178,8 @@ class StreakService
             return;
         }
 
-        // Badge eligible berdasarkan current streak
         $eligibleBadges = StreakBadge::where('milestone_days', '<=', $currentStreak)->get();
 
-        // Badge yang sudah diperoleh user
         $alreadyEarned = UserStreakBadge::where('user_id', $user->id)
             ->pluck('streak_badge_id')
             ->toArray();
