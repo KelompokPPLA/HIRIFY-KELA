@@ -22,36 +22,21 @@ class ActivityLog extends Model
         'activity_date' => 'date',
     ];
 
-    // ─── Relasi ─────────────────────────────────────────────
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    // ─── Scopes ─────────────────────────────────────────────
-
-    /**
-     * Filter log berdasarkan tipe aktivitas.
-     */
     public function scopeOfType($query, string $type)
     {
         return $query->where('activity_type', $type);
     }
 
-    /**
-     * Filter log untuk 30 hari terakhir (untuk kalender heatmap).
-     */
     public function scopeLastDays($query, int $days = 30)
     {
         return $query->where('activity_date', '>=', now()->subDays($days)->toDateString());
     }
 
-    // ─── Helper ─────────────────────────────────────────────
-
-    /**
-     * Label aktivitas yang ramah pembaca.
-     */
     public function getTypeLabelAttribute(): string
     {
         return match ($this->activity_type) {
@@ -62,9 +47,6 @@ class ActivityLog extends Model
         };
     }
 
-    /**
-     * Icon emoji berdasarkan tipe aktivitas.
-     */
     public function getTypeIconAttribute(): string
     {
         return match ($this->activity_type) {

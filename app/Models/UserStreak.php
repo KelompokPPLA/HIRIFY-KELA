@@ -26,8 +26,6 @@ class UserStreak extends Model
         'total_activity_days'  => 'integer',
     ];
 
-    // ─── Relasi ─────────────────────────────────────────────
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -38,11 +36,6 @@ class UserStreak extends Model
         return $this->hasMany(ActivityLog::class, 'user_id', 'user_id');
     }
 
-    // ─── Helper Attributes ──────────────────────────────────
-
-    /**
-     * Cek apakah streak pengguna masih aktif (aktivitas hari ini atau kemarin).
-     */
     public function getIsActiveAttribute(): bool
     {
         if (! $this->last_activity_date) {
@@ -56,9 +49,6 @@ class UserStreak extends Model
             || $this->last_activity_date->toDateString() === $yesterday;
     }
 
-    /**
-     * Cek apakah pengguna sudah aktif hari ini.
-     */
     public function getIsActiveToday(): bool
     {
         return $this->last_activity_date?->toDateString() === now()->toDateString();

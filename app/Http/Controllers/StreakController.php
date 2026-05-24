@@ -10,9 +10,6 @@ class StreakController extends Controller
 {
     public function __construct(private readonly StreakService $streakService) {}
 
-    /**
-     * Dashboard utama Career Streak.
-     */
     public function index()
     {
         $user = auth()->user();
@@ -21,14 +18,11 @@ class StreakController extends Controller
         return view('streak.index', $data);
     }
 
-    /**
-     * Riwayat aktivitas dengan pagination.
-     */
     public function history(Request $request)
     {
         $user     = auth()->user();
         $perPage  = 15;
-        $type     = $request->query('type'); // filter opsional
+        $type     = $request->query('type');
 
         $query = ActivityLog::where('user_id', $user->id)
             ->orderByDesc('activity_date')

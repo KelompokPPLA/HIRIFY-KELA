@@ -212,7 +212,7 @@ class SkillTrainingController extends Controller
                 'completed_at'    => now(),
             ]);
 
-            // ─── Career Streak: catat aktivitas pelatihan (hanya jika materi baru) ───
+            // Career Streak: catat aktivitas pelatihan
             app(StreakService::class)->recordActivity(
                 $user,
                 'training',

@@ -29,7 +29,6 @@ class DashboardController extends Controller
         $stats      = $this->computeStats($user);
         $activities = $this->recentActivities($user);
 
-        // Career Streak widget data
         $userStreak = UserStreak::firstOrCreate(
             ['user_id' => $user->id],
             ['current_streak' => 0, 'longest_streak' => 0, 'last_activity_date' => null, 'total_activity_days' => 0]

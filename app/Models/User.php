@@ -96,8 +96,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(UserNotification::class);
     }
 
-    // ─── Career Streak ───────────────────────────────────────
-
     public function streak()
     {
         return $this->hasOne(UserStreak::class);

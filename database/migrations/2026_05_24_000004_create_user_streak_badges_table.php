@@ -17,7 +17,6 @@ return new class extends Migration
             $table->timestamp('earned_at')->comment('Waktu badge diperoleh');
             $table->timestamps();
 
-            // Satu user hanya bisa mendapatkan satu badge yang sama sekali
             $table->unique(['user_id', 'streak_badge_id']);
         });
     }

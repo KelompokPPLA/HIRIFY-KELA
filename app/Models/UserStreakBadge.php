@@ -20,8 +20,6 @@ class UserStreakBadge extends Model
         'earned_at' => 'datetime',
     ];
 
-    // ─── Relasi ─────────────────────────────────────────────
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
