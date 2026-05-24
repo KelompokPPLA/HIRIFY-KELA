@@ -11,6 +11,8 @@ use App\Models\Mentor;
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
 use App\Models\SesiJadwal;
+use App\Models\UserNotification;
+use App\Services\StreakService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -343,6 +345,14 @@ class MentorshipController extends Controller
             'action_url' => '/mentorship',
             'data' => ['booking_id' => $booking->id, 'status' => 'pending'],
         ]);
+
+        // ─── Career Streak: catat aktivitas mentorship ───
+        app(StreakService::class)->recordActivity(
+            $user,
+            'mentorship',
+            $booking->id,
+            'Sesi mentorship dengan ' . ($booking->mentor?->user?->name ?? 'mentor') . ' berhasil dijadwalkan'
+        );
 
         return ResponseHelper::jsonResponse(
             true,
