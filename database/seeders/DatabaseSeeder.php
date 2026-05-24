@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             MentorshipDemoSeeder::class,
             SkillTrainingSeeder::class,
+            StreakBadgeSeeder::class,
         ]);
     }
 }

@@ -39,6 +39,26 @@
                     </div>
                 </div>
             </div>
+            <div class="hidden lg:flex flex-col items-center gap-2">
+                {{-- Career Streak Widget --}}
+                <a href="{{ route('streak.index') }}"
+                   class="group flex flex-col items-center gap-2 rounded-2xl p-5 border border-white/10 bg-white/[0.06] hover:bg-white/[0.10] transition-all">
+                    <div class="text-5xl leading-none group-hover:scale-110 transition-transform duration-300">
+                        {{ ($streakWidget->current_streak ?? 0) > 0 ? '🔥' : '💤' }}
+                    </div>
+                    <div class="text-center">
+                        <p class="text-2xl font-extrabold text-orange-400 leading-none">
+                            {{ $streakWidget->current_streak ?? 0 }}
+                        </p>
+                        <p class="text-xs text-slate-400 mt-1 font-medium">hari streak</p>
+                    </div>
+                    @if($streakActiveToday ?? false)
+                    <span class="text-[10px] font-bold bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">✓ Aktif Hari Ini</span>
+                    @else
+                    <span class="text-[10px] font-bold bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full">Jaga Streak!</span>
+                    @endif
+                </a>
+            </div>
         </div>
     </section>
 

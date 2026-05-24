@@ -7,6 +7,7 @@ use App\Models\SkillCourse;
 use App\Models\SkillEnrollment;
 use App\Models\SkillLesson;
 use App\Models\SkillLessonProgress;
+use App\Services\StreakService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -210,6 +211,14 @@ class SkillTrainingController extends Controller
                 'skill_lesson_id' => $lessonId,
                 'completed_at'    => now(),
             ]);
+
+            // ─── Career Streak: catat aktivitas pelatihan (hanya jika materi baru) ───
+            app(StreakService::class)->recordActivity(
+                $user,
+                'training',
+                $lessonId,
+                'Materi "' . ($lesson->title ?? 'Pelatihan') . '" berhasil diselesaikan'
+            );
         }
 
         $lessonIds    = SkillLesson::where('skill_course_id', $courseId)->pluck('id');

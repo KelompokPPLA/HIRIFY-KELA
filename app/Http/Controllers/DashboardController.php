@@ -9,6 +9,7 @@ use App\Models\SkillEnrollment;
 use App\Models\SkillLesson;
 use App\Models\SkillLessonProgress;
 use App\Models\User;
+use App\Models\UserStreak;
 use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
@@ -25,10 +26,20 @@ class DashboardController extends Controller
             return redirect()->route('mentor.dashboard');
         }
 
-        $stats = $this->computeStats($user);
+        $stats      = $this->computeStats($user);
         $activities = $this->recentActivities($user);
 
-        return view('dashboard.index', array_merge($stats, ['activities' => $activities]));
+        // Career Streak widget data
+        $userStreak = UserStreak::firstOrCreate(
+            ['user_id' => $user->id],
+            ['current_streak' => 0, 'longest_streak' => 0, 'last_activity_date' => null, 'total_activity_days' => 0]
+        );
+
+        return view('dashboard.index', array_merge($stats, [
+            'activities'       => $activities,
+            'streakWidget'     => $userStreak,
+            'streakActiveToday' => $userStreak->last_activity_date?->toDateString() === now()->toDateString(),
+        ]));
     }
 
     private function computeStats(User $user): array
