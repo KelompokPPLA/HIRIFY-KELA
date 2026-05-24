@@ -18,6 +18,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\PortofolioController;
+use App\Http\Controllers\StreakController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -115,6 +116,10 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
 
     // Mentorship
     Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
+
+    /* ---------- Career Streak ---------- */
+    Route::get('/streak',         [StreakController::class, 'index'])->name('streak.index');
+    Route::get('/streak/history', [StreakController::class, 'history'])->name('streak.history');
 
 
     /* ---------- AUTH ACTION ---------- */
