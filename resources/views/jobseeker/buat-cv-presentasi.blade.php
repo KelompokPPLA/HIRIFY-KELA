@@ -243,11 +243,8 @@
                     <div class="mt-5 grid gap-4 sm:grid-cols-2">
                         <div class="input-group">
                             <label class="input-label" for="slideCount">Jumlah Slide</label>
-                            <select id="slideCount" class="cv-select">
-                                <option value="8">8 slide (Ringkas)</option>
-                                <option value="12" selected>12 slide (Standar)</option>
-                                <option value="16">16 slide (Lengkap)</option>
-                                <option value="20">20 slide (Komprehensif)</option>
+                            <select id="slideCount" class="cv-select" disabled>
+                                <option value="8" selected>8 slide (Maksimal)</option>
                             </select>
                         </div>
                         <div class="input-group">
@@ -371,13 +368,25 @@
         </div>
     </div>
 </div>
+
+<!-- VIRTUAL PDF DECK (HIDDEN) -->
+<div style="position: absolute; top: -99999px; left: -99999px; width: 960px; pointer-events: none; z-index: -999;">
+    <div id="virtualPdfDeck">
+        <!-- Will be populated by JS -->
+    </div>
+</div>
 @endsection
 
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
 /* =========================================================
    FONTS
@@ -1108,10 +1117,102 @@
     .section-card { padding: 18px; }
     .main-card { padding: 20px; }
 }
+
+/* VIRTUAL DECK CSS */
+.deck-container {
+    width: 960px;
+    background: transparent;
+    display: block;
+}
+.deck-slide {
+    width: 960px;
+    height: 540px;
+    background: white;
+    box-sizing: border-box;
+    position: relative;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+.slide-header {
+    flex-shrink: 0;
+    height: 76px;
+    display: flex;
+    align-items: center;
+    padding: 0 48px;
+}
+.slide-header h2 { font-size: 28px; margin: 0; font-weight: 700; }
+.slide-body {
+    flex: 1;
+    padding: 20px 48px 24px;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow: hidden;
+}
+.slide-body h3 { font-size: 18px; margin: 0 0 10px 0; font-weight: 700; }
+.slide-body p { margin: 0 0 10px 0; }
+.cover-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    padding: 0 80px;
+}
+.cover-content h1 { font-size: 48px; margin: 0 0 12px 0; font-weight: 800; line-height: 1.15; }
+.subtitle { font-size: 20px; margin: 0; }
+.deck-photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 16px; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+/* Skill tag style */
+.skill-tags { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 8px; }
+.skill-tag { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 20px; padding: 6px 16px; font-size: 15px; font-weight: 500; color: #334155; }
+
+/* Experience card */
+.exp-card { background: #f8fafc; border-left: 4px solid currentColor; border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 12px; }
+.exp-title { font-size: 16px; font-weight: 700; margin: 0 0 2px; }
+.exp-meta { font-size: 13px; opacity: 0.7; margin: 0 0 4px; }
+.exp-desc { font-size: 14px; margin: 0; }
+
+/* Theme Professional */
+.template-professional .deck-slide { background: #ffffff; color: #1e293b; }
+.template-professional .deck-slide:not(.slide-cover) { border-top: 6px solid #1e293b; }
+.template-professional .slide-header { background: #1e293b; color: white; }
+.template-professional .slide-cover { background: #f1f5f9; }
+.template-professional .slide-cover h1 { color: #0f172a; }
+.template-professional .slide-cover .subtitle { color: #0284c7; }
+.template-professional .skill-tag { background: #e2e8f0; border-color: #94a3b8; }
+.template-professional .exp-card { border-color: #1e293b; }
+
+/* Theme Modern */
+.template-modern .deck-slide { background: #ffffff; color: #334155; }
+.template-modern .slide-header { border-left: 14px solid #0ea5e9; padding-left: 34px; }
+.template-modern .slide-cover { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+.template-modern .slide-cover h1 { color: white; }
+.template-modern .slide-cover .subtitle { color: rgba(255,255,255,0.9); }
+.template-modern .skill-tag { background: #e0f2fe; border-color: #7dd3fc; color: #0369a1; }
+.template-modern .exp-card { border-color: #0ea5e9; }
+
+/* Theme Creative */
+.template-creative .deck-slide { background: #faf5ff; color: #334155; }
+.template-creative .slide-header { border-bottom: 3px solid #a855f7; background: transparent; }
+.template-creative .slide-header h2 { background: linear-gradient(90deg, #a855f7, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.template-creative .slide-cover { background: linear-gradient(135deg, #7c3aed, #4f46e5); }
+.template-creative .slide-cover h1 { color: white; }
+.template-creative .slide-cover .subtitle { color: rgba(255,255,255,0.85); }
+.template-creative .skill-tag { background: #ede9fe; border-color: #c4b5fd; color: #6d28d9; }
+.template-creative .exp-card { border-color: #a855f7; background: #ede9fe; }
+
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+    const profileData = @json($profileData ?? []);
+
 
     /* ===========================================
        STATE
@@ -1119,7 +1220,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const state = {
         source: 'profile',
         style: 'professional',
-        slideCount: '12',
+        slideCount: '8',
         language: 'id',
         uploadedFile: null,
     };
@@ -1253,6 +1354,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         state.uploadedFile = file;
+        state.parsedCvData = null;
 
         // show preview
         fileNameEl.textContent = file.name;
@@ -1260,8 +1362,170 @@ document.addEventListener('DOMContentLoaded', function () {
         dropArea.classList.add('hidden');
         filePreview.classList.remove('hidden');
 
+        showToast('⏳ Membaca isi CV...', '');
+
+        // Parse file content
+        if (file.type === 'application/pdf') {
+            parsePdf(file);
+        } else {
+            parseDocx(file);
+        }
+
         detectActiveStep();
-        showToast('✓ File berhasil diunggah', 'success');
+    }
+
+    /* ───────────────────────────────────────────
+       PDF PARSER  (using PDF.js)
+    ─────────────────────────────────────────── */
+    async function parsePdf(file) {
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page   = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                fullText += content.items.map(s => s.str).join(' ') + '\n';
+            }
+            applyParsedCvText(fullText);
+        } catch (e) {
+            showToast('Gagal membaca PDF. Isi form secara manual.', 'error');
+        }
+    }
+
+    /* ───────────────────────────────────────────
+       DOCX PARSER  (using mammoth.js)
+    ─────────────────────────────────────────── */
+    async function parseDocx(file) {
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            applyParsedCvText(result.value);
+        } catch (e) {
+            showToast('Gagal membaca DOCX. Isi form secara manual.', 'error');
+        }
+    }
+
+    /* ───────────────────────────────────────────
+       TEXT PARSER — extract structured data
+    ─────────────────────────────────────────── */
+    function applyParsedCvText(rawText) {
+        const lines  = rawText.split(/\n|\r/).map(l => l.trim()).filter(Boolean);
+        const text   = rawText;
+        const ltext  = rawText.toLowerCase();
+
+        // ── Helper: grab lines between two section keywords ──────────────────
+        function extractSection(startKeys, endKeys) {
+            const startIdx = lines.findIndex(l => startKeys.some(k => l.toLowerCase().includes(k)));
+            if (startIdx < 0) return [];
+            let endIdx = lines.length;
+            for (let k of endKeys) {
+                const ei = lines.findIndex((l, i) => i > startIdx && l.toLowerCase().includes(k));
+                if (ei > 0 && ei < endIdx) endIdx = ei;
+            }
+            return lines.slice(startIdx + 1, endIdx).filter(l => l.length > 2);
+        }
+
+        // ── Name: first non-empty line that looks like a name ────────────────
+        let detectedName = '';
+        for (let l of lines.slice(0, 5)) {
+            if (/^[A-Z][a-z]+( [A-Z][a-z]+)+$/.test(l) || (l.split(' ').length >= 2 && l.split(' ').length <= 5 && !/\d|@/.test(l))) {
+                detectedName = l; break;
+            }
+        }
+
+        // ── Email ─────────────────────────────────────────────────────────────
+        const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+        const detectedEmail = emailMatch ? emailMatch[0] : '';
+
+        // ── Phone ─────────────────────────────────────────────────────────────
+        const phoneMatch = text.match(/(\+62|62|0)[\s-]?8[\d\s-]{8,12}/);
+        const detectedPhone = phoneMatch ? phoneMatch[0].replace(/[\s-]/g,'') : '';
+
+        // ── Job Title: look for line after name containing common titles ──────
+        const titleKws = ['engineer','developer','designer','manager','analyst','staff','officer','coordinator','consultant','architect','lead','senior','junior','direktur','manajer'];
+        let detectedTitle = '';
+        for (let l of lines.slice(0, 10)) {
+            if (titleKws.some(k => l.toLowerCase().includes(k)) && l.length < 60) {
+                detectedTitle = l; break;
+            }
+        }
+
+        // ── Summary ───────────────────────────────────────────────────────────
+        const summaryKeys  = ['summary','ringkasan','profil','about','objective','tujuan','deskripsi diri'];
+        const summaryEndKs = ['pendidikan','education','pengalaman','experience','keahlian','skill','organisasi'];
+        const summaryLines = extractSection(summaryKeys, summaryEndKs);
+        const detectedSummary = summaryLines.slice(0, 5).join(' ');
+
+        // ── Skills ────────────────────────────────────────────────────────────
+        const skillKeys  = ['keahlian','skill','kompetensi','kemampuan','tools','technology','teknologi','bahasa pemrograman'];
+        const skillEndKs = ['pendidikan','education','pengalaman','experience','organisasi','sertifikat','project'];
+        const skillLines = extractSection(skillKeys, skillEndKs);
+        // Flatten comma/bullet separated skills
+        const skillFlat  = skillLines.join(', ').replace(/[•·\-–—]/g, ',').replace(/,+/g, ',').replace(/\s+/g,' ');
+        const detectedSkills = [...new Set(skillFlat.split(',').map(s=>s.trim()).filter(s=>s.length>1 && s.length<40))].slice(0,15).join(', ');
+
+        // ── Experience ────────────────────────────────────────────────────────
+        const expSectionKeys = ['pengalaman kerja','pengalaman','experience','work experience','riwayat kerja'];
+        const expEndKs       = ['pendidikan','education','keahlian','skill','organisasi','sertifikat'];
+        const expLines       = extractSection(expSectionKeys, expEndKs);
+        // Build simple experience objects: grab title-like lines
+        const expRaw = [];
+        for (let i = 0; i < expLines.length && expRaw.length < 4; i++) {
+            const l = expLines[i];
+            const period = l.match(/(\d{4}|jan|feb|mar|apr|mei|jun|jul|aug|sep|okt|nov|des|january|february|march|april|may|june|july|august|september|october|november|december)/i);
+            if (period || l.length < 80) {
+                expRaw.push({
+                    posisi: l,
+                    perusahaan: expLines[i+1] || '',
+                    periode: period ? l : (expLines[i+1] || ''),
+                    deskripsi: expLines[i+2] || ''
+                });
+                i += 2;
+            }
+        }
+
+        // ── Education ─────────────────────────────────────────────────────────
+        const eduSectionKeys = ['pendidikan','education','riwayat pendidikan'];
+        const eduEndKs       = ['pengalaman','experience','keahlian','skill','organisasi','sertifikat','project'];
+        const eduLines       = extractSection(eduSectionKeys, eduEndKs);
+        const eduRaw = [];
+        for (let i = 0; i < eduLines.length && eduRaw.length < 3; i++) {
+            const l = eduLines[i];
+            const yr = l.match(/\d{4}/);
+            if (yr || l.length < 60) {
+                eduRaw.push({
+                    institusi: l,
+                    gelar: eduLines[i+1] || '',
+                    tahun: yr ? yr[0] : ''
+                });
+                i += 1;
+            }
+        }
+
+        // ── Store parsed data & populate form ─────────────────────────────────
+        state.parsedCvData = {
+            name:         detectedName,
+            email:        detectedEmail,
+            phone:        detectedPhone,
+            summary:      detectedSummary,
+            jobTitle:     detectedTitle,
+            skills:       detectedSkills,
+            experiences:  expRaw,
+            educations:   eduRaw,
+        };
+
+        // Auto-fill form fields
+        if (detectedSummary && !summaryInput.value.trim()) {
+            summaryInput.value = detectedSummary;
+            summaryInput.dispatchEvent(new Event('input'));
+        }
+        const jobTitleEl = document.getElementById('jobTitle');
+        if (detectedTitle && jobTitleEl && !jobTitleEl.value.trim()) jobTitleEl.value = detectedTitle;
+        const keySkillsEl = document.getElementById('keySkills');
+        if (detectedSkills && keySkillsEl && !keySkillsEl.value.trim()) keySkillsEl.value = detectedSkills;
+
+        showToast('✓ CV berhasil dibaca! Data telah diisi otomatis.', 'success');
     }
 
     function resetFile() {
@@ -1380,7 +1644,7 @@ document.addEventListener('DOMContentLoaded', function () {
         cleanupGeneratedPdf();
         cleanupGeneratedPptx();
 
-        const pdfBlob = createPdfBlob();
+        const pdfBlob = await createPdfBlob();
         generatedPdfUrl = URL.createObjectURL(pdfBlob);
         downloadPdf.href = generatedPdfUrl;
         
@@ -1391,77 +1655,177 @@ document.addEventListener('DOMContentLoaded', function () {
         setExportButtonsState(true);
     }
 
-    function createPdfBlob() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-        const margin = 40;
-        let y = 50;
+    function generateDeckHtml() {
+        const deck = document.getElementById('virtualPdfDeck');
+        deck.className = 'deck-container template-' + state.style;
 
-        doc.setFontSize(20);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Presentasi CV', margin, y);
-        y += 32;
+        // ─── Gather data ────────────────────────────────────────────────────────
+        let name      = 'Nama Lengkap';
+        let email     = 'email@example.com';
+        let phone     = '';
+        let summary   = summaryInput.value.trim();
+        let jobTitle  = (document.getElementById('jobTitle')  || {}).value?.trim() ?? '';
+        let targetRole= (document.getElementById('targetRole')|| {}).value?.trim() ?? '';
+        let formSkills= (document.getElementById('keySkills') || {}).value?.trim() ?? '';
 
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'normal');
-        const sourceText = state.source === 'upload' ? 'Upload CV' : 'Dari Profil';
-        const langText = { id: 'Indonesia', en: 'English', bilingual: 'Bilingual' }[state.language];
+        let expRaw  = [];   // raw objects {posisi, perusahaan, periode, deskripsi}
+        let eduRaw  = [];   // raw objects {institusi, gelar, tahun}
+        let skillArr = formSkills ? formSkills.split(',').map(s=>s.trim()).filter(Boolean) : [];
 
-        doc.text(`Sumber       : ${sourceText}`, margin, y);
-        y += 18;
-        doc.text(`Gaya         : ${styleLabels[state.style]}`, margin, y);
-        y += 18;
-        doc.text(`Jumlah Slide : ${state.slideCount} slide`, margin, y);
-        y += 18;
-        doc.text(`Bahasa       : ${langText}`, margin, y);
-        y += 28;
+        if (state.source === 'profile') {
+            name  = ((profileData.first_name||'') + ' ' + (profileData.last_name||'')).trim() || name;
+            email = profileData.email || email;
+            phone = profileData.phone || phone;
+            if (!summary) summary = profileData.bio || '';
 
-        doc.setFont('helvetica', 'bold');
-        doc.text('Ringkasan Presentasi', margin, y);
-        y += 18;
-        doc.setFont('helvetica', 'normal');
-        const summaryText = summaryInput.value.trim() || 'Ringkasan profil otomatis diambil dari data profil Anda.';
-        const lines = doc.splitTextToSize(summaryText, 520);
-        doc.text(lines, margin, y);
-        y += (lines.length * 16) + 14;
-
-        if (state.source === 'upload' && state.uploadedFile) {
-            if (y > 720) { doc.addPage(); y = 50; }
-            doc.setFont('helvetica', 'bold');
-            doc.text('Informasi CV Sumber', margin, y);
-            y += 18;
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Nama file: ${state.uploadedFile.name}`, margin, y);
-            y += 16;
-            doc.text(`Ukuran   : ${formatBytes(state.uploadedFile.size)}`, margin, y);
-            y += 24;
+            expRaw  = profileData.experiences || [];
+            eduRaw  = profileData.educations  || [];
+            if (!skillArr.length) {
+                const rawSkills = profileData.skills || [];
+                skillArr = rawSkills.map(s => s.nama_skill || s.skill || s).filter(Boolean);
+            }
+        } else if (state.uploadedFile) {
+            // Use data parsed from the uploaded CV file
+            const cv = state.parsedCvData || {};
+            name  = cv.name  || 'Nama dari CV';
+            email = cv.email || email;
+            phone = cv.phone || phone;
+            if (!summary) summary = cv.summary || 'Ringkasan dari CV yang diunggah.';
+            // Job title from parsed or form
+            if (!jobTitle) jobTitle = cv.jobTitle || '';
+            expRaw  = cv.experiences || [];
+            eduRaw  = cv.educations  || [];
+            if (!skillArr.length) {
+                skillArr = (cv.skills || '').split(',').map(s => s.trim()).filter(Boolean);
+            }
+            // Append upload file note if no summary found
+            if (!summary) summary = 'Data dari file: ' + state.uploadedFile.name;
         }
 
-        if (y > 680) { doc.addPage(); y = 50; }
-        doc.setFont('helvetica', 'bold');
-        doc.text('Highlight Presentasi', margin, y);
-        y += 18;
-        doc.setFont('helvetica', 'normal');
-        const bullets = [
-            'Struktur slide profesional dengan poin utama yang jelas.',
-            'Template presentasi siap pakai dan mudah dibaca.',
-            'Warna serta tipografi sesuai gaya pilihan.',
-            'Ringkasan profil yang menarik untuk audiens.',
-        ];
-        bullets.forEach(item => {
-            const itemLines = doc.splitTextToSize(item, 500);
-            doc.text('• ' + itemLines[0], margin, y);
-            y += 16;
-            for (let i = 1; i < itemLines.length; i++) {
-                doc.text(itemLines[i], margin + 12, y);
-                y += 16;
-            }
-            if (y > 720) { doc.addPage(); y = 50; }
-        });
+        // ─── Helpers ────────────────────────────────────────────────────────────
+        const photoHtml = profileData.photo
+            ? `<img src="${profileData.photo}" crossorigin="anonymous" class="deck-photo">`
+            : '';
 
-        doc.setFontSize(10);
-        doc.text('Generated by Hirify – Buat CV Presentasi', margin, 790);
-        return doc.output('blob');
+        let coverSubtitle = 'Disusun oleh Hirify';
+        if (jobTitle && targetRole) coverSubtitle = `${jobTitle} &nbsp;➔&nbsp; Target: ${targetRole}`;
+        else if (jobTitle)   coverSubtitle = jobTitle;
+        else if (targetRole) coverSubtitle = `Target: ${targetRole}`;
+
+        function makeSlide(inner, isCover) {
+            return `<div class="deck-slide${isCover?' slide-cover':''}">${inner}</div>`;
+        }
+        function makeContent(headerTxt, bodyHtml) {
+            return `<div class="slide-header"><h2>${headerTxt}</h2></div><div class="slide-body">${bodyHtml}</div>`;
+        }
+
+        let slides = [];
+
+        // Slide 1 – Cover
+        slides.push(makeSlide(
+            `<div class="cover-content">${photoHtml}<h1>${name}</h1><p class="subtitle">${coverSubtitle}</p></div>`,
+            true
+        ));
+
+        // Slide 2 – Summary
+        if (summary) {
+            slides.push(makeSlide(makeContent(
+                'Profile Summary',
+                `<p>${summary.replace(/\n/g,'<br>')}</p>`
+            )));
+        }
+
+        // Slides 3+ – Experience (1 entry per slide if needed, max 3 slides)
+        if (expRaw.length > 0) {
+            const ITEMS_PER_SLIDE = 2;
+            const chunks = [];
+            for (let i = 0; i < expRaw.length && chunks.length < 3; i += ITEMS_PER_SLIDE) {
+                chunks.push(expRaw.slice(i, i + ITEMS_PER_SLIDE));
+            }
+            chunks.forEach((chunk, ci) => {
+                const label = chunks.length > 1 ? `Pengalaman Kerja (${ci+1})` : 'Pengalaman Kerja';
+                const body = chunk.map(e => `
+                    <div class="exp-card">
+                        <p class="exp-title">${e.posisi || e.position || ''}</p>
+                        <p class="exp-meta">${e.perusahaan || e.company || ''} &nbsp;•&nbsp; ${e.periode || e.period || ''}</p>
+                        ${e.deskripsi ? `<p class="exp-desc">${e.deskripsi}</p>` : ''}
+                    </div>`).join('');
+                slides.push(makeSlide(makeContent(label, body)));
+            });
+        }
+
+        // Slides – Education
+        if (eduRaw.length > 0) {
+            const body = eduRaw.map(e => `
+                <div class="exp-card" style="margin-bottom:10px;">
+                    <p class="exp-title">${e.institusi || e.institution || ''}</p>
+                    <p class="exp-meta">${e.gelar || e.degree || ''} &nbsp;•&nbsp; ${e.tahun || e.year || ''}</p>
+                </div>`).join('');
+            slides.push(makeSlide(makeContent('Pendidikan', body)));
+        }
+
+        // Slides – Skills
+        if (skillArr.length > 0) {
+            const body = `<div class="skill-tags">${skillArr.map(s=>`<span class="skill-tag">${s}</span>`).join('')}</div>`;
+            slides.push(makeSlide(makeContent('Keahlian', body)));
+        }
+
+        // Last slide – Closing  (always present)
+        slides.push(makeSlide(
+            `<div class="cover-content"><h1>Terima Kasih</h1><p class="subtitle">${email}${phone ? ' &nbsp;•&nbsp; '+phone : ''}</p></div>`,
+            true
+        ));
+
+        // Cap at 8 slides max
+        if (slides.length > 8) slides = slides.slice(0, 7).concat(slides[slides.length-1]);
+
+        deck.innerHTML = slides.join('');
+    }
+
+    async function createPdfBlob() {
+        generateDeckHtml();
+
+        // Get all slide elements
+        const slides = document.querySelectorAll('#virtualPdfDeck .deck-slide');
+        if (slides.length === 0) return null;
+
+        const SLIDE_W = 960;
+        const SLIDE_H = 540;
+
+        // Import jsPDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [SLIDE_W, SLIDE_H] });
+
+        for (let i = 0; i < slides.length; i++) {
+            const slide = slides[i];
+
+            // Force the slide to exact 960x540 for capture
+            slide.style.width  = SLIDE_W + 'px';
+            slide.style.height = SLIDE_H + 'px';
+            slide.style.overflow = 'hidden';
+            slide.style.position = 'relative';
+
+            const canvas = await html2canvas(slide, {
+                scale: 2,
+                useCORS: true,
+                width:  SLIDE_W,
+                height: SLIDE_H,
+                windowWidth: SLIDE_W
+            });
+
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+            if (i > 0) pdf.addPage([SLIDE_W, SLIDE_H], 'landscape');
+            pdf.addImage(imgData, 'JPEG', 0, 0, SLIDE_W, SLIDE_H);
+
+            // Restore styles
+            slide.style.width    = '';
+            slide.style.height   = '';
+            slide.style.overflow = '';
+            slide.style.position = '';
+        }
+
+        return pdf.output('blob');
     }
 
     async function createPptxBlob() {
@@ -1469,7 +1833,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const pres = new PptxGenJS();
         
         // Set slide size
-        pres.setPageSize({ cx: 10, cy: 5.625 });
+        pres.layout = 'LAYOUT_16x9';
         
         const brandColor = '#06cbe5';
         const darkColor = '#0d1b3d';
