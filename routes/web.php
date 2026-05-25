@@ -78,7 +78,7 @@ Route::middleware('auth')->group(function () {
     // Resource routes — 'create' excluded to avoid conflict with the route above
     Route::resource('cv', CvController::class)->except(['create']);
 
-    Route::view('/buat-cv-presentasi', 'jobseeker.buat-cv-presentasi')->name('buat-cv-presentasi.index');
+    Route::get('/buat-cv-presentasi', [\App\Http\Controllers\CvPresentationController::class, 'index'])->name('buat-cv-presentasi.index');
     Route::get('/cv/{id}/download', [DownloadController::class, 'downloadPdf']);
     Route::post('/cv', [GenerateController::class, 'store'])->name('cv.store');
 
