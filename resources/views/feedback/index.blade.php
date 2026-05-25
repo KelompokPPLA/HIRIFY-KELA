@@ -39,48 +39,4 @@
     @include('mentor.feedback._modal')
 </div>
 
-@push('scripts')
-<script>
-// Modal & Rating JS
-document.addEventListener('DOMContentLoaded', function(){
-    const modal = document.getElementById('feedbackModal');
-    const openBtn = document.getElementById('openModalBtn');
-    const closeBtn = document.getElementById('closeModalBtn');
-    const cancelBtn = document.getElementById('modalCancelBtn');
-
-    function openModal(){ modal.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); }
-    function closeModal(){ modal.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); }
-
-    openBtn?.addEventListener('click', openModal);
-    closeBtn?.addEventListener('click', closeModal);
-    cancelBtn?.addEventListener('click', closeModal);
-
-    // close on outside click
-    modal?.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
-    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
-
-    // Rating logic
-    const stars = Array.from(document.querySelectorAll('#feedbackModal .star'));
-    const ratingInput = document.querySelector('#feedbackModal input[name="rating"]');
-    let selected = parseInt(ratingInput?.value || '5', 10);
-
-    function paint(v){
-        stars.forEach(s => {
-            const val = parseInt(s.dataset.value,10);
-            if(val <= v){ s.classList.remove('text-gray-300'); s.classList.add('text-teal-400'); }
-            else { s.classList.remove('text-teal-400'); s.classList.add('text-gray-300'); }
-        });
-    }
-
-    paint(selected);
-
-    stars.forEach(s => {
-        s.addEventListener('mouseover', ()=> paint(parseInt(s.dataset.value,10)));
-        s.addEventListener('mouseleave', ()=> paint(selected));
-        s.addEventListener('click', ()=>{ selected = parseInt(s.dataset.value,10); ratingInput.value = selected; paint(selected); });
-    });
-});
-</script>
-@endpush
-
 @endsection

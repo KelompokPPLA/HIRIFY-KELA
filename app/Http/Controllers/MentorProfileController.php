@@ -42,16 +42,6 @@ class MentorProfileController extends Controller
                 'email' => $validated['email'],
             ]);
 
-            $mentor = Mentor::with(['user', 'certifications'])
-                ->firstOrCreate(
-                    ['user_id' => $user->id],
-                    [
-                        'expertise' => 'Belum diisi',
-                        'experience_years' => 0,
-                        'skills' => [],
-                    ]
-                );
-
             $skills = collect($validated['skills'] ?? [])
                 ->map(fn ($item) => trim($item))
                 ->filter()
@@ -59,18 +49,21 @@ class MentorProfileController extends Controller
                 ->values()
                 ->all();
 
-            $mentor->update([
-                'phone_number' => $validated['phone_number'] ?? null,
-                'expertise' => $validated['expertise'],
-                'experience_years' => $validated['experience_years'] ?? 0,
-                'bio' => $validated['bio'] ?? null,
-                'education' => $validated['education'] ?? null,
-                'skills' => $skills,
-            ]);
+            $mentor = Mentor::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'phone_number' => $validated['phone_number'],
+                    'expertise' => $validated['expertise'],
+                    'experience_years' => $validated['experience_years'] ?? 0,
+                    'bio' => $validated['bio'] ?? null,
+                    'education' => $validated['education'] ?? null,
+                    'skills' => $skills,
+                ]
+            );
 
             DB::commit();
 
-            $mentor->load(['user', 'certifications']);
+            $mentor->refresh()->load(['user', 'certifications']);
 
             return ResponseHelper::jsonResponse(true, 'Profil mentor berhasil diperbarui.', new MentorProfileResource($mentor), 200);
         } catch (\Throwable $e) {

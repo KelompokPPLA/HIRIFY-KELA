@@ -502,7 +502,7 @@
                             <div class="grid">
                                 <div>
                                     <label for="name">Nama Lengkap</label>
-                                    <input id="name" name="name" required pattern="[A-Za-z\s]+" title="Nama lengkap hanya boleh berisi huruf dan spasi" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, ''); syncPreviewFromInputs();">
+                                    <input id="name" name="name" required minlength="10" maxlength="60" pattern="[A-Za-z\s]+" title="Nama lengkap minimal 10 karakter dan hanya boleh berisi huruf dan spasi" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, ''); syncPreviewFromInputs();">
                                 </div>
                                 <div class="grid-two">
                                     <div>
@@ -511,7 +511,7 @@
                                     </div>
                                     <div>
                                         <label for="phone_number">Nomor Telepon</label>
-                                        <input id="phone_number" name="phone_number" placeholder="08xxx xxxx xxxx" type="text" pattern="\d{10,13}" title="Nomor telepon harus berisi 10-13 digit angka" oninput="this.value = this.value.replace(/[^0-9]/g, ''); syncPreviewFromInputs();" minlength="10" maxlength="13">
+                                        <input id="phone_number" name="phone_number" placeholder="08xxx xxxx xxxx" type="text" required pattern="\d{10,13}" title="Nomor telepon wajib diisi dan harus berisi 10-13 digit angka" oninput="this.value = this.value.replace(/[^0-9]/g, ''); syncPreviewFromInputs();" minlength="10" maxlength="13">
                                     </div>
                                 </div>
                             </div>
@@ -540,11 +540,12 @@
                                 </div>
                                 <div>
                                     <label for="experience_years">Pengalaman (tahun)</label>
-                                    <input id="experience_years" name="experience_years" type="number" min="0" max="60" placeholder="8">
+                                    <input id="experience_years" name="experience_years" type="number" min="0" max="50" placeholder="8">
                                 </div>
                                 <div>
                                     <label for="bio">Bio</label>
-                                    <textarea id="bio" name="bio" placeholder="Ceritakan latar belakang, fokus mentoring, dan pengalaman profesional Anda."></textarea>
+                                    <textarea id="bio" name="bio" maxlength="150" placeholder="Ceritakan latar belakang, fokus mentoring, dan pengalaman profesional Anda."></textarea>
+                                    <small id="bioCounter" style="color:var(--muted); display:block; margin-top:6px; text-align:right;">0 / 150</small>
                                 </div>
                             </div>
                         </article>
@@ -865,6 +866,7 @@
             fields.expertise.value = data.expertise || '';
             fields.experience_years.value = data.experience_years ?? '';
             fields.bio.value = data.bio || '';
+            document.getElementById('bioCounter').textContent = `${(data.bio || '').length} / 150`;
             fields.education.value = data.education || '';
             skillsState.splice(0, skillsState.length, ...(data.skills || []));
             certificationsState = [];
@@ -998,10 +1000,18 @@
 
         async function saveProfile(event) {
             event.preventDefault();
+
+            const name = fields.name.value.trim();
+            if (name.length < 10 || name.length > 60) {
+                showToast('Nama Lengkap harus antara 10 sampai 60 karakter.', 'error');
+                fields.name.focus();
+                return;
+            }
+
             saveBtn.disabled = true;
 
             const payload = {
-                name: fields.name.value.trim(),
+                name: name,
                 email: fields.email.value.trim(),
                 phone_number: fields.phone_number.value.trim(),
                 expertise: fields.expertise.value.trim(),
@@ -1094,7 +1104,15 @@
         });
 
         Object.values(fields).forEach((input) => {
-            input.addEventListener('input', syncPreviewFromInputs);
+            if (input.id === 'bio') {
+                input.addEventListener('input', () => {
+                    const length = input.value.length;
+                    document.getElementById('bioCounter').textContent = `${length} / 150`;
+                    syncPreviewFromInputs();
+                });
+            } else {
+                input.addEventListener('input', syncPreviewFromInputs);
+            }
         });
 
         profileForm.addEventListener('submit', saveProfile);

@@ -11,6 +11,8 @@ use App\Models\Mentor;
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
 use App\Models\SesiJadwal;
+use App\Models\UserNotification;
+use App\Services\StreakService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -138,7 +140,7 @@ class MentorshipController extends Controller
 
         // Also fetch from SesiJadwal (manual slots created by mentor)
         $manualSessions = SesiJadwal::where('mentor_id', $mentor->user_id)
-            ->where('status', 'Pending')
+            ->whereIn('status', ['Pending', 'Confirmed'])
             ->where('date', '>=', now()->toDateString())
             ->whereNotExists(function ($query) use ($user) {
                 $query->select(DB::raw(1))
@@ -154,7 +156,7 @@ class MentorshipController extends Controller
         foreach ($manualSessions as $session) {
             $startAt = Carbon::parse($session->date . ' ' . $session->time);
             $endAt = (clone $startAt)->addMinutes($session->duration);
-            
+
             $slotItems[] = [
                 'id' => $session->id, // Frontend will handle this ID
                 'is_manual' => true,  // Flag for backend if needed
@@ -249,7 +251,7 @@ class MentorshipController extends Controller
                         throw new \RuntimeException('Sesi jadwal tidak ditemukan.');
                     }
 
-                    if ($session->status !== 'Pending') {
+                    if (!in_array($session->status, ['Pending', 'Confirmed'])) {
                         throw new \RuntimeException('Sesi jadwal sudah tidak tersedia untuk dibooking.');
                     }
 
@@ -265,7 +267,7 @@ class MentorshipController extends Controller
 
                     $start = Carbon::parse($session->date . ' ' . $session->time);
                     $end = (clone $start)->addMinutes($session->duration);
-                    
+
                     $booking = MentorBooking::create([
                         'mentor_id' => $mentor->id,
                         'jobseeker_user_id' => $user->id,
@@ -281,7 +283,7 @@ class MentorshipController extends Controller
                     // User says "ketika mentor membuat jadwal sesi maka muncul... ketika diklik muncul detail"
                     // Let's keep it Pending in SesiJadwal for now, or maybe change to Confirmed if we want to "reserve" it.
                     // Actually, let's keep it as is, but we could update status.
-                    
+
                     return $booking;
                 } else {
                     if (empty($validated['scheduled_start'])) {
@@ -334,6 +336,23 @@ class MentorshipController extends Controller
         }
 
         $booking->load(['mentor.user']);
+
+        UserNotification::create([
+            'user_id' => $user->id,
+            'type' => 'jadwal',
+            'title' => 'Booking mentorship dibuat',
+            'message' => 'Booking sesi dengan ' . ($booking->mentor?->user?->name ?? 'mentor') . ' berhasil dibuat dan menunggu konfirmasi.',
+            'action_url' => '/mentorship',
+            'data' => ['booking_id' => $booking->id, 'status' => 'pending'],
+        ]);
+
+        // Career Streak: catat aktivitas mentorship
+        app(StreakService::class)->recordActivity(
+            $user,
+            'mentorship',
+            $booking->id,
+            'Sesi mentorship dengan ' . ($booking->mentor?->user?->name ?? 'mentor') . ' berhasil dijadwalkan'
+        );
 
         return ResponseHelper::jsonResponse(
             true,

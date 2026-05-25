@@ -39,6 +39,26 @@
                     </div>
                 </div>
             </div>
+            <div class="hidden lg:flex flex-col items-center gap-2">
+                {{-- Career Streak Widget --}}
+                <a href="{{ route('streak.index') }}"
+                   class="group flex flex-col items-center gap-2 rounded-2xl p-5 border border-white/10 bg-white/[0.06] hover:bg-white/[0.10] transition-all">
+                    <div class="text-5xl leading-none group-hover:scale-110 transition-transform duration-300">
+                        {{ ($streakWidget->current_streak ?? 0) > 0 ? '🔥' : '💤' }}
+                    </div>
+                    <div class="text-center">
+                        <p class="text-2xl font-extrabold text-orange-400 leading-none">
+                            {{ $streakWidget->current_streak ?? 0 }}
+                        </p>
+                        <p class="text-xs text-slate-400 mt-1 font-medium">hari streak</p>
+                    </div>
+                    @if($streakActiveToday ?? false)
+                    <span class="text-[10px] font-bold bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">✓ Aktif Hari Ini</span>
+                    @else
+                    <span class="text-[10px] font-bold bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full">Jaga Streak!</span>
+                    @endif
+                </a>
+            </div>
         </div>
     </section>
 
@@ -99,13 +119,14 @@
         <p class="mt-1 text-sm text-slate-500">Navigasi langsung ke fitur utama Hirify.</p>
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         @php
             $quickActions = [
                 ['href' => '/skill-training', 'title' => 'Pelatihan Skill', 'desc' => 'Akses katalog kursus dan tingkatkan skill kariermu.', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>'],
                 ['href' => '/roadmap-karier', 'title' => 'Roadmap Karier', 'desc' => 'Ikuti panduan dan tahapan karier sesuai bidangmu.', 'icon' => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>'],
                 ['href' => '/self-assessment', 'title' => 'Self Assessment', 'desc' => 'Evaluasi dan ukur kesiapan kariermu sekarang.', 'icon' => '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle>'],
                 ['href' => '/mentorship', 'title' => 'Cari Mentor', 'desc' => 'Temukan mentor berpengalaman untuk membimbingmu.', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'],
+                ['href' => '/portofolio', 'title' => 'Portofolio Saya', 'desc' => 'Kelola proyek dan sertifikat profesional Anda.', 'icon' => '<rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>'],
             ];
         @endphp
 
