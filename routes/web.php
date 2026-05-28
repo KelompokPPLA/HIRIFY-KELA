@@ -19,6 +19,7 @@ use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\PortofolioController;
 use App\Http\Controllers\StreakController;
+use App\Http\Controllers\JobController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -123,6 +124,10 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
     /* ---------- Career Streak ---------- */
     Route::get('/streak',         [StreakController::class, 'index'])->name('streak.index');
     Route::get('/streak/history', [StreakController::class, 'history'])->name('streak.history');
+
+    /* ---------- Lowongan Kerja (DEV-126) ---------- */
+    Route::get('/lowongan',      [JobController::class, 'index'])->name('jobs.index');
+    Route::get('/lowongan/{id}', [JobController::class, 'show'])->name('jobs.show');
 
 
     /* ---------- AUTH ACTION ---------- */
