@@ -4,9 +4,17 @@
 
 @section('content')
 <div class="max-w-5xl mx-auto px-4 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Sertifikat Saya</h1>
-        <p class="text-gray-500 mt-1">Koleksi sertifikat pelatihan yang telah Anda selesaikan di Hirify.</p>
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Sertifikat Saya</h1>
+            <p class="text-gray-500 mt-1">Koleksi sertifikat pelatihan yang telah Anda selesaikan di Hirify.</p>
+        </div>
+        @if($totalCertificates > 0)
+        <div class="bg-cyan-50 border border-cyan-200 rounded-2xl px-5 py-3 text-center flex-shrink-0">
+            <p class="text-2xl font-black text-cyan-600">{{ $totalCertificates }}</p>
+            <p class="text-xs text-cyan-500 font-semibold">Sertifikat Diraih</p>
+        </div>
+        @endif
     </div>
 
     @if(session('success'))
