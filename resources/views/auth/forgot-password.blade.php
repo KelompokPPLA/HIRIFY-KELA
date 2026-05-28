@@ -134,24 +134,33 @@
 <body>
     <main class="card">
         <h1>Lupa Password</h1>
-        <p>Masukkan email akun Hirify Anda. Kami akan kirim kode OTP untuk mereset password.</p>
+        <p>Masukkan email akun Hirify Anda. Kami akan kirim link reset password yang berlaku selama 60 menit.</p>
 
         @if ($errors->any())
             <div class="alert alert-error">{{ $errors->first() }}</div>
+        @endif
+
+        @if (session('status'))
+            <div class="alert alert-success">
+                ✅ {{ session('status') }}
+            </div>
         @endif
 
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        <form method="POST" action="{{ route('password.send-otp') }}">
+        <form method="POST" action="{{ route('password.send-link') }}">
             @csrf
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus>
+            <label for="email">Alamat Email</label>
+            <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus placeholder="nama@email.com">
 
-            <button type="submit">Kirim Kode OTP →</button>
+            <button type="submit">Kirim Link Reset Password →</button>
         </form>
 
+        <p class="link" style="margin-top:14px; font-size:13px; color: var(--muted);">
+            Lebih suka pakai OTP? <a href="{{ route('password.otp.show') }}">Reset via OTP</a>
+        </p>
         <p class="link"><a href="/login">← Kembali ke login</a></p>
     </main>
 </body>
