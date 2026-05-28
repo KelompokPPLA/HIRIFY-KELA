@@ -33,9 +33,10 @@ class JobController extends Controller
             $query->where('job_type', $jobType);
         }
 
-        $jobs       = $query->orderByDesc('created_at')->paginate(12)->withQueryString();
-        $categories = JobListing::active()->distinct()->pluck('category')->sort()->values();
-        $locations  = JobListing::active()->distinct()->pluck('location')->sort()->values();
+        $jobs       = $query->notExpired()->orderByDesc('created_at')->paginate(12)->withQueryString();
+        $categories = JobListing::active()->notExpired()->distinct()->pluck('category')->sort()->values();
+        $locations  = JobListing::active()->notExpired()->distinct()->pluck('location')->sort()->values();
+        $totalJobs  = JobListing::active()->notExpired()->count();
 
         // Rekomendasi berdasarkan skill dari profil pengguna
         $recommended = collect();
@@ -52,7 +53,7 @@ class JobController extends Controller
             }
         }
 
-        return view('jobs.index', compact('jobs', 'categories', 'locations', 'recommended'));
+        return view('jobs.index', compact('jobs', 'categories', 'locations', 'recommended', 'totalJobs'));
     }
 
     public function show(int $id)
