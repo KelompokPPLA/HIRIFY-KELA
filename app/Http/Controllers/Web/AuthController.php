@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\LoginRequest;
 use App\Http\Requests\Web\RegisterRequest;
+use App\Mail\ResetPasswordMail;
 use App\Models\PasswordOtp;
+use App\Models\PasswordResetLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
@@ -179,6 +183,46 @@ class AuthController extends Controller
     public function showForgotPassword()
     {
         return view('auth.forgot-password');
+    }
+
+    /**
+     * Kirim link reset password ke email (token-based, valid 60 menit).
+     */
+    public function sendResetLink(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $email = $request->input('email');
+        $user  = User::where('email', $email)->first();
+
+        // Selalu tampilkan pesan yang sama untuk mencegah email enumeration
+        $genericMessage = 'Jika email terdaftar, link reset password telah dikirim. Periksa kotak masuk Anda.';
+
+        if (! $user) {
+            return back()->with('status', $genericMessage)->withInput();
+        }
+
+        $token     = Str::random(64);
+        $expiresAt = now()->addMinutes(60);
+
+        // Simpan ke tabel password_reset_logs untuk audit
+        PasswordResetLog::create([
+            'email'      => $email,
+            'token'      => hash('sha256', $token),
+            'status'     => 'requested',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'expires_at' => $expiresAt,
+        ]);
+
+        $resetUrl = route('password.reset', [
+            'token' => $token,
+            'email' => $email,
+        ]);
+
+        Mail::to($email)->send(new ResetPasswordMail($resetUrl, $user->name, '60'));
+
+        return back()->with('status', $genericMessage);
     }
 
     /**
