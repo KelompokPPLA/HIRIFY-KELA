@@ -137,13 +137,36 @@
             <input name="email" type="hidden" value="{{ $email ?? request('email') }}">
 
             <label for="password">Password Baru</label>
-            <input id="password" name="password" type="password" minlength="8" required placeholder="Minimal 8 karakter">
+            <input id="password" name="password" type="password" minlength="8" required placeholder="Min. 8 karakter, huruf + angka">
 
             <label for="password_confirmation">Konfirmasi Password Baru</label>
             <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" required placeholder="Ulangi password baru">
 
+            <div id="strength-bar" style="margin-top:8px;height:4px;border-radius:4px;background:#e2e8f0;overflow:hidden;">
+                <div id="strength-fill" style="height:100%;width:0%;transition:width .3s,background .3s;border-radius:4px;"></div>
+            </div>
+            <p id="strength-label" style="font-size:11px;margin:4px 0 0;color:var(--muted);"></p>
+
             <button type="submit">Simpan Password Baru →</button>
         </form>
+
+        <script>
+            document.getElementById('password').addEventListener('input', function () {
+                const val = this.value;
+                let score = 0;
+                if (val.length >= 8) score++;
+                if (/[A-Z]/.test(val)) score++;
+                if (/[0-9]/.test(val)) score++;
+                if (/[^A-Za-z0-9]/.test(val)) score++;
+                const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+                const labels = ['Lemah','Cukup','Kuat','Sangat Kuat'];
+                const fill = document.getElementById('strength-fill');
+                const label = document.getElementById('strength-label');
+                fill.style.width = (score * 25) + '%';
+                fill.style.background = colors[score - 1] || '#e2e8f0';
+                label.textContent = val.length ? labels[score - 1] || '' : '';
+            });
+        </script>
 
         <p class="link"><a href="/login">← Kembali ke login</a></p>
     </main>
