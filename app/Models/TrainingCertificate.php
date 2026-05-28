@@ -35,7 +35,7 @@ class TrainingCertificate extends Model
     public static function generateCertificateNumber(): string
     {
         do {
-            $number = 'CERT-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
+            $number = 'HIRIFY-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
         } while (static::where('certificate_number', $number)->exists());
 
         return $number;
