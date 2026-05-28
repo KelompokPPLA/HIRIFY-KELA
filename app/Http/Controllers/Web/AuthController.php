@@ -269,8 +269,10 @@ class AuthController extends Controller
         $validated = $request->validate([
             'token'                 => 'required|string',
             'email'                 => 'required|email',
-            'password'              => 'required|string|min:8|confirmed',
+            'password'              => 'required|string|min:8|confirmed|regex:/^(?=.*[A-Za-z])(?=.*\d).+$/',
             'password_confirmation' => 'required|string|min:8',
+        ], [
+            'password.regex' => 'Password harus mengandung minimal 1 huruf dan 1 angka.',
         ]);
 
         $log = PasswordResetLog::where('email', $validated['email'])
