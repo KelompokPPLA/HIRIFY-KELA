@@ -202,6 +202,11 @@ class AuthController extends Controller
             return back()->with('status', $genericMessage)->withInput();
         }
 
+        // Hapus token lama yang belum dipakai agar tidak menumpuk
+        PasswordResetLog::where('email', $email)
+            ->where('status', 'requested')
+            ->update(['status' => 'expired']);
+
         $token     = Str::random(64);
         $expiresAt = now()->addMinutes(60);
 
