@@ -36,14 +36,17 @@ Route::middleware('guest')->group(function () {
     Route::get('/register',  [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    // PASSWORD RESET
+    // PASSWORD RESET — Email Link (DEV-139)
     Route::get('/forgot-password',  [AuthController::class, 'showForgotPassword'])->name('password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendOtp'])->name('password.send-otp');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.send-link');
 
-    Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::get('/reset-password',  [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetWithToken'])->name('password.reset.token');
 
-    Route::get('/reset-password-otp',  [AuthController::class, 'showOtpReset'])->name('password.otp.show');
-    Route::post('/reset-password-otp', [AuthController::class, 'resetWithOtp'])->name('password.otp.reset');
+    // PASSWORD RESET — OTP (existing flow)
+    Route::post('/forgot-password-otp', [AuthController::class, 'sendOtp'])->name('password.send-otp');
+    Route::get('/reset-password-otp',   [AuthController::class, 'showOtpReset'])->name('password.otp.show');
+    Route::post('/reset-password-otp',  [AuthController::class, 'resetWithOtp'])->name('password.otp.reset');
 });
 
 /* ============================================================
