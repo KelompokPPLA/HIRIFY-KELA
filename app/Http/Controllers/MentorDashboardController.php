@@ -1,0 +1,194 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\MentorAvailability;
+use App\Models\MentorBooking;
+use App\Models\SesiJadwal;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class MentorDashboardController extends Controller
+{
+    // Show dashboard with availabilities and bookings
+    public function index()
+    {
+        $user = Auth::user();
+        $mentor = $user ? ($user->mentorProfile ?? null) : null;
+
+        $sessions = collect();
+        $pendingBookings = collect();
+        $acceptedBookings = collect();
+        $totalMenteesCount = 0;
+        $sessionsThisMonthCount = 0;
+        $menteesThisMonthCount = 0;
+        $sessionsThisWeekCount = 0;
+        $avgRating = 0.0;
+        $earningsFormatted = 'Rp 0,0jt';
+
+        if ($mentor) {
+            $sessions = SesiJadwal::with('bookings.jobseeker')->where('mentor_id', $user->id)
+                ->whereIn('status', ['Pending', 'Confirmed'])
+                ->orderBy('date', 'asc')
+                ->orderBy('time', 'asc')
+                ->get();
+
+            $pendingBookings = MentorBooking::where('mentor_id', $mentor->id)
+                ->where('status', 'pending')
+                ->with('jobseeker', 'availability')
+                ->orderBy('scheduled_start')
+                ->get();
+
+            $acceptedBookings = MentorBooking::where('mentor_id', $mentor->id)
+                ->where('status', 'confirmed')
+                ->with('jobseeker', 'availability')
+                ->orderBy('scheduled_start')
+                ->get();
+
+            $totalMenteesCount = MentorBooking::where('mentor_id', $mentor->id)
+                ->whereNotNull('jobseeker_user_id')
+                ->distinct('jobseeker_user_id')
+                ->count('jobseeker_user_id');
+
+            $sessionsThisMonthCount = SesiJadwal::where('mentor_id', $user->id)
+                ->whereMonth('date', now()->month)
+                ->whereYear('date', now()->year)
+                ->count();
+
+            $menteesThisMonthCount = MentorBooking::where('mentor_id', $mentor->id)
+                ->whereNotNull('jobseeker_user_id')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->distinct('jobseeker_user_id')
+                ->count('jobseeker_user_id');
+
+            $sessionsThisWeekCount = SesiJadwal::where('mentor_id', $user->id)
+                ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
+                ->count();
+
+            $dbRating = \App\Models\Feedback::where('mentor_id', $user->id)->avg('rating');
+            $avgRating = $dbRating ? round($dbRating, 1) : 0.0;
+
+            $earningsFormatted = 'Rp ' . number_format(($totalMenteesCount * 200000) / 1000000, 1, ',', '.') . 'jt';
+        }
+
+        return view('mentor.dashboard', compact(
+            'sessions',
+            'pendingBookings',
+            'acceptedBookings',
+            'totalMenteesCount',
+            'sessionsThisMonthCount',
+            'menteesThisMonthCount',
+            'sessionsThisWeekCount',
+            'avgRating',
+            'earningsFormatted'
+        ));
+    }
+
+    // Store a new availability slot
+    public function storeAvailability(Request $request)
+    {
+        $request->validate([
+            'start_at' => 'required|date',
+            'end_at' => 'required|date|after:start_at',
+            'label' => 'nullable|string|max:255',
+        ]);
+
+        $mentor = Auth::user()->mentorProfile;
+
+        MentorAvailability::create([
+            'mentor_id' => $mentor->id,
+            'start_at' => $request->start_at,
+            'end_at' => $request->end_at,
+            'timezone' => $request->timezone ?? config('app.timezone'),
+            'is_booked' => false,
+            'label' => $request->label,
+        ]);
+
+        return back()->with('success', 'Slot ketersediaan berhasil ditambahkan.');
+    }
+
+    // Update an availability slot
+    public function updateAvailability(Request $request, $id)
+    {
+        $request->validate([
+            'start_at' => 'required|date',
+            'end_at' => 'required|date|after:start_at',
+            'label' => 'nullable|string|max:255',
+        ]);
+
+        $mentor = Auth::user()->mentorProfile;
+
+        $slot = MentorAvailability::where('mentor_id', $mentor->id)->findOrFail($id);
+
+        $slot->update([
+            'start_at' => $request->start_at,
+            'end_at' => $request->end_at,
+            'label' => $request->label,
+        ]);
+
+        return back()->with('success', 'Slot diperbarui.');
+    }
+
+    // Delete availability slot
+    public function destroyAvailability($id)
+    {
+        $mentor = Auth::user()->mentorProfile;
+
+        $slot = MentorAvailability::where('mentor_id', $mentor->id)->findOrFail($id);
+        if ($slot->is_booked) {
+            return back()->with('error', 'Tidak dapat menghapus slot yang sudah dibooking.');
+        }
+        $slot->delete();
+
+        return back()->with('success', 'Slot dihapus.');
+    }
+
+    // Accept booking
+    public function acceptBooking(Request $request, $id)
+    {
+        $mentor = Auth::user()->mentorProfile;
+
+        if (! $mentor) {
+            return back()->with('error', 'Profil mentor tidak ditemukan.');
+        }
+
+        $booking = MentorBooking::where('mentor_id', $mentor->id)
+            ->where('status', 'pending')
+            ->findOrFail($id);
+
+        $booking->update(['status' => 'confirmed']);
+
+        if ($booking->mentor_availability_id) {
+            $availability = MentorAvailability::find($booking->mentor_availability_id);
+            if ($availability) {
+                $availability->update(['is_booked' => true]);
+            }
+        }
+
+        return back()->with('success', 'Booking berhasil dikonfirmasi.');
+    }
+
+    // Reject booking
+    public function rejectBooking(Request $request, $id)
+    {
+        $request->validate([
+            'rejection_reason' => 'nullable|string|max:500',
+        ]);
+
+        $mentor = Auth::user()->mentorProfile;
+
+        if (! $mentor) {
+            return back()->with('error', 'Profil mentor tidak ditemukan.');
+        }
+
+        $booking = MentorBooking::where('mentor_id', $mentor->id)->findOrFail($id);
+
+        $booking->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason,
+        ]);
+
+        return back()->with('success', 'Booking ditolak.');
+    }
+}
