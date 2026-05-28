@@ -117,73 +117,35 @@
 
     <main class="card">
         <h1>Buat Password Baru</h1>
-        <p>Gunakan token reset dari email untuk menyelesaikan perubahan password Anda.</p>
+        <p>Masukkan password baru Anda. Link ini valid selama 60 menit dan hanya bisa digunakan sekali.</p>
 
-        <form id="resetForm">
-            <input id="token" name="token" type="hidden" value="{{ request('token') }}">
+        @if ($errors->any())
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;margin-bottom:14px;background:rgba(180,35,24,0.08);color:#b42318;border:1px solid rgba(180,35,24,0.2);">
+                {{ $errors->first() }}
+            </div>
+        @endif
 
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" value="{{ request('email') }}" required>
+        @if (session('error'))
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;margin-bottom:14px;background:rgba(180,35,24,0.08);color:#b42318;border:1px solid rgba(180,35,24,0.2);">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('password.reset.token') }}">
+            @csrf
+            <input name="token" type="hidden" value="{{ $token ?? request('token') }}">
+            <input name="email" type="hidden" value="{{ $email ?? request('email') }}">
 
             <label for="password">Password Baru</label>
-            <input id="password" name="password" type="password" minlength="8" required>
+            <input id="password" name="password" type="password" minlength="8" required placeholder="Minimal 8 karakter">
 
             <label for="password_confirmation">Konfirmasi Password Baru</label>
-            <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" required>
+            <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" required placeholder="Ulangi password baru">
 
-            <button type="submit" id="submitBtn">Reset Password</button>
-            <div id="feedback" class="feedback"></div>
+            <button type="submit">Simpan Password Baru →</button>
         </form>
 
-        <p class="link"><a href="/login">Kembali ke login</a></p>
+        <p class="link"><a href="/login">← Kembali ke login</a></p>
     </main>
-
-    <script>
-        const form = document.getElementById('resetForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const feedback = document.getElementById('feedback');
-        const showToast = window.hirifyShowToast;
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            feedback.textContent = '';
-            feedback.className = 'feedback';
-            submitBtn.disabled = true;
-
-            const payload = {
-                token: form.token.value,
-                email: form.email.value,
-                password: form.password.value,
-                password_confirmation: form.password_confirmation.value,
-            };
-
-            try {
-                const response = await fetch('/api/auth/reset-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
-                });
-
-                const result = await response.json();
-
-                if (!response.ok || !result.success) {
-                    throw new Error(result.message || 'Reset password gagal.');
-                }
-
-                showToast(result.message || 'Password berhasil diubah.', 'success');
-
-                setTimeout(() => {
-                    window.location.href = '/login';
-                }, 1100);
-            } catch (error) {
-                showToast(error.message || 'Reset password gagal. Periksa token dan data Anda.', 'error');
-            } finally {
-                submitBtn.disabled = false;
-            }
-        });
-    </script>
 </body>
 </html>

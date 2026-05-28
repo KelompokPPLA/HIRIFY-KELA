@@ -19,10 +19,15 @@ use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\PortofolioController;
 use App\Http\Controllers\StreakController;
+use App\Http\Controllers\JobController;
+use App\Http\Controllers\CertificateController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Verifikasi sertifikat (publik, tanpa auth)
+Route::get('/sertifikat/verifikasi', [CertificateController::class, 'verify'])->name('certificates.verify');
 
 /* ============================================================
    PUBLIC ROUTES (GUEST ONLY)
@@ -36,14 +41,17 @@ Route::middleware('guest')->group(function () {
     Route::get('/register',  [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    // PASSWORD RESET
+    // PASSWORD RESET — Email Link (DEV-139)
     Route::get('/forgot-password',  [AuthController::class, 'showForgotPassword'])->name('password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendOtp'])->name('password.send-otp');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.send-link');
 
-    Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::get('/reset-password',  [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetWithToken'])->name('password.reset.token');
 
-    Route::get('/reset-password-otp',  [AuthController::class, 'showOtpReset'])->name('password.otp.show');
-    Route::post('/reset-password-otp', [AuthController::class, 'resetWithOtp'])->name('password.otp.reset');
+    // PASSWORD RESET — OTP (existing flow)
+    Route::post('/forgot-password-otp', [AuthController::class, 'sendOtp'])->name('password.send-otp');
+    Route::get('/reset-password-otp',   [AuthController::class, 'showOtpReset'])->name('password.otp.show');
+    Route::post('/reset-password-otp',  [AuthController::class, 'resetWithOtp'])->name('password.otp.reset');
 });
 
 /* ============================================================
@@ -120,6 +128,15 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
     /* ---------- Career Streak ---------- */
     Route::get('/streak',         [StreakController::class, 'index'])->name('streak.index');
     Route::get('/streak/history', [StreakController::class, 'history'])->name('streak.history');
+
+    /* ---------- Lowongan Kerja (DEV-126) ---------- */
+    Route::get('/lowongan',      [JobController::class, 'index'])->name('jobs.index');
+    Route::get('/lowongan/{id}', [JobController::class, 'show'])->name('jobs.show');
+
+    /* ---------- Sertifikat Pelatihan (DEV-133) ---------- */
+    Route::get('/sertifikat',           [CertificateController::class, 'index'])->name('certificates.index');
+    Route::get('/sertifikat/{id}',      [CertificateController::class, 'show'])->name('certificates.show');
+    Route::get('/sertifikat/{id}/unduh',[CertificateController::class, 'download'])->name('certificates.download');
 
 
     /* ---------- AUTH ACTION ---------- */
