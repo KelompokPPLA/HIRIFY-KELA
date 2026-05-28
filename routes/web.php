@@ -76,8 +76,8 @@ Route::middleware('auth')->group(function () {
     // resource CV TANPA create (biar ga conflict)
     Route::resource('cv', CvController::class)->except(['create']);
 
-    // CV presentasi
-    Route::view('/buat-cv-presentasi', 'jobseeker.buat-cv-presentasi')->name('buat-cv-presentasi.index');
+    // CV presentasi (menggunakan CvPresentationController)
+    Route::get('/buat-cv-presentasi', [\App\Http\Controllers\CvPresentationController::class, 'index'])->name('buat-cv-presentasi.index');
 
     /* ---------- Portofolio Management ---------- */
     Route::resource('portofolio', PortofolioController::class);
