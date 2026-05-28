@@ -20,10 +20,14 @@ use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\PortofolioController;
 use App\Http\Controllers\StreakController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\CertificateController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Verifikasi sertifikat (publik, tanpa auth)
+Route::get('/sertifikat/verifikasi', [CertificateController::class, 'verify'])->name('certificates.verify');
 
 /* ============================================================
    PUBLIC ROUTES (GUEST ONLY)
@@ -128,6 +132,11 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
     /* ---------- Lowongan Kerja (DEV-126) ---------- */
     Route::get('/lowongan',      [JobController::class, 'index'])->name('jobs.index');
     Route::get('/lowongan/{id}', [JobController::class, 'show'])->name('jobs.show');
+
+    /* ---------- Sertifikat Pelatihan (DEV-133) ---------- */
+    Route::get('/sertifikat',           [CertificateController::class, 'index'])->name('certificates.index');
+    Route::get('/sertifikat/{id}',      [CertificateController::class, 'show'])->name('certificates.show');
+    Route::get('/sertifikat/{id}/unduh',[CertificateController::class, 'download'])->name('certificates.download');
 
 
     /* ---------- AUTH ACTION ---------- */
