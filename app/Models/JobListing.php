@@ -83,7 +83,15 @@ class JobListing extends Model
             $q->where('title', 'like', "%{$keyword}%")
               ->orWhere('company_name', 'like', "%{$keyword}%")
               ->orWhere('description', 'like', "%{$keyword}%")
-              ->orWhere('category', 'like', "%{$keyword}%");
+              ->orWhere('category', 'like', "%{$keyword}%")
+              ->orWhere('location', 'like', "%{$keyword}%");
+        });
+    }
+
+    public function scopeNotExpired($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('deadline')->orWhere('deadline', '>=', now()->toDateString());
         });
     }
 }
