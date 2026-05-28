@@ -15,7 +15,10 @@ class CertificateController extends Controller
             ->orderByDesc('issued_at')
             ->get();
 
-        return view('certificates.index', compact('certificates'));
+        $totalCertificates = $certificates->count();
+        $latestCertificate = $certificates->first();
+
+        return view('certificates.index', compact('certificates', 'totalCertificates', 'latestCertificate'));
     }
 
     public function show(int $id)
