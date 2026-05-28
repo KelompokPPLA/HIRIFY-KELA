@@ -7,6 +7,7 @@ use App\Models\SkillCourse;
 use App\Models\SkillEnrollment;
 use App\Models\SkillLesson;
 use App\Models\SkillLessonProgress;
+use App\Models\TrainingCertificate;
 use App\Services\StreakService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -229,16 +230,25 @@ class SkillTrainingController extends Controller
 
         $progressPct = $totalLessons > 0 ? (int) round(($completed / $totalLessons) * 100) : 0;
 
+        $certificateIssued = false;
         if ($progressPct === 100 && ! $enrollment->completed_at) {
             $enrollment->update(['completed_at' => now()]);
+
+            // Auto-generate sertifikat saat kursus selesai 100%
+            $course = SkillCourse::find($courseId);
+            if ($course) {
+                TrainingCertificate::issueForEnrollment($user, $course);
+                $certificateIssued = true;
+            }
         }
 
         return ResponseHelper::jsonResponse(true, 'Materi ditandai selesai.', [
-            'progress_pct'    => $progressPct,
-            'completed_count' => $completed,
-            'total_lessons'   => $totalLessons,
-            'course_completed'=> $progressPct === 100,
-            'lesson_was_new'  => ! $alreadyCompleted,
+            'progress_pct'       => $progressPct,
+            'completed_count'    => $completed,
+            'total_lessons'      => $totalLessons,
+            'course_completed'   => $progressPct === 100,
+            'lesson_was_new'     => ! $alreadyCompleted,
+            'certificate_issued' => $certificateIssued,
         ], 200);
     }
 
