@@ -63,7 +63,7 @@
                 @endif
                 <div class="field">
                     <div class="field-label">Tanggal Terbit</div>
-                    <div class="field-value">{{ $certificate->issued_at->translatedFormat('d F Y') }}</div>
+                    <div class="field-value">{{ $certificate->issued_at->format('d M Y') }}</div>
                 </div>
                 <div class="field">
                     <div class="field-label">Nomor Sertifikat</div>

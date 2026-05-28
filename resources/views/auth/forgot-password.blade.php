@@ -158,9 +158,24 @@
             <button type="submit">Kirim Link Reset Password →</button>
         </form>
 
-        <p class="link" style="margin-top:14px; font-size:13px; color: var(--muted);">
-            Lebih suka pakai OTP? <a href="{{ route('password.otp.show') }}">Reset via OTP</a>
-        </p>
+        <form method="POST" action="{{ route('password.send-otp') }}" style="margin-top:12px;">
+            @csrf
+            <input name="email" type="hidden" id="otp_email">
+            <p style="font-size:13px; color: var(--muted); margin:0;">
+                Lebih suka pakai OTP?
+                <button type="button" onclick="submitOtp()" style="background:none;border:none;color:#26c6da;font-weight:700;cursor:pointer;font-size:13px;padding:0;">
+                    Reset via OTP
+                </button>
+            </p>
+        </form>
+        <script>
+            function submitOtp() {
+                const email = document.getElementById('email').value;
+                if (!email) { alert('Masukkan email terlebih dahulu.'); return; }
+                document.getElementById('otp_email').value = email;
+                document.querySelector('form[action*="forgot-password-otp"]').submit();
+            }
+        </script>
         <p class="link"><a href="/login">← Kembali ke login</a></p>
     </main>
 </body>

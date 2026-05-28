@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobListing;
-use App\Models\JobSkill;
-use App\Models\Skill;
+use App\Models\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,10 +37,11 @@ class JobController extends Controller
         $categories = JobListing::active()->distinct()->pluck('category')->sort()->values();
         $locations  = JobListing::active()->distinct()->pluck('location')->sort()->values();
 
-        // Rekomendasi berdasarkan skill pengguna
+        // Rekomendasi berdasarkan skill dari profil pengguna
         $recommended = collect();
         if (Auth::check()) {
-            $userSkills = Skill::where('user_id', Auth::id())->pluck('name')->toArray();
+            $profile    = Profile::where('user_id', Auth::id())->first();
+            $userSkills = $profile ? collect($profile->skills ?? [])->map(fn ($s) => strtolower($s))->toArray() : [];
             if (! empty($userSkills)) {
                 $recommended = JobListing::with('skills')
                     ->active()
@@ -67,10 +67,11 @@ class JobController extends Controller
             ->limit(4)
             ->get();
 
-        // Cek apakah skill pengguna cocok
+        // Cek apakah skill pengguna cocok dengan lowongan
         $matchScore = 0;
         if (Auth::check()) {
-            $userSkills  = Skill::where('user_id', Auth::id())->pluck('name')->map(fn ($s) => strtolower($s))->toArray();
+            $profile     = Profile::where('user_id', Auth::id())->first();
+            $userSkills  = $profile ? collect($profile->skills ?? [])->map(fn ($s) => strtolower($s))->toArray() : [];
             $jobSkills   = $job->skills->pluck('skill_name')->map(fn ($s) => strtolower($s))->toArray();
             $matches     = array_intersect($userSkills, $jobSkills);
             $matchScore  = count($jobSkills) > 0 ? round((count($matches) / count($jobSkills)) * 100) : 0;

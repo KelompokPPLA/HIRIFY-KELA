@@ -125,7 +125,7 @@
         @endif
         <div class="meta-item">
             <div class="meta-label">Tanggal Penyelesaian</div>
-            <div class="meta-value">{{ $certificate->issued_at->translatedFormat('d F Y') }}</div>
+            <div class="meta-value">{{ $certificate->issued_at->format('d M Y') }}</div>
         </div>
         <div class="meta-item">
             <div class="meta-label">Nomor Sertifikat</div>

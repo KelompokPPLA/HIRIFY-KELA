@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('certificate_number', 50)->unique();
             $table->string('verification_code', 20)->unique();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('skill_course_id')->constrained()->onDelete('cascade');
+            // users.id dan skill_courses.id menggunakan UUID (konsisten dengan migration lain)
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('skill_course_id')->constrained()->cascadeOnDelete();
             $table->string('user_name');
             $table->string('course_title');
             $table->string('instructor_name')->nullable();
