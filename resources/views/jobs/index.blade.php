@@ -75,7 +75,13 @@
 
     {{-- Hasil --}}
     <div class="flex items-center justify-between mb-4">
-        <p class="text-sm text-gray-500">{{ $jobs->total() }} lowongan ditemukan</p>
+        <p class="text-sm text-gray-500">
+            {{ $jobs->total() }} lowongan ditemukan
+            @if(request()->hasAny(['search','category','level','job_type','location']))
+                <span class="text-gray-400">dari {{ $totalJobs }} total</span>
+            @endif
+        </p>
+        <p class="text-xs text-gray-400">Hanya menampilkan lowongan aktif & belum expired</p>
     </div>
 
     @if($jobs->isEmpty())
