@@ -170,6 +170,43 @@
                                 + Tambah Portofolio
                             </a>
                         </div>
+                    @endif
+                </div>
+
+                {{-- Sertifikat Pelatihan (DEV-133) --}}
+                @php
+                    $certificates = \App\Models\TrainingCertificate::where('user_id', $user->id)
+                        ->orderByDesc('issued_at')->limit(4)->get();
+                @endphp
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-slate-950">Sertifikat Pelatihan</h2>
+                        <a href="{{ route('certificates.index') }}" class="text-xs font-bold text-navy hover:underline">Lihat Semua</a>
+                    </div>
+                    @if($certificates->isNotEmpty())
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            @foreach($certificates as $cert)
+                                <div class="rounded-2xl bg-cyan-50 border border-cyan-100 p-4 flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-cyan-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="font-semibold text-slate-900 text-sm truncate">{{ $cert->course_title }}</p>
+                                        <p class="text-xs text-slate-500">{{ $cert->issued_at->format('d M Y') }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="p-5 border-2 border-dashed border-slate-100 rounded-2xl text-center">
+                            <p class="text-sm text-slate-500">Belum ada sertifikat. Selesaikan pelatihan untuk mendapatkan sertifikat.</p>
+                            <a href="{{ route('pelatihan.index') }}" class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-cyan-500 px-3.5 py-2 rounded-xl hover:bg-cyan-600 transition-colors">
+                                Mulai Pelatihan
+                            </a>
+                        </div>
+                    @endif
+                </div>
+
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <h2 class="text-lg font-semibold text-slate-950">Skill</h2>
                     @if($profile?->skills && count($profile->skills))

@@ -5,10 +5,22 @@
 @section('content')
 <div class="space-y-8">
     {{-- Header --}}
-    <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Admin Dashboard</p>
-        <h1 class="text-3xl font-semibold text-slate-950">Statistik Platform</h1>
-        <p class="mt-2 text-sm text-slate-600 max-w-2xl">Pantau jumlah pengguna aktif, sesi mentorship, pelatihan, dan aktivitas platform per periode untuk mengambil keputusan berbasis data.</p>
+    <div class="flex items-start justify-between flex-wrap gap-4">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Admin Dashboard</p>
+            <h1 class="text-3xl font-semibold text-slate-950">Statistik Platform</h1>
+            <p class="mt-2 text-sm text-slate-600 max-w-2xl">Pantau jumlah pengguna aktif, sesi mentorship, pelatihan, dan aktivitas platform per periode untuk mengambil keputusan berbasis data.</p>
+        </div>
+        {{-- Period Filter --}}
+        <form method="GET" action="{{ route('admin.statistics') }}" class="flex items-center gap-2 mt-1">
+            <label for="periodSelect" class="text-sm font-semibold text-slate-600 whitespace-nowrap">Filter Periode:</label>
+            <select id="periodSelect" name="months" onchange="this.form.submit()"
+                class="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer">
+                <option value="3"  {{ $selectedMonths === 3  ? 'selected' : '' }}>3 Bulan Terakhir</option>
+                <option value="6"  {{ $selectedMonths === 6  ? 'selected' : '' }}>6 Bulan Terakhir</option>
+                <option value="12" {{ $selectedMonths === 12 ? 'selected' : '' }}>12 Bulan Terakhir</option>
+            </select>
+        </form>
     </div>
 
     {{-- Summary cards --}}
@@ -84,7 +96,7 @@
     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
             <div>
-                <h2 class="text-xl font-semibold text-slate-950">Aktivitas Per Periode (6 Bulan Terakhir)</h2>
+                <h2 class="text-xl font-semibold text-slate-950">Aktivitas Per Periode ({{ $selectedMonths }} Bulan Terakhir)</h2>
                 <p class="mt-1 text-sm text-slate-500">Perkembangan pengguna baru, sesi mentorship, dan pendaftaran pelatihan per bulan.</p>
             </div>
             <div class="flex items-center gap-4 text-xs">
@@ -104,7 +116,7 @@
                 + array_sum(array_column($monthly, 'enrollments'));
         @endphp
 
-        <div class="grid grid-cols-6 gap-4 items-end" style="height: 220px;">
+        <div style="display:grid; grid-template-columns:repeat({{ count($monthly) }},1fr); gap:12px; align-items:end; height:220px;">
             @foreach ($monthly as $m)
                 @php
                     $usersHeight = $m['users'] > 0 ? max(4, ($m['users'] / $maxValue) * 180) : 2;
@@ -139,7 +151,7 @@
         {{-- Tabel aktivitas --}}
         <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 class="text-xl font-semibold text-slate-950 mb-1">Tabel Aktivitas Per Periode</h2>
-            <p class="text-sm text-slate-500 mb-5">Rincian numerik dari grafik di atas.</p>
+            <p class="text-sm text-slate-500 mb-5">Rincian numerik {{ $selectedMonths }} bulan terakhir.</p>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
