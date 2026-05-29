@@ -69,20 +69,27 @@ Route::middleware('auth')->group(function () {
 
     /* ---------- CV MANAGEMENT ---------- */
 
-    // halaman list CV
-    Route::view('/manajemen-cv', 'jobseeker.manajemen-cv')->name('manajemen-cv.index');
+    // Halaman list semua CV milik user
+    Route::get('/cv',                [CvController::class, 'index'])   ->name('cv.index');
 
-    // halaman buat CV ATS
-    Route::get('/buat-cv-ats', [CvController::class, 'create'])->name('buat-cv-ats.index');
+    // Halaman buat CV ATS — GET form + POST simpan
+    Route::get('/buat-cv-ats',       [CvController::class, 'create'])  ->name('buat-cv-ats.create');
+    Route::post('/buat-cv-ats',      [CvController::class, 'store'])   ->name('buat-cv-ats.store');
 
-    // generate CV
-    Route::post('/cv', [GenerateController::class, 'store'])->name('cv.store');
+    // Detail / preview CV
+    Route::get('/cv/{id}',           [CvController::class, 'show'])    ->name('cv.show');
 
-    // download CV
-    Route::get('/cv/{id}/download', [DownloadController::class, 'downloadPdf'])->name('cv.download');
+    // Download CV sebagai PDF
+    Route::get('/cv/{id}/download',  [CvController::class, 'download'])->name('cv.download');
 
-    // resource CV TANPA create (biar ga conflict)
-    Route::resource('cv', CvController::class)->except(['create']);
+    // Hapus CV
+    Route::delete('/cv/{id}',        [CvController::class, 'destroy']) ->name('cv.destroy');
+
+    // Halaman manajemen CV (redirect ke cv.index)
+    Route::get('/manajemen-cv',      [CvController::class, 'index'])   ->name('manajemen-cv.index');
+
+    // Generate CV via API
+    Route::post('/cv/generate',      [GenerateController::class, 'store'])->name('cv.generate');
 
     // CV presentasi (menggunakan CvPresentationController)
     Route::get('/buat-cv-presentasi', [\App\Http\Controllers\CvPresentationController::class, 'index'])->name('buat-cv-presentasi.index');
@@ -91,17 +98,13 @@ Route::middleware('auth')->group(function () {
     Route::resource('portofolio', PortofolioController::class);
 
     /* ---------- Roadmap & Assessment ---------- */
-    Route::view('/roadmap-karier',  'roadmap-karier.index')->name('roadmap-karier.index');
-    Route::view('/self-assessment', 'self-assessment.index')->name('self-assessment.index');
-
     /* ---------- ROADMAP KARIER ---------- */
-    Route::get('/roadmap-karier', [RoadmapController::class, 'index'])->name('roadmap-karier');
-    Route::post('/roadmap-karier', [RoadmapController::class, 'store'])->name('roadmap-karier.store');
+    Route::get('/roadmap-karier',        [RoadmapController::class, 'index'])->name('roadmap-karier.index');
+    Route::post('/roadmap-karier',       [RoadmapController::class, 'store'])->name('roadmap-karier.store');
     Route::patch('/roadmap-karier/{id}', [RoadmapController::class, 'update'])->name('roadmap-karier.update');
 
-
     /* ---------- SELF ASSESSMENT ---------- */
-    Route::get('/self-assessment',   [SelfAssessmentController::class, 'index'])->name('self-assessment');
+    Route::get('/self-assessment',   [SelfAssessmentController::class, 'index'])->name('self-assessment.index');
     Route::post('/self-assessment',  [SelfAssessmentController::class, 'store'])->name('assessment.store');
     Route::get('/assessment/result', [SelfAssessmentController::class, 'result'])->name('assessment.result');
 
