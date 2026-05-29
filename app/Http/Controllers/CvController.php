@@ -4,170 +4,91 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCvRequest;
 use App\Models\Cv;
-use App\Models\Education;
-use App\Models\Experience;
-use App\Models\Skill;
+use App\Services\CvService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CvController extends Controller
 {
-    /**
-     * Display a listing of user's CVs.
-     */
-    public function index()
-    {
-        $cvs = Cv::where('user_id', auth()->id())
-                  ->with(['educations', 'experiences', 'skills'])
-                  ->orderBy('created_at', 'desc')
-                  ->get();
+    public function __construct(protected CvService $cvService) {}
 
-        return view('cv.index', compact('cvs'));
-    }
-
-    /**
-     * Show the form for creating a new CV.
-     */
+    // ─── GET /buat-cv-ats — Form create CV ─────────────────────────────────
     public function create()
     {
-        return view('cv.create');
+        return view('buat-cv-ats.create');
     }
 
-    /**
-     * Store a newly created CV in storage.
-     */
+    // ─── POST /buat-cv-ats — Simpan CV baru ────────────────────────────────
     public function store(StoreCvRequest $request)
     {
-        $validated = $request->validated();
-        $userId    = auth()->id();
+        try {
+            $cv = $this->cvService->create(
+                $request->validated(),
+                auth()->id()
+            );
 
-        $cv = DB::transaction(function () use ($validated, $userId) {
-            // 1. Buat CV utama
-            $cv = Cv::create([
-                'user_id'      => $userId,
-                'nama_lengkap' => $validated['nama_lengkap'],
-                'email'        => $validated['email'],
-                'telepon'      => $validated['telepon'],
-                'alamat'       => $validated['alamat']    ?? null,
-                'linkedin'     => $validated['linkedin']  ?? null,
-                'ringkasan'    => $validated['ringkasan'] ?? null,
+            Log::info('[CvController@store] CV tersimpan', ['cv_id' => $cv->id]);
+
+            return redirect()
+                ->route('cv.show', $cv->id)
+                ->with('success', 'CV ATS berhasil dibuat!');
+
+        } catch (\Throwable $e) {
+            Log::error('[CvController@store] Gagal simpan CV', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            $this->syncCvDetails($cv, $validated);
-
-            return $cv;
-        });
-
-        return redirect()
-            ->route('cv.show', $cv->id)
-            ->with('success', 'CV ATS berhasil dibuat!');
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal menyimpan CV: ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Display the specified CV.
-     */
+    // ─── GET /manajemen-cv — Daftar CV user ────────────────────────────────
+    public function index()
+    {
+        $cvs = $this->cvService->getAllByUser(auth()->id());
+
+        return view('buat-cv-ats.index', compact('cvs'));
+    }
+
+    // ─── GET /cv/{cv} — Detail / preview CV ───────────────────────────────
     public function show(string $id)
     {
         $cv = Cv::with(['educations', 'experiences', 'skills'])
                 ->where('user_id', auth()->id())
                 ->findOrFail($id);
 
-        return view('cv.show', compact('cv'));
+        return view('buat-cv-ats.show', compact('cv'));
     }
 
-    /**
-     * Show the form for editing the specified CV.
-     */
-    public function edit(string $id)
+    // ─── GET /cv/{cv}/download — Download CV sebagai PDF ──────────────────
+    public function download(string $id)
     {
         $cv = Cv::with(['educations', 'experiences', 'skills'])
                 ->where('user_id', auth()->id())
                 ->findOrFail($id);
 
-        return view('cv.create', compact('cv'));
+        $pdf = Pdf::loadView('buat-cv-ats.pdf', compact('cv'))
+                  ->setPaper('a4', 'portrait');
+
+        $filename = 'CV-ATS-' . str_replace(' ', '-', $cv->nama_lengkap) . '.pdf';
+
+        return $pdf->download($filename);
     }
 
-    /**
-     * Update the specified CV in storage.
-     */
-    public function update(StoreCvRequest $request, string $id)
-    {
-        $validated = $request->validated();
-
-        $cv = DB::transaction(function () use ($validated, $id) {
-            $cv = Cv::where('user_id', auth()->id())->findOrFail($id);
-
-            $cv->update([
-                'nama_lengkap' => $validated['nama_lengkap'],
-                'email'        => $validated['email'],
-                'telepon'      => $validated['telepon'],
-                'alamat'       => $validated['alamat']    ?? null,
-                'linkedin'     => $validated['linkedin']  ?? null,
-                'ringkasan'    => $validated['ringkasan'] ?? null,
-            ]);
-
-            $cv->educations()->delete();
-            $cv->experiences()->delete();
-            $cv->skills()->delete();
-
-            $this->syncCvDetails($cv, $validated);
-
-            return $cv;
-        });
-
-        return redirect()
-            ->route('cv.show', $cv->id)
-            ->with('success', 'CV ATS berhasil diperbarui!');
-    }
-
-    /**
-     * Remove the specified CV from storage.
-     */
+    // ─── DELETE /cv/{cv} — Hapus CV ───────────────────────────────────────
     public function destroy(string $id)
     {
-        $cv = Cv::where('user_id', auth()->id())->findOrFail($id);
+        $cv = Cv::where('user_id', auth()->id())
+                ->findOrFail($id);
+
         $cv->delete();
 
         return redirect()
             ->route('cv.index')
             ->with('success', 'CV berhasil dihapus.');
-    }
-
-    private function syncCvDetails(Cv $cv, array $validated): void
-    {
-        foreach ($validated['pendidikan'] ?? [] as $edu) {
-            Education::create([
-                'cv_id'     => $cv->id,
-                'institusi' => $edu['institusi'],
-                'gelar'     => $edu['gelar'],
-                'tahun'     => $edu['tahun'],
-            ]);
-        }
-
-        foreach ($validated['pengalaman'] ?? [] as $exp) {
-            Experience::create([
-                'cv_id'      => $cv->id,
-                'posisi'     => $exp['posisi'],
-                'perusahaan' => $exp['perusahaan'],
-                'deskripsi'  => $exp['deskripsi'] ?? null,
-                'periode'    => $exp['periode'],
-            ]);
-        }
-
-        foreach (array_filter(array_map('trim', explode(',', $validated['technical_skills'] ?? ''))) as $skill) {
-            Skill::create([
-                'cv_id'      => $cv->id,
-                'nama_skill' => $skill,
-                'tipe'       => 'technical',
-            ]);
-        }
-
-        foreach (array_filter(array_map('trim', explode(',', $validated['soft_skills'] ?? ''))) as $skill) {
-            Skill::create([
-                'cv_id'      => $cv->id,
-                'nama_skill' => $skill,
-                'tipe'       => 'soft',
-            ]);
-        }
     }
 }
