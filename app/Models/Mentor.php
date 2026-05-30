@@ -60,4 +60,19 @@ class Mentor extends Model
             $q->where('name', 'like', '%' . $search . '%');
         });
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(MentorReview::class, 'mentor_id');
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return round($this->reviews()->avg('rating') ?? 0, 1);
+    }
+
+    public function getReviewsCountAttribute()
+    {
+        return $this->reviews()->count();
+    }
 }
