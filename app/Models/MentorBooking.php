@@ -65,4 +65,9 @@ class MentorBooking extends Model
             && $this->scheduled_start
             && $this->scheduled_start->isFuture();
     }
+
+    public function review()
+    {
+        return $this->hasOne(MentorReview::class, 'mentor_booking_id');
+    }
 }
