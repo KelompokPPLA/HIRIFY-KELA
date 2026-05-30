@@ -90,4 +90,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Portofolio::class);
     }
+
+    public function mentorReviews()
+    {
+        return $this->hasMany(MentorReview::class, 'jobseeker_user_id');
+    }
 }
