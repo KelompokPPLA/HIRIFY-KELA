@@ -124,6 +124,22 @@ class MentorshipDemoSeeder extends Seeder
 
                 $confirmedSlot->update(['is_booked' => true]);
             }
+
+            // Also seed a completed booking for UI testing
+            MentorBooking::firstOrCreate(
+                [
+                    'mentor_id' => $firstMentor->id,
+                    'jobseeker_user_id' => $jobseeker->id,
+                    'status' => 'completed',
+                ],
+                [
+                    'scheduled_start' => now()->subDays(2),
+                    'scheduled_end' => now()->subDays(2)->addHour(),
+                    'price_per_session' => $firstMentor->price_per_session,
+                    'booking_notes' => 'Sesi review portofolio UI/UX yang lalu.',
+                    'meeting_url' => 'https://meet.google.com/',
+                ]
+            );
         }
     }
 
