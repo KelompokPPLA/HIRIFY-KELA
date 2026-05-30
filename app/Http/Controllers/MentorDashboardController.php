@@ -21,8 +21,10 @@ class MentorDashboardController extends Controller
         $acceptedBookings = collect();
         $totalMenteesCount = 0;
         $sessionsThisMonthCount = 0;
-        $avgRating = 4.9;
-        $earningsFormatted = 'Rp 0';
+        $menteesThisMonthCount = 0;
+        $sessionsThisWeekCount = 0;
+        $avgRating = 0.0;
+        $earningsFormatted = 'Rp 0,0jt';
 
         if ($mentor) {
             $sessions = SesiJadwal::with('bookings.jobseeker')->where('mentor_id', $user->id)
@@ -53,24 +55,32 @@ class MentorDashboardController extends Controller
                 ->whereYear('date', now()->year)
                 ->count();
 
+            $menteesThisMonthCount = MentorBooking::where('mentor_id', $mentor->id)
+                ->whereNotNull('jobseeker_user_id')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->distinct('jobseeker_user_id')
+                ->count('jobseeker_user_id');
+
+            $sessionsThisWeekCount = SesiJadwal::where('mentor_id', $user->id)
+                ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
+                ->count();
+
             $dbRating = \App\Models\Feedback::where('mentor_id', $user->id)->avg('rating');
-            $avgRating = $dbRating ? round($dbRating, 1) : 4.9;
+            $avgRating = $dbRating ? round($dbRating, 1) : 0.0;
 
             $earningsFormatted = 'Rp ' . number_format(($totalMenteesCount * 200000) / 1000000, 1, ',', '.') . 'jt';
-            if ($totalMenteesCount === 0) {
-                $earningsFormatted = 'Rp 4,8jt'; // fallback matching mockup
-                $totalMenteesCount = 24;          // fallback matching mockup
-                $sessionsThisMonthCount = 48;     // fallback matching mockup
-            }
         }
 
         return view('mentor.dashboard', compact(
-            'sessions', 
-            'pendingBookings', 
-            'acceptedBookings', 
-            'totalMenteesCount', 
-            'sessionsThisMonthCount', 
-            'avgRating', 
+            'sessions',
+            'pendingBookings',
+            'acceptedBookings',
+            'totalMenteesCount',
+            'sessionsThisMonthCount',
+            'menteesThisMonthCount',
+            'sessionsThisWeekCount',
+            'avgRating',
             'earningsFormatted'
         ));
     }
@@ -156,13 +166,6 @@ class MentorDashboardController extends Controller
             }
         }
 
-        if ($booking->sesi_jadwal_id) {
-            $session = \App\Models\SesiJadwal::find($booking->sesi_jadwal_id);
-            if ($session) {
-                $session->update(['status' => 'Confirmed']);
-            }
-        }
-
         return back()->with('success', 'Booking berhasil dikonfirmasi.');
     }
 
@@ -181,19 +184,10 @@ class MentorDashboardController extends Controller
 
         $booking = MentorBooking::where('mentor_id', $mentor->id)->findOrFail($id);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($booking, $request) {
-            $booking->update([
-                'status' => 'rejected',
-                'rejection_reason' => $request->rejection_reason,
-            ]);
-
-            if ($booking->mentor_availability_id) {
-                $availability = MentorAvailability::find($booking->mentor_availability_id);
-                if ($availability) {
-                    $availability->update(['is_booked' => false]);
-                }
-            }
-        });
+        $booking->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason,
+        ]);
 
         return back()->with('success', 'Booking ditolak.');
     }

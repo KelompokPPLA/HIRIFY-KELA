@@ -152,7 +152,7 @@ class MentorshipController extends Controller
         foreach ($manualSessions as $session) {
             $startAt = Carbon::parse($session->date . ' ' . $session->time);
             $endAt = (clone $startAt)->addMinutes($session->duration);
-            
+
             $slotItems[] = [
                 'id' => $session->id, // Frontend will handle this ID
                 'is_manual' => true,  // Flag for backend if needed
@@ -275,7 +275,7 @@ class MentorshipController extends Controller
 
                     $start = Carbon::parse($session->date . ' ' . $session->time);
                     $end = (clone $start)->addMinutes($session->duration);
-                    
+
                     $booking = MentorBooking::create([
                         'mentor_id' => $mentor->id,
                         'jobseeker_user_id' => $user->id,
@@ -291,7 +291,7 @@ class MentorshipController extends Controller
                     // User says "ketika mentor membuat jadwal sesi maka muncul... ketika diklik muncul detail"
                     // Let's keep it Pending in SesiJadwal for now, or maybe change to Confirmed if we want to "reserve" it.
                     // Actually, let's keep it as is, but we could update status.
-                    
+
                     return $booking;
                 } else {
                     if (empty($validated['scheduled_start'])) {
@@ -344,6 +344,15 @@ class MentorshipController extends Controller
         }
 
         $booking->load(['mentor.user']);
+
+        UserNotification::create([
+            'user_id' => $user->id,
+            'type' => 'jadwal',
+            'title' => 'Booking mentorship dibuat',
+            'message' => 'Booking sesi dengan ' . ($booking->mentor?->user?->name ?? 'mentor') . ' berhasil dibuat dan menunggu konfirmasi.',
+            'action_url' => '/mentorship',
+            'data' => ['booking_id' => $booking->id, 'status' => 'pending'],
+        ]);
 
         return ResponseHelper::jsonResponse(
             true,

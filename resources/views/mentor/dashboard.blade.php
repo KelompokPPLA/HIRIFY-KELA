@@ -54,7 +54,7 @@
                     </svg>
                 </div>
                 <div class="text-sm font-bold text-slate-800">Total Mentee</div>
-                <div class="text-xs text-slate-400 font-semibold mt-0.5">+3 bulan ini</div>
+                <div class="text-xs text-slate-400 font-semibold mt-0.5">+{{ $menteesThisMonthCount }} bulan ini</div>
             </div>
             <div class="text-3xl font-black text-slate-800 tracking-tight">{{ $totalMenteesCount }}</div>
         </div>
@@ -70,7 +70,7 @@
                     </svg>
                 </div>
                 <div class="text-sm font-bold text-slate-800">Sesi Bulan Ini</div>
-                <div class="text-xs text-slate-400 font-semibold mt-0.5">12 sesi minggu ini</div>
+                <div class="text-xs text-slate-400 font-semibold mt-0.5">{{ $sessionsThisWeekCount }} sesi minggu ini</div>
             </div>
             <div class="text-3xl font-black text-slate-800 tracking-tight">{{ $sessionsThisMonthCount }}</div>
         </div>
@@ -258,31 +258,9 @@
                                 'time' => '2 jam yang lalu'
                             ]);
                         }
-                        
-                        // Fallback elements matching mockup exactly if nothing is booked yet
-                        if ($activities->isEmpty()) {
-                            $activities->push([
-                                'name' => 'John Doe',
-                                'action' => 'menyelesaikan sesi',
-                                'topic' => 'React Development',
-                                'time' => '2 jam yang lalu'
-                            ]);
-                            $activities->push([
-                                'name' => 'Jane Smith',
-                                'action' => 'membooking sesi baru',
-                                'topic' => 'Career Guidance',
-                                'time' => '5 jam yang lalu'
-                            ]);
-                            $activities->push([
-                                'name' => 'Bob Wilson',
-                                'action' => 'memberikan review',
-                                'topic' => 'Technical Interview',
-                                'time' => '1 hari yang lalu'
-                            ]);
-                        }
                     @endphp
                     
-                    @foreach($activities->take(3) as $act)
+                    @forelse($activities->take(3) as $act)
                         @php
                             $gradient = 'from-[#0ea5e9] to-[#00bee4]';
                             if (str_contains($act['name'], 'John')) {
@@ -306,7 +284,11 @@
                                 </div>
                             </div>
                         </div>
-                    @endforeach
+                    @empty
+                        <div class="py-12 text-center text-slate-400 font-medium text-sm">
+                            Belum ada aktivitas terbaru saat ini.
+                        </div>
+                    @endforelse
                 </div>
                 
                 <div class="text-center pt-6 border-t border-slate-100">

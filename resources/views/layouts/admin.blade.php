@@ -68,6 +68,8 @@
                     $adminItems = [
                         ['url' => '/admin/statistics', 'label' => 'Statistik Platform', 'pattern' => 'admin/statistics', 'icon' => '<path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path>'],
                         ['url' => '/admin/users', 'label' => 'Manajemen Pengguna', 'pattern' => 'admin/users', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'],
+                        ['url' => '/admin/mentors', 'label' => 'Manajemen Mentor', 'pattern' => 'admin/mentors', 'icon' => '<path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>'],
+                        ['url' => '/admin/training-modules', 'label' => 'Modul Pelatihan', 'pattern' => 'admin/training-modules', 'icon' => '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>'],
                         ['url' => '/admin/activity', 'label' => 'Aktivitas Platform', 'pattern' => 'admin/activity', 'icon' => '<path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>'],
                     ];
                 @endphp

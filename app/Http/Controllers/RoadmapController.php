@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ResponseHelper;
+use App\Models\Profile;
 use App\Models\Roadmap;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -52,6 +55,10 @@ class RoadmapController extends Controller
      */
     public function index()
     {
+        if (request()->is('api/*') || request()->expectsJson()) {
+            return $this->apiIndex();
+        }
+
         $user    = auth()->user();
         $roadmap = Roadmap::where('user_id', $user->id)->orderBy('step_order')->get();
 
@@ -69,6 +76,36 @@ class RoadmapController extends Controller
             'totalCount',
             'progressPercent'
         ));
+    }
+
+    private function apiIndex(): JsonResponse
+    {
+        $user = auth()->user();
+        $profile = $user->profile;
+
+        return ResponseHelper::jsonResponse(true, 'Roadmap karier berhasil dimuat.', [
+            'paths' => array_values($this->careerPathOptions()),
+            'selected_path' => $profile?->career_path,
+        ], 200);
+    }
+
+    public function select(Request $request): JsonResponse
+    {
+        $paths = $this->careerPathOptions();
+
+        $data = $request->validate([
+            'path_id' => ['required', 'string', 'in:' . implode(',', array_keys($paths))],
+        ]);
+
+        $profile = Profile::updateOrCreate(
+            ['user_id' => auth()->id()],
+            ['career_path' => $data['path_id']]
+        );
+
+        return ResponseHelper::jsonResponse(true, 'Pilihan roadmap karier berhasil disimpan.', [
+            'selected_path' => $profile->career_path,
+            'path' => $paths[$profile->career_path],
+        ], 200);
     }
 
     /**
@@ -108,6 +145,16 @@ class RoadmapController extends Controller
         }
 
         return redirect()->route('roadmap-karier')->with('success', "Roadmap {$careerField} berhasil dibuat!");
+    }
+
+    private function careerPathOptions(): array
+    {
+        return [
+            'frontend' => ['id' => 'frontend', 'name' => 'Frontend Developer', 'description' => 'Fokus pada UI web, komponen, dan pengalaman pengguna.'],
+            'backend' => ['id' => 'backend', 'name' => 'Backend Developer', 'description' => 'Fokus pada API, database, keamanan, dan performa sistem.'],
+            'data' => ['id' => 'data', 'name' => 'Data Analyst', 'description' => 'Fokus pada analisis data, dashboard, dan insight bisnis.'],
+            'uiux' => ['id' => 'uiux', 'name' => 'UI/UX Designer', 'description' => 'Fokus pada riset pengguna, desain produk, dan prototyping.'],
+        ];
     }
 
     /**

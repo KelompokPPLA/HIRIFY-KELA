@@ -56,6 +56,8 @@
     .forum-page .role-pill.mentor    { background: #f0edff; color: #6c47c9; }
     .forum-page .role-pill.admin     { background: #fff5ed; color: #c97b10; }
     .forum-page .dot { color: #c5d4e3; }
+    .forum-page .meta-icon { display: inline-flex; align-items: center; gap: 3px; }
+    .forum-page .meta-icon svg { opacity: .7; }
 
     .forum-page .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; }
 
@@ -178,13 +180,12 @@
             </div>
         </div>
     </div>
-</div>
 
 <div id="newThreadModal" class="forum-modal">
     <div class="forum-modal-box">
         <div class="forum-modal-head">
             <h3>Buat Thread Baru</h3>
-            <button class="forum-modal-close" type="button" id="closeModalBtn">x</button>
+            <button class="forum-modal-close" type="button" id="closeModalBtn">×</button>
         </div>
         <div class="form-grid">
             <div>
@@ -208,7 +209,7 @@
     <div class="forum-modal-box">
         <div class="forum-modal-head">
             <h3>Edit Thread</h3>
-            <button class="forum-modal-close" type="button" id="closeEditThreadModalBtn">x</button>
+            <button class="forum-modal-close" type="button" id="closeEditThreadModalBtn">×</button>
         </div>
         <div class="form-grid">
             <div>
@@ -226,6 +227,7 @@
             <button class="btn btn-dark" type="button" id="submitEditThreadBtn">Simpan Perubahan</button>
         </div>
     </div>
+</div>
 </div>
 
 <script src="/js/hirify-api.js"></script>
@@ -292,9 +294,8 @@
                     <span class="dot">·</span>
                     <span>${esc(t.created_at)}</span>
                     <span class="dot">·</span>
-                    <span>Komentar: ${esc(String(t.comments_count))}</span>
-                    <span class="dot">·</span>
-                    <span>Views: ${esc(String(t.views_count))}</span>
+                    <span class="meta-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${esc(String(t.comments_count))}</span>
+                    <span class="meta-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${esc(String(t.views_count))}</span>
                 </div>
             </article>`).join('');
         container.querySelectorAll('.thread-card').forEach(el => {

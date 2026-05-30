@@ -6,6 +6,7 @@ use App\Models\Feedback;
 use App\Models\MentorBooking;
 use App\Models\SesiJadwal;
 use App\Models\User;
+use App\Models\UserNotification;
 use Illuminate\Http\Request;
 
 class FeedbackController extends Controller
@@ -36,7 +37,20 @@ class FeedbackController extends Controller
                   });
         })->get();
 
-        $sessions = SesiJadwal::where('mentor_id', auth()->id())->get();
+        $sessions = SesiJadwal::where('mentor_id', auth()->id())
+            ->whereHas('bookings', function($q) use ($mentorProfileId) {
+                $q->whereIn('status', ['confirmed', 'completed'])
+                  ->when($mentorProfileId, function ($qq) use ($mentorProfileId) {
+                      $qq->where('mentor_id', $mentorProfileId);
+                  });
+            })
+            ->with(['bookings' => function($q) use ($mentorProfileId) {
+                $q->whereIn('status', ['confirmed', 'completed'])
+                  ->when($mentorProfileId, function ($qq) use ($mentorProfileId) {
+                      $qq->where('mentor_id', $mentorProfileId);
+                  });
+            }])
+            ->get();
 
         return view('mentor.feedback.index', compact('feedbacks', 'mentees', 'sessions', 'search'));
     }
@@ -67,6 +81,7 @@ class FeedbackController extends Controller
 
         $bookingExists = MentorBooking::where('mentor_id', $mentorProfileId)
             ->where('jobseeker_user_id', $data['mentee_id'])
+            ->where('sesi_jadwal_id', $data['session_id'])
             ->whereIn('status', ['confirmed', 'completed'])
             ->exists();
 
@@ -74,17 +89,89 @@ class FeedbackController extends Controller
             return back()->with('error', 'Selected mentee has no prior booking with you.');
         }
 
-        Feedback::create([
+        $feedback = Feedback::create([
             'mentor_id'      => auth()->id(),
             'mentee_id'      => $data['mentee_id'],
             'session_id'     => $data['session_id'],
-            'rating'         => null,
+            'rating'         => $data['mentee_rating'],
             'mentee_rating'  => $data['mentee_rating'],
             'strength'       => $data['strength'],
             'improvement'    => $data['improvement'],
             'recommendation' => $data['recommendation'],
         ]);
 
+        UserNotification::create([
+            'user_id' => $data['mentee_id'],
+            'type' => 'feedback',
+            'title' => 'Feedback mentorship baru',
+            'message' => 'Mentor memberikan feedback baru untuk perkembangan karier Anda.',
+            'action_url' => '/riwayat-feedback',
+            'data' => ['feedback_id' => $feedback->id, 'session_id' => $data['session_id']],
+        ]);
+
         return redirect()->route('mentor.feedback.index')->with('success', 'Feedback berhasil disimpan.');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $feedback = Feedback::findOrFail($id);
+        
+        // Ensure mentor owns this feedback
+        if ((string)$feedback->mentor_id !== (string)auth()->id()) {
+            return back()->with('error', 'Unauthorized action.');
+        }
+
+        $data = $request->validate([
+            'mentee_id'     => ['required'],
+            'session_id'    => ['required'],
+            'mentee_rating' => ['required','integer','between:1,5'],
+            'strength'      => ['required','string'],
+            'improvement'   => ['required','string'],
+            'recommendation'=> ['required','string'],
+        ]);
+
+        $session = SesiJadwal::find($data['session_id']);
+        if (!$session || (string)$session->mentor_id !== (string)auth()->id()) {
+            return back()->with('error', 'Invalid session selected.');
+        }
+
+        $mentorProfile = auth()->user()->mentorProfile;
+        $mentorProfileId = $mentorProfile->id ?? null;
+
+        $bookingExists = MentorBooking::where('mentor_id', $mentorProfileId)
+            ->where('jobseeker_user_id', $data['mentee_id'])
+            ->where('sesi_jadwal_id', $data['session_id'])
+            ->whereIn('status', ['confirmed', 'completed'])
+            ->exists();
+
+        if (!$bookingExists) {
+            return back()->with('error', 'Selected mentee has no prior booking with you for this session.');
+        }
+
+        $feedback->update([
+            'mentee_id'      => $data['mentee_id'],
+            'session_id'     => $data['session_id'],
+            'rating'         => $data['mentee_rating'],
+            'mentee_rating'  => $data['mentee_rating'],
+            'strength'       => $data['strength'],
+            'improvement'    => $data['improvement'],
+            'recommendation' => $data['recommendation'],
+        ]);
+
+        return redirect()->route('mentor.feedback.index')->with('success', 'Feedback berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        $feedback = Feedback::findOrFail($id);
+
+        // Ensure mentor owns this feedback
+        if ((string)$feedback->mentor_id !== (string)auth()->id()) {
+            return back()->with('error', 'Unauthorized action.');
+        }
+
+        $feedback->delete();
+
+        return redirect()->route('mentor.feedback.index')->with('success', 'Feedback berhasil dihapus.');
     }
 }

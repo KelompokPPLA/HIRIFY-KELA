@@ -26,7 +26,7 @@
                 </div>
 
                 {{-- Rating Mentee --}}
-                <div class="flex flex-col items-end gap-1 shrink-0">
+                <div class="flex flex-col items-end gap-1.5 shrink-0">
                     <div class="flex items-center gap-0.5">
                         @for($i = 1; $i <= 5; $i++)
                             <svg class="h-4 w-4 {{ $i <= ($fb->mentee_rating ?? 0) ? 'text-[#00bee4]' : 'text-slate-200' }}"
@@ -35,7 +35,22 @@
                             </svg>
                         @endfor
                     </div>
-                    <div class="text-[11px] font-bold text-slate-400">{{ $fb->created_at->format('Y-m-d') }}</div>
+                    <div class="flex items-center gap-2">
+                        <div class="text-[11px] font-bold text-slate-400">{{ $fb->created_at->format('Y-m-d') }}</div>
+                        <button type="button" 
+                                class="editFeedbackBtn text-slate-400 hover:text-cyan-500 transition duration-150 cursor-pointer"
+                                data-id="{{ $fb->id }}"
+                                data-mentee-id="{{ $fb->mentee_id }}"
+                                data-session-id="{{ $fb->session_id }}"
+                                data-rating="{{ $fb->mentee_rating }}"
+                                data-strength="{{ e($fb->strength) }}"
+                                data-improvement="{{ e($fb->improvement) }}"
+                                data-recommendation="{{ e($fb->recommendation) }}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 

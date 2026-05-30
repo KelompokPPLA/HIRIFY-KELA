@@ -95,4 +95,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(MentorReview::class, 'jobseeker_user_id');
     }
+    
+    public function userNotifications()
+    {
+        return $this->hasMany(UserNotification::class);
+    }
 }
