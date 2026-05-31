@@ -23,7 +23,6 @@ use App\Http\Controllers\StreakController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\AdminMentorManagementController;
-use App\Http\Controllers\AdminTrainingModuleController;
 use App\Http\Controllers\JobseekerFeedbackController;
 
 Route::get('/', function () {
