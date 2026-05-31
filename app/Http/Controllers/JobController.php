@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JobListing;
 use App\Models\Profile;
+use App\Services\JobRecommendationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,22 +39,16 @@ class JobController extends Controller
         $locations  = JobListing::active()->notExpired()->distinct()->pluck('location')->sort()->values();
         $totalJobs  = JobListing::active()->notExpired()->count();
 
-        // Rekomendasi berdasarkan skill dari profil pengguna
-        $recommended = collect();
+        // Rekomendasi otomatis berdasarkan analisis profil, kursus, dan career path
+        $recommended    = collect();
+        $recommendLabel = 'Cocok untuk Anda';
         if (Auth::check()) {
-            $profile    = Profile::where('user_id', Auth::id())->first();
-            $userSkills = $profile ? collect($profile->skills ?? [])->map(fn ($s) => strtolower($s))->toArray() : [];
-            if (! empty($userSkills)) {
-                $recommended = JobListing::with('skills')
-                    ->active()
-                    ->whereHas('skills', fn ($q) => $q->whereIn('skill_name', $userSkills))
-                    ->orderByDesc('created_at')
-                    ->limit(6)
-                    ->get();
-            }
+            $result         = (new JobRecommendationService())->getRecommendations(6);
+            $recommended    = $result['jobs'];
+            $recommendLabel = $result['label'];
         }
 
-        return view('jobs.index', compact('jobs', 'categories', 'locations', 'recommended', 'totalJobs'));
+        return view('jobs.index', compact('jobs', 'categories', 'locations', 'recommended', 'recommendLabel', 'totalJobs'));
     }
 
     public function show(int $id)

@@ -14,7 +14,7 @@
     {{-- Rekomendasi --}}
     @if($recommended->isNotEmpty())
     <div class="mb-10">
-        <h2 class="text-lg font-bold text-gray-800 mb-4">⭐ Direkomendasikan untuk Anda</h2>
+        <h2 class="text-lg font-bold text-gray-800 mb-4">⭐ {{ $recommendLabel }}</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($recommended as $job)
                 <a href="{{ route('jobs.show', $job->id) }}" class="block bg-cyan-50 border border-cyan-200 rounded-2xl p-5 hover:shadow-md transition">
