@@ -29,6 +29,20 @@
 
         * { box-sizing: border-box; }
 
+        .small-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(0,0,0,0.12);
+            border-top-color: var(--brand);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         body {
             margin: 0;
             font-family: 'Manrope', sans-serif;
@@ -947,7 +961,45 @@
                     <button data-status="rejected">Rejected</button>
                 </div>
 
-                <div id="bookingList" class="booking-list"></div>
+                <div id="bookingList" class="booking-list">
+                    @if(!empty($initialBookings) && count($initialBookings))
+                        @foreach($initialBookings as $booking)
+                            @php
+                                $canCancel = ($booking['status'] ?? '') === 'pending';
+                                $canJoin = ($booking['status'] ?? '') === 'confirmed' && !empty($booking['meeting_url']);
+                            @endphp
+                            <article class="booking-item">
+                                <div>
+                                    <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px;">
+                                        <div style="flex: 1;">
+                                            <strong style="font-size: 1.1rem; color: var(--brand-dark);">{{ $booking['mentor']['name'] ?? 'Mentor' }}</strong>
+                                            @if(!empty($booking['session_topic']))
+                                                <div style="margin-top: 2px; color: var(--brand); font-weight: 600; font-size: 0.95rem; line-height: 1.4;">
+                                                    {{ $booking['session_topic'] }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <small style="display: block; color: var(--muted); margin-bottom: 8px;">
+                                        {{ $booking['mentor']['expertise'] ?? '-' }} • {{ $booking['display_date'] ?? '-' }} • {{ $booking['display_time'] ?? '-' }}
+                                    </small>
+                                    <div class="badge {{ $booking['status'] ?? 'pending' }}">{{ $booking['status_label'] ?? $booking['status'] }}</div>
+                                </div>
+                                <div class="booking-actions">
+                                    <button class="btn btn-ghost" type="button" data-detail-id="{{ $booking['id'] }}">Detail</button>
+                                    @if($canJoin)
+                                        <button class="btn btn-brand" type="button" data-join-booking="{{ $booking['meeting_url'] }}">Join</button>
+                                    @endif
+                                    @if($canCancel)
+                                        <button class="btn btn-danger" type="button" data-cancel-booking="{{ $booking['id'] }}">Batalkan</button>
+                                    @endif
+                                </div>
+                            </article>
+                        @endforeach
+                    @else
+                        <div class="empty">Belum ada data booking pada status ini.</div>
+                    @endif
+                </div>
             </section>
         </main>
     </div>
@@ -958,6 +1010,7 @@
                 <div class="booking-head">
                     <h3>Booking Sesi Mentorship</h3>
                     <p id="modalSubtitle">dengan Mentor</p>
+                    <button id="modalFollowBtn" class="btn btn-ghost" type="button" style="margin-left:12px;">Follow</button>
                 </div>
 
                 <div class="booking-body">
@@ -1065,7 +1118,7 @@
                 </div>
                 <div class="booking-body">
                     <input type="hidden" id="reviewBookingId">
-                    
+
                     <div style="text-align: center; margin-bottom: 15px;">
                         <p class="booking-label" style="margin-bottom: 10px;">Rating Mentor</p>
                         <div class="star-rating" style="display: inline-flex; flex-direction: row-reverse; gap: 8px; justify-content: center;">
@@ -1103,6 +1156,14 @@
         hirifyInitToken('{{ session("jwt_token") }}');
         const api = window.hirifyApi;
         const escapeHtml = window.hirifyEsc;
+        // bookingsByMentor is a map: mentorId => booking object
+        window.bookingsByMentor = @json($bookingsByMentor ?? []);
+        // Debug helpers: inspect these values in browser console if badges not showing
+        try {
+            console.log('bookingsByMentor (server):', window.bookingsByMentor);
+            console.log('initialBookings (server):', @json($initialBookings ?? []));
+            console.log('bookingsByMentor keys:', Object.keys(window.bookingsByMentor || {}));
+        } catch (e) { /* ignore */ }
         let selectedBookingStatus = 'all';
         let selectedSlotId = null;
         let selectedSlotIsManual = false;
@@ -1113,6 +1174,9 @@
             mentors: [],
             bookings: [],
             upcoming: [],
+            followedMentorIds: [],
+            followLoadingIds: [],
+            currentSlots: [],
             filters: {
                 search: '',
                 expertise: '',
@@ -1198,8 +1262,27 @@
                     ? `<img src="${escapeHtml(mentor.avatar_url)}" alt="Avatar mentor">`
                     : escapeHtml(getInitial(mentor.name));
 
+                const isFollowed = state.followedMentorIds.includes(mentor.id);
+                const isLoading = state.followLoadingIds.includes(mentor.id);
+                const followText = isLoading ? '' : (isFollowed ? 'Following' : 'Follow');
+                const followClass = isFollowed ? 'btn-ghost' : 'btn-brand';
+
+                // Resolve booking for this mentor from multiple possible sources
+                let booked = null;
+                const bMap = (window.bookingsByMentor && typeof window.bookingsByMentor === 'object') ? window.bookingsByMentor : {};
+                if (bMap[mentor.id]) {
+                    booked = bMap[mentor.id];
+                } else if (bMap[String(mentor.id)]) {
+                    booked = bMap[String(mentor.id)];
+                } else if (Array.isArray(state.bookings) && state.bookings.length) {
+                    booked = state.bookings.find(b => Number(b.mentor?.id) === Number(mentor.id)) || null;
+                }
+
+                const bookedBadge = booked ? `<div style="position:absolute; right:12px; top:12px; background: #fff; border-radius: 999px; padding:6px 10px; font-weight:800; font-size:12px; border:1px solid #e6f6fb; z-index:6;">${escapeHtml(booked.status_label || booked.status)}</div>` : '';
+
                 return `
                     <article class="card mentor-card">
+                        ${bookedBadge}
                         <div class="mentor-head">
                             <div class="mentor-avatar">${avatar}</div>
                             <div>
@@ -1224,13 +1307,49 @@
                             </div>
                         </div>
 
-                        <button class="btn btn-brand" data-open-mentor="${escapeHtml(mentor.id)}" type="button">Booking</button>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn ${followClass}" data-follow-mentor="${escapeHtml(mentor.id)}" type="button" ${isLoading ? 'disabled' : ''}>
+                                ${isLoading ? '<span class="small-spinner"></span>' : ''}${followText}
+                            </button>
+                            <button class="btn btn-brand" data-open-mentor="${escapeHtml(mentor.id)}" type="button">Booking</button>
+                        </div>
                     </article>
                 `;
             }).join('');
 
             mentorGrid.querySelectorAll('[data-open-mentor]').forEach((button) => {
                 button.addEventListener('click', () => openMentorDetail(button.getAttribute('data-open-mentor')));
+            });
+
+            // Follow / Unfollow handlers
+            mentorGrid.querySelectorAll('[data-follow-mentor]').forEach((button) => {
+                button.addEventListener('click', async () => {
+                    const mentorId = button.getAttribute('data-follow-mentor');
+                    if (!mentorId) return;
+
+                    const isNowFollowed = state.followedMentorIds.includes(mentorId);
+                    try {
+                        // set loading
+                        state.followLoadingIds.push(mentorId);
+                        renderMentors();
+                        if (isNowFollowed) {
+                            await api(`/api/mentorship/mentors/${mentorId}/follow`, { method: 'DELETE' });
+                            state.followedMentorIds = state.followedMentorIds.filter(id => id !== mentorId);
+                            showToast('Berhasil berhenti mengikuti mentor', 'success');
+                        } else {
+                            await api(`/api/mentorship/mentors/${mentorId}/follow`, { method: 'POST' });
+                            state.followedMentorIds.push(mentorId);
+                            showToast('Berhasil mengikuti mentor', 'success');
+                        }
+                        // remove loading
+                        state.followLoadingIds = state.followLoadingIds.filter(id => id !== mentorId);
+                        renderMentors();
+                    } catch (err) {
+                        state.followLoadingIds = state.followLoadingIds.filter(id => id !== mentorId);
+                        renderMentors();
+                        showToast(err.message || 'Gagal melakukan aksi follow', 'error');
+                    }
+                });
             });
         }
 
@@ -1361,7 +1480,7 @@
                     const reviewStarsEl = document.getElementById('detailReviewStars');
                     const reviewRatingEl = document.getElementById('detailReviewRating');
                     const reviewCommentEl = document.getElementById('detailReviewComment');
-                    
+
                     if (booking.review) {
                         reviewBox.style.display = 'block';
                         reviewStarsEl.textContent = '★'.repeat(booking.review.rating) + '☆'.repeat(5 - booking.review.rating);
@@ -1409,6 +1528,14 @@
             document.getElementById('miniName').textContent = user.name || 'User';
             document.getElementById('miniEmail').textContent = user.email || '-';
             document.getElementById('miniAvatar').textContent = getInitial(user.name);
+
+            // Load mentors the user already follows (so we can mark Follow buttons)
+            try {
+                const followed = await api('/api/mentorship/my-followed-mentors');
+                state.followedMentorIds = (followed.data?.data || []).map(m => m.id);
+            } catch (e) {
+                state.followedMentorIds = [];
+            }
 
             return true;
         }
@@ -1476,6 +1603,7 @@
                 activeMentor = response.data?.mentor || null;
                 const slots = response.data?.availability_slots || [];
                 const reviews = response.data?.reviews || [];
+                state.currentSlots = slots;
                 selectedSlotId = null;
 
                 if (!activeMentor) {
@@ -1486,20 +1614,135 @@
                 modalSubtitle.textContent = `dengan ${activeMentor.name || 'Mentor'}`;
                 document.getElementById('slotDetailPanel').style.display = 'none';
 
-                if (!slots.length) {
-                    slotGrid.innerHTML = '<div class="empty" style="grid-column:1/-1;">Belum ada slot yang dibuka mentor.</div>';
+                // Setup modal follow button
+                try {
+                    const modalFollowBtn = document.getElementById('modalFollowBtn');
+                    if (modalFollowBtn) {
+                        const isFollowed = state.followedMentorIds.includes(activeMentor.id);
+                        modalFollowBtn.textContent = isFollowed ? 'Following' : 'Follow';
+                        modalFollowBtn.className = isFollowed ? 'btn btn-ghost' : 'btn btn-brand';
+                        modalFollowBtn.disabled = false;
+                        modalFollowBtn.onclick = async () => {
+                            modalFollowBtn.disabled = true;
+                            const prevText = modalFollowBtn.textContent;
+                            modalFollowBtn.innerHTML = '<span class="small-spinner"></span>';
+                            try {
+                                if (state.followedMentorIds.includes(activeMentor.id)) {
+                                    await api(`/api/mentorship/mentors/${activeMentor.id}/follow`, { method: 'DELETE' });
+                                    state.followedMentorIds = state.followedMentorIds.filter(id => id !== activeMentor.id);
+                                    showToast('Berhasil berhenti mengikuti mentor', 'success');
+                                } else {
+                                    await api(`/api/mentorship/mentors/${activeMentor.id}/follow`, { method: 'POST' });
+                                    state.followedMentorIds.push(activeMentor.id);
+                                    showToast('Berhasil mengikuti mentor', 'success');
+                                }
+                                renderMentors();
+                                modalFollowBtn.textContent = state.followedMentorIds.includes(activeMentor.id) ? 'Following' : 'Follow';
+                                modalFollowBtn.className = state.followedMentorIds.includes(activeMentor.id) ? 'btn btn-ghost' : 'btn btn-brand';
+                            } catch (err) {
+                                showToast(err.message || 'Gagal melakukan aksi follow', 'error');
+                                modalFollowBtn.textContent = prevText;
+                            } finally {
+                                modalFollowBtn.disabled = false;
+                            }
+                        };
+                    }
+                } catch (e) {
+                    // ignore modal follow setup errors
+                }
+
+                    if (!slots.length) {
+                    slotGrid.innerHTML = `
+                        <div class="empty" style="grid-column:1/-1;">Belum ada slot yang dibuka mentor.</div>
+                        <div class="meta-box" style="grid-column:1/-1; margin-top:12px;">
+                            <label style="display:block; font-weight:600; margin-bottom:6px;">Minta Jadwal ke Mentor (Pilih Rentang Waktu)</label>
+                            <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+                                <input id="requestDate" type="date" style="padding:8px; border:1px solid var(--line); border-radius:6px;" />
+                                <input id="requestStartTime" type="time" style="padding:8px; border:1px solid var(--line); border-radius:6px; width:120px;" />
+                                <span style="font-weight:700; color:var(--muted);">–</span>
+                                <input id="requestEndTime" type="time" style="padding:8px; border:1px solid var(--line); border-radius:6px; width:120px;" />
+                            </div>
+                            <textarea id="requestMessage" rows="3" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; resize:vertical;" placeholder="Tulis pesan singkat (opsional), mis. 'Saya ingin diskusi tentang roadmap karier minggu depan'."></textarea>
+                            <div style="margin-top:8px; display:flex; gap:8px;">
+                                <button id="requestScheduleBtn" class="btn btn-brand" type="button">Minta Jadwal</button>
+                                <button id="requestCancelBtn" class="btn btn-ghost" type="button">Batal</button>
+                            </div>
+                        </div>
+                    `;
                     document.getElementById('slotDetailPanel').style.display = 'none';
+                    const bookBtnEl = document.getElementById('bookBtn');
+                    if (bookBtnEl) bookBtnEl.disabled = true;
+
+                    // bind request buttons
+                    setTimeout(() => {
+                        const reqBtn = document.getElementById('requestScheduleBtn');
+                        const cancelReqBtn = document.getElementById('requestCancelBtn');
+                        const dateInput = document.getElementById('requestDate');
+                        const startInput = document.getElementById('requestStartTime');
+                        const endInput = document.getElementById('requestEndTime');
+                        const bookBtnEl = document.getElementById('bookBtn');
+
+                        // prefill date and times with next day 10:00-11:00
+                        const dt = new Date();
+                        const next = new Date(dt.getTime() + 24*60*60*1000);
+                        const yyyy = next.getFullYear();
+                        const mm = String(next.getMonth()+1).padStart(2,'0');
+                        const dd = String(next.getDate()).padStart(2,'0');
+                        if (dateInput && !dateInput.value) dateInput.value = `${yyyy}-${mm}-${dd}`;
+                        if (startInput && !startInput.value) startInput.value = '10:00';
+                        if (endInput && !endInput.value) endInput.value = '11:00';
+
+                        function updateBookButtonState() {
+                            if (!bookBtnEl) return;
+                            // enable if a slot is selected OR date+start+end provided and start < end
+                            const hasSelectedSlot = !!selectedSlotId;
+                            const hasPreferred = (dateInput && dateInput.value) && (startInput && startInput.value) && (endInput && endInput.value);
+                            let validRange = false;
+                            if (hasPreferred) {
+                                const s = startInput.value;
+                                const e = endInput.value;
+                                validRange = s < e;
+                            }
+                            bookBtnEl.disabled = !(hasSelectedSlot || (hasPreferred && validRange));
+                        }
+
+                        if (dateInput) dateInput.addEventListener('change', updateBookButtonState);
+                        if (startInput) startInput.addEventListener('change', updateBookButtonState);
+                        if (endInput) endInput.addEventListener('change', updateBookButtonState);
+
+                        if (reqBtn) {
+                            reqBtn.addEventListener('click', async () => {
+                                await requestSchedule();
+                                updateBookButtonState();
+                            });
+                        }
+                        if (cancelReqBtn) {
+                            cancelReqBtn.addEventListener('click', () => {
+                                if (dateInput) dateInput.value = '';
+                                if (startInput) startInput.value = '';
+                                if (endInput) endInput.value = '';
+                                if (document.getElementById('requestMessage')) document.getElementById('requestMessage').value = '';
+                                updateBookButtonState();
+                            });
+                        }
+
+                        // initial state
+                        updateBookButtonState();
+                    }, 40);
                 } else {
                     slotGrid.innerHTML = slots.map((slot) => `
                         <label class="slot" data-slot-id="${escapeHtml(slot.id)}" data-is-manual="${!!slot.is_manual}">
                             <input type="radio" name="slotChoice" value="${escapeHtml(slot.id)}">
                             <span class="slot-icon">🗓</span>
                             <div>
-                                <strong>${escapeHtml(slot.display_date || '-')}</strong>
-                                <span class="slot-time">${escapeHtml(slot.display_time || '-')}</span>
+                                <strong>${escapeHtml((slot.display_date || '-') + (slot.display_time ? ' • ' + slot.display_time : ''))}</strong>
                             </div>
                         </label>
                     `).join('');
+
+                    // disable book button until a slot is selected
+                    const bookBtnEl = document.getElementById('bookBtn');
+                    if (bookBtnEl) bookBtnEl.disabled = true;
 
                     slotGrid.querySelectorAll('.slot').forEach((slotEl) => {
                         slotEl.addEventListener('click', () => {
@@ -1515,9 +1758,11 @@
 
                             if (selectedSlot) {
                                 document.getElementById('slotDetailPanel').style.display = 'block';
-                                document.getElementById('slotDetailDate').textContent = selectedSlot.display_date || '-';
-                                document.getElementById('slotDetailTime').textContent = selectedSlot.display_time || '-';
+                                document.getElementById('slotDetailDate').textContent = ((selectedSlot.display_date || '-') + (selectedSlot.display_time ? ' • ' + selectedSlot.display_time : ''));
+                                document.getElementById('slotDetailTime').textContent = '';
                                 document.getElementById('slotDetailLabel').textContent = selectedSlot.label || 'Sesi mentoring reguler.';
+                                // enable confirm booking button now that a slot is selected
+                                if (bookBtnEl) bookBtnEl.disabled = false;
                             }
                         });
                     });
@@ -1554,6 +1799,23 @@
                 return;
             }
 
+            // If there is no selected slot but user provided preferred date + start/end time, treat as schedule request
+            if (!selectedSlotId) {
+                const dateEl = document.getElementById('requestDate');
+                const startEl = document.getElementById('requestStartTime');
+                const endEl = document.getElementById('requestEndTime');
+                const hasPreferred = dateEl && dateEl.value && startEl && startEl.value && endEl && endEl.value && (startEl.value < endEl.value);
+                if (!state.currentSlots || !state.currentSlots.length) {
+                    if (hasPreferred) {
+                        // send schedule request instead of booking
+                        await requestSchedule();
+                        return;
+                    }
+                    showToast('Mentor belum membuka slot. Silakan pilih mentor lain atau hubungi mentor.', 'error');
+                    return;
+                }
+            }
+
             const payload = {
                 mentor_id: activeMentor.id,
             };
@@ -1578,6 +1840,9 @@
                 showToast('Booking sesi berhasil dibuat.', 'success');
                 mentorModal.classList.remove('show');
                 selectedSlotId = null;
+                state.currentSlots = [];
+                const bookBtnEl = document.getElementById('bookBtn');
+                if (bookBtnEl) bookBtnEl.disabled = false;
 
                 await Promise.all([loadMentors(), loadBookings(), loadUpcoming()]);
             } catch (error) {
@@ -1587,24 +1852,24 @@
 
         function openReviewModal(bookingId) {
             document.getElementById('reviewBookingId').value = bookingId;
-            
+
             // Reset stars rating radio selection
             const ratingInputs = document.getElementsByName('reviewRating');
             ratingInputs.forEach(input => input.checked = false);
-            
+
             // Reset comment textarea
             document.getElementById('reviewComment').value = '';
-            
+
             // Hide error message
             document.getElementById('ratingErrorMessage').style.display = 'none';
-            
+
             // Open modal
             document.getElementById('reviewModal').classList.add('show');
         }
 
         async function submitReview() {
             const bookingId = document.getElementById('reviewBookingId').value;
-            
+
             // Find selected rating
             const ratingInputs = document.getElementsByName('reviewRating');
             let rating = null;
@@ -1614,21 +1879,21 @@
                     break;
                 }
             }
-            
+
             if (!rating) {
                 document.getElementById('ratingErrorMessage').style.display = 'block';
                 return;
             }
-            
+
             document.getElementById('ratingErrorMessage').style.display = 'none';
-            
+
             const comment = document.getElementById('reviewComment').value.trim();
             const submitBtn = document.getElementById('submitReviewBtn');
             const originalText = submitBtn.textContent;
-            
+
             submitBtn.disabled = true;
             submitBtn.textContent = 'Mengirim...';
-            
+
             try {
                 await api(`/api/mentorship/bookings/${bookingId}/reviews`, {
                     method: 'POST',
@@ -1637,7 +1902,7 @@
                         comment: comment || null
                     })
                 });
-                
+
                 showToast('Ulasan Anda berhasil dikirim!', 'success');
                 document.getElementById('reviewModal').classList.remove('show');
                 await Promise.all([loadBookings(), loadMentors()]);
@@ -1646,6 +1911,42 @@
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
+            }
+        }
+
+        async function requestSchedule() {
+            if (!activeMentor?.id) {
+                showToast('Mentor belum dipilih.', 'error');
+                return;
+            }
+
+            const msgEl = document.getElementById('requestMessage');
+            const reqBtn = document.getElementById('requestScheduleBtn');
+            if (reqBtn) reqBtn.disabled = true;
+            const message = msgEl ? msgEl.value.trim() : '';
+            const dateEl = document.getElementById('requestDate');
+            const startEl = document.getElementById('requestStartTime');
+            const endEl = document.getElementById('requestEndTime');
+            const preferred_date = dateEl ? dateEl.value : null;
+            const preferred_start = startEl ? startEl.value : null;
+            const preferred_end = endEl ? endEl.value : null;
+
+            try {
+                if (reqBtn) reqBtn.innerHTML = '<span class="small-spinner"></span> Mengirim...';
+                await api('/api/mentorship/mentor-requests', {
+                    method: 'POST',
+                    body: JSON.stringify({ mentor_id: activeMentor.id, message, preferred_date, preferred_start, preferred_end }),
+                });
+
+                showToast('Permintaan jadwal berhasil dikirim ke mentor.', 'success');
+                if (msgEl) msgEl.value = '';
+            } catch (err) {
+                showToast(err.message || 'Gagal mengirim permintaan jadwal.', 'error');
+            } finally {
+                if (reqBtn) {
+                    reqBtn.disabled = false;
+                    reqBtn.textContent = 'Minta Jadwal';
+                }
             }
         }
 
@@ -1685,6 +1986,10 @@
             });
 
             document.getElementById('closeModalBtn').addEventListener('click', () => {
+                state.currentSlots = [];
+                selectedSlotId = null;
+                const bookBtnEl = document.getElementById('bookBtn');
+                if (bookBtnEl) bookBtnEl.disabled = false;
                 mentorModal.classList.remove('show');
             });
 
@@ -1694,6 +1999,10 @@
 
             mentorModal.addEventListener('click', (event) => {
                 if (event.target === mentorModal) {
+                    state.currentSlots = [];
+                    selectedSlotId = null;
+                    const bookBtnEl = document.getElementById('bookBtn');
+                    if (bookBtnEl) bookBtnEl.disabled = false;
                     mentorModal.classList.remove('show');
                 }
             });

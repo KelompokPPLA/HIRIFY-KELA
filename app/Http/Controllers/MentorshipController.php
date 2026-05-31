@@ -347,9 +347,10 @@ class MentorshipController extends Controller
 
         $booking->load(['mentor.user']);
 
+        // Notification for jobseeker (you)
         UserNotification::create([
             'user_id' => $user->id,
-            'type' => 'jadwal',
+            'type' => 'booking',
             'title' => 'Booking mentorship dibuat',
             'message' => 'Booking sesi dengan ' . ($booking->mentor?->user?->name ?? 'mentor') . ' berhasil dibuat dan menunggu konfirmasi.',
             'action_url' => '/mentorship',
@@ -363,6 +364,24 @@ class MentorshipController extends Controller
             $booking->id,
             'Sesi mentorship dengan ' . ($booking->mentor?->user?->name ?? 'mentor') . ' berhasil dijadwalkan'
         );
+
+        // Notification for mentor (notify mentor user)
+        try {
+            $mentorUserId = $booking->mentor?->user?->id ?? null;
+            if ($mentorUserId) {
+                $startLabel = $booking->scheduled_start?->locale('id')->translatedFormat('D, d M Y • H:i') ?? null;
+                UserNotification::create([
+                    'user_id' => $mentorUserId,
+                    'type' => 'jadwal',
+                    'title' => 'Ada booking baru',
+                    'message' => ($user->name ?? 'Seorang user') . ' melakukan booking untuk ' . ($startLabel ?: 'waktu terjadwal') . '. Cek dan konfirmasi jadwal.',
+                    'action_url' => '/mentor/dashboard',
+                    'data' => ['booking_id' => $booking->id, 'jobseeker_user_id' => $user->id],
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // Non-fatal: don't block response if notification fails
+        }
 
         return ResponseHelper::jsonResponse(
             true,
@@ -543,7 +562,7 @@ class MentorshipController extends Controller
         }
 
         // Check if booking is completed
-        $isCompleted = $booking->status === 'completed' || 
+        $isCompleted = $booking->status === 'completed' ||
             ($booking->sesiJadwal && strtolower($booking->sesiJadwal->status) === 'completed');
 
         if (! $isCompleted) {
