@@ -21,6 +21,8 @@ use App\Http\Controllers\PortofolioController;
 use App\Http\Controllers\StreakController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\AdminMentorManagementController;
+use App\Http\Controllers\AdminTrainingModuleController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -137,9 +139,10 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
     Route::get('/lowongan/{id}', [JobController::class, 'show'])->name('jobs.show');
 
     /* ---------- Sertifikat Pelatihan (DEV-133) ---------- */
-    Route::get('/sertifikat',           [CertificateController::class, 'index'])->name('certificates.index');
-    Route::get('/sertifikat/{id}',      [CertificateController::class, 'show'])->name('certificates.show');
-    Route::get('/sertifikat/{id}/unduh',[CertificateController::class, 'download'])->name('certificates.download');
+    Route::get('/sertifikat',                    [CertificateController::class, 'index'])->name('certificates.index');
+    Route::get('/sertifikat/generate-completed', [CertificateController::class, 'generateForCompleted'])->name('certificates.generate');
+    Route::get('/sertifikat/{id}',               [CertificateController::class, 'show'])->name('certificates.show');
+    Route::get('/sertifikat/{id}/unduh',         [CertificateController::class, 'download'])->name('certificates.download');
 
 
     /* ---------- AUTH ACTION ---------- */
@@ -151,6 +154,22 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
         Route::get('/admin/statistics', [AdminStatisticsController::class, 'show'])->name('admin.statistics');
         Route::get('/admin/users', [AdminStatisticsController::class, 'users'])->name('admin.users');
         Route::get('/admin/activity', [AdminStatisticsController::class, 'activity'])->name('admin.activity');
+
+        // Admin Mentor Management
+        Route::get('/admin/mentors', [AdminMentorManagementController::class, 'index'])->name('admin.mentors.index');
+        Route::get('/admin/mentors/create', [AdminMentorManagementController::class, 'create'])->name('admin.mentors.create');
+        Route::post('/admin/mentors', [AdminMentorManagementController::class, 'store'])->name('admin.mentors.store');
+        Route::get('/admin/mentors/{id}/edit', [AdminMentorManagementController::class, 'edit'])->name('admin.mentors.edit');
+        Route::put('/admin/mentors/{id}', [AdminMentorManagementController::class, 'update'])->name('admin.mentors.update');
+        Route::delete('/admin/mentors/{id}', [AdminMentorManagementController::class, 'destroy'])->name('admin.mentors.destroy');
+
+        // Admin Training Module Management
+        Route::get('/admin/training-modules', [AdminTrainingModuleController::class, 'index'])->name('admin.training-modules.index');
+        Route::get('/admin/training-modules/create', [AdminTrainingModuleController::class, 'create'])->name('admin.training-modules.create');
+        Route::post('/admin/training-modules', [AdminTrainingModuleController::class, 'store'])->name('admin.training-modules.store');
+        Route::get('/admin/training-modules/{trainingModule}/edit', [AdminTrainingModuleController::class, 'edit'])->name('admin.training-modules.edit');
+        Route::put('/admin/training-modules/{trainingModule}', [AdminTrainingModuleController::class, 'update'])->name('admin.training-modules.update');
+        Route::delete('/admin/training-modules/{trainingModule}', [AdminTrainingModuleController::class, 'destroy'])->name('admin.training-modules.destroy');
     });
 
 
