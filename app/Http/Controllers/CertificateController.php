@@ -42,6 +42,34 @@ class CertificateController extends Controller
         return $pdf->download($filename);
     }
 
+    public function generateForCompleted()
+    {
+        $user = Auth::user();
+
+        $completedEnrollments = \App\Models\SkillEnrollment::with('course')
+            ->where('user_id', $user->id)
+            ->whereNotNull('completed_at')
+            ->get();
+
+        $generated = 0;
+        foreach ($completedEnrollments as $enrollment) {
+            if ($enrollment->course) {
+                $existing = \App\Models\TrainingCertificate::where('user_id', $user->id)
+                    ->where('skill_course_id', $enrollment->skill_course_id)
+                    ->first();
+                if (! $existing) {
+                    \App\Models\TrainingCertificate::issueForEnrollment($user, $enrollment->course);
+                    $generated++;
+                }
+            }
+        }
+
+        return redirect()->route('certificates.index')
+            ->with('success', $generated > 0
+                ? "{$generated} sertifikat berhasil digenerate!"
+                : 'Semua sertifikat sudah tersedia.');
+    }
+
     public function verify(Request $request)
     {
         $code = $request->query('code');
