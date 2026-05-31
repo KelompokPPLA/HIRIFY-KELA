@@ -31,6 +31,20 @@ class NotificationController extends Controller
         return view('notifikasi.index', compact('notifications', 'unreadCount', 'typeCounts', 'type', 'status'));
     }
 
+    // API: return JSON notifications for authenticated API user (for debugging)
+    public function apiIndex(Request $request)
+    {
+        $user = $request->user();
+
+        $notifications = UserNotification::query()
+            ->where('user_id', $user->id)
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return response()->json(['data' => $notifications]);
+    }
+
     public function markAsRead(Request $request, UserNotification $notification)
     {
         abort_unless($notification->user_id === $request->user()->id, 403);

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 /* ================= CONTROLLERS ================= */
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\AdminStatisticsController;
+use App\Http\Controllers\AdminTrainingModuleController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoadmapController;
@@ -15,6 +16,10 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\MenteeSayaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\GenerateController;
+use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\JobseekerFeedbackController;
+use App\Http\Controllers\AdminMentorManagementController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -63,6 +68,12 @@ Route::middleware('auth')->group(function () {
     // halaman buat CV ATS
     Route::get('/buat-cv-ats', [CvController::class, 'create'])->name('buat-cv-ats.index');
 
+    // handle buat CV ATS (form submit)
+    Route::post('/buat-cv-ats', [GenerateController::class, 'store'])->name('buat-cv-ats.store');
+
+    // Legacy/resource-compatible create route (used by some views)
+    Route::get('/cv/create', [CvController::class, 'create'])->name('cv.create');
+
     // generate CV
     Route::post('/cv', [GenerateController::class, 'store'])->name('cv.store');
 
@@ -105,7 +116,10 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
     ->name('notifikasi.read');
 
     // Mentorship
-    Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
+    Route::get('/mentorship', [\App\Http\Controllers\Web\MentorshipPageController::class, 'index'])->name('mentorship.index');
+
+    // Jobseeker feedback history
+    Route::get('/riwayat-feedback', [JobseekerFeedbackController::class, 'index'])->name('jobseeker.feedback.index');
 
 
     /* ---------- AUTH ACTION ---------- */
@@ -115,7 +129,27 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
     // ---- Admin Routes ----
     Route::middleware('role:admin')->group(function () {
         Route::get('/admin/statistics', [AdminStatisticsController::class, 'show'])->name('admin.statistics');
+        // Admin user management
         Route::get('/admin/users', [AdminStatisticsController::class, 'users'])->name('admin.users');
+        Route::get('/admin/users/create', [\App\Http\Controllers\AdminUserManagementController::class, 'create'])->name('admin.users.create');
+        Route::post('/admin/users', [\App\Http\Controllers\AdminUserManagementController::class, 'store'])->name('admin.users.store');
+        Route::get('/admin/users/{user}/edit', [\App\Http\Controllers\AdminUserManagementController::class, 'edit'])->name('admin.users.edit');
+        Route::patch('/admin/users/{user}', [\App\Http\Controllers\AdminUserManagementController::class, 'update'])->name('admin.users.update');
+        Route::delete('/admin/users/{user}', [\App\Http\Controllers\AdminUserManagementController::class, 'destroy'])->name('admin.users.destroy');
+        // Admin mentor management (index, create, store, edit, update, destroy)
+        Route::get('/admin/mentors', [AdminMentorManagementController::class, 'index'])->name('admin.mentors.index');
+        Route::get('/admin/mentors/create', [AdminMentorManagementController::class, 'create'])->name('admin.mentors.create');
+        Route::post('/admin/mentors', [AdminMentorManagementController::class, 'store'])->name('admin.mentors.store');
+        Route::get('/admin/mentors/{mentor}/edit', [AdminMentorManagementController::class, 'edit'])->name('admin.mentors.edit');
+        Route::patch('/admin/mentors/{mentor}', [AdminMentorManagementController::class, 'update'])->name('admin.mentors.update');
+        Route::delete('/admin/mentors/{mentor}', [AdminMentorManagementController::class, 'destroy'])->name('admin.mentors.destroy');
+        // Admin training modules
+        Route::get('/admin/training-modules', [AdminTrainingModuleController::class, 'index'])->name('admin.training-modules.index');
+        Route::get('/admin/training-modules/create', [AdminTrainingModuleController::class, 'create'])->name('admin.training-modules.create');
+        Route::post('/admin/training-modules', [AdminTrainingModuleController::class, 'store'])->name('admin.training-modules.store');
+        Route::get('/admin/training-modules/{trainingModule}/edit', [AdminTrainingModuleController::class, 'edit'])->name('admin.training-modules.edit');
+        Route::patch('/admin/training-modules/{trainingModule}', [AdminTrainingModuleController::class, 'update'])->name('admin.training-modules.update');
+        Route::delete('/admin/training-modules/{trainingModule}', [AdminTrainingModuleController::class, 'destroy'])->name('admin.training-modules.destroy');
         Route::get('/admin/activity', [AdminStatisticsController::class, 'activity'])->name('admin.activity');
     });
 
@@ -137,6 +171,9 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
         // booking
         Route::post('/bookings/{id}/accept', [MentorDashboardController::class, 'acceptBooking'])->name('bookings.accept');
         Route::post('/bookings/{id}/reject', [MentorDashboardController::class, 'rejectBooking'])->name('bookings.reject');
+        // backwards-compatible named routes used in views
+        Route::post('/bookings/{id}/accept', [MentorDashboardController::class, 'acceptBooking'])->name('mentor.bookings.accept');
+        Route::post('/bookings/{id}/reject', [MentorDashboardController::class, 'rejectBooking'])->name('mentor.bookings.reject');
     });
 
 });

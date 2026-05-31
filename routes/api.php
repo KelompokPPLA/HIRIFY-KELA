@@ -12,6 +12,8 @@ use App\Http\Controllers\SelfAssessmentController;
 use App\Http\Controllers\SkillTrainingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GenerateController;
+use App\Http\Controllers\MentorFollowerController;
+use App\Http\Controllers\MentorRequestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -92,7 +94,16 @@ Route::middleware(['auth:api', 'role:jobseeker'])->prefix('mentorship')->group(f
     Route::post('bookings', [MentorshipController::class, 'createBooking']);
     Route::get('bookings/my', [MentorshipController::class, 'myBookings']);
     Route::patch('bookings/{id}/cancel', [MentorshipController::class, 'cancelBooking']);
+    // Follow / Unfollow mentors
+    Route::post('mentors/{mentor}/follow', [MentorFollowerController::class, 'follow']);
+    Route::delete('mentors/{mentor}/follow', [MentorFollowerController::class, 'unfollow']);
+    Route::get('my-followed-mentors', [MentorFollowerController::class, 'listFollowed']);
+    // Mentor schedule requests (jobseeker)
+    Route::post('mentor-requests', [MentorRequestController::class, 'store']);
 });
+
+// Debug: expose notifications for authenticated API user
+Route::middleware('auth:api')->get('notifications/my', [\App\Http\Controllers\NotificationController::class, 'apiIndex']);
 
 // ============= CV ROUTES (JWT + web session supported) =============
 Route::middleware(['web', 'auth:api,web'])->group(function () {

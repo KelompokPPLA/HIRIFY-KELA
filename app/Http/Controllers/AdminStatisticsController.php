@@ -51,6 +51,37 @@ class AdminStatisticsController extends Controller
         return view('admin.users', ['users' => $users]);
     }
 
+    /**
+     * Remove a user (admin action).
+     */
+    public function destroy($id)
+    {
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            abort(403, 'Hanya admin yang dapat melakukan aksi ini.');
+        }
+
+        $user = User::find($id);
+        if (!$user) {
+            return redirect()->route('admin.users')->with('error', 'Pengguna tidak ditemukan.');
+        }
+
+        // Prevent deleting self
+        if ($user->id === auth()->id()) {
+            return redirect()->route('admin.users')->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+        }
+
+        try {
+            DB::transaction(function () use ($user) {
+                // If there are related models to cleanup, cascade or handle here.
+                $user->delete();
+            });
+
+            return redirect()->route('admin.users')->with('success', 'Pengguna berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.users')->with('error', 'Gagal menghapus pengguna: ' . $e->getMessage());
+        }
+    }
+
     public function activity()
     {
         if (!auth()->check() || auth()->user()->role !== 'admin') {
