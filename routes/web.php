@@ -80,6 +80,9 @@ Route::middleware('auth')->group(function () {
 
     // handle buat CV ATS (form submit)
     Route::post('/buat-cv-ats', [GenerateController::class, 'store'])->name('buat-cv-ats.store');
+    Route::get('/buat-cv-ats', [CvController::class, 'create'])->name('buat-cv-ats.create');
+    Route::post('/buat-cv-ats', [CvController::class, 'store'])->name('buat-cv-ats.store');
+    Route::get('/cv/{id}', [CvController::class, 'show'])->name('cv.show');
 
     // Legacy/resource-compatible create route (used by some views)
     Route::get('/cv/create', [CvController::class, 'create'])->name('cv.create');
@@ -133,6 +136,7 @@ Route::post('/notifikasi/read-all', [NotificationController::class, 'markAllAsRe
 Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 'markAsRead'])
     ->name('notifikasi.read');
 
+Route::get('/riwayat-feedback', [JobseekerFeedbackController::class, 'index'])->name('jobseeker.feedback.index');
     // Mentorship
     Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
 
