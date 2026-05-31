@@ -134,24 +134,48 @@
 <body>
     <main class="card">
         <h1>Lupa Password</h1>
-        <p>Masukkan email akun Hirify Anda. Kami akan kirim kode OTP untuk mereset password.</p>
+        <p>Masukkan email akun Hirify Anda. Kami akan kirim link reset password yang berlaku selama 60 menit.</p>
 
         @if ($errors->any())
             <div class="alert alert-error">{{ $errors->first() }}</div>
+        @endif
+
+        @if (session('status'))
+            <div class="alert alert-success">
+                ✅ {{ session('status') }}
+            </div>
         @endif
 
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        <form method="POST" action="{{ route('password.send-otp') }}">
+        <form method="POST" action="{{ route('password.send-link') }}">
             @csrf
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus>
+            <label for="email">Alamat Email</label>
+            <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus placeholder="nama@email.com">
 
-            <button type="submit">Kirim Kode OTP →</button>
+            <button type="submit">Kirim Link Reset Password →</button>
         </form>
 
+        <form method="POST" action="{{ route('password.send-otp') }}" style="margin-top:12px;">
+            @csrf
+            <input name="email" type="hidden" id="otp_email">
+            <p style="font-size:13px; color: var(--muted); margin:0;">
+                Lebih suka pakai OTP?
+                <button type="button" onclick="submitOtp()" style="background:none;border:none;color:#26c6da;font-weight:700;cursor:pointer;font-size:13px;padding:0;">
+                    Reset via OTP
+                </button>
+            </p>
+        </form>
+        <script>
+            function submitOtp() {
+                const email = document.getElementById('email').value;
+                if (!email) { alert('Masukkan email terlebih dahulu.'); return; }
+                document.getElementById('otp_email').value = email;
+                document.querySelector('form[action*="forgot-password-otp"]').submit();
+            }
+        </script>
         <p class="link"><a href="/login">← Kembali ke login</a></p>
     </main>
 </body>

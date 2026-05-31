@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Answer;
 use App\Models\Assessment;
 use App\Models\Question;
+use App\Services\StreakService;
 use Illuminate\Http\Request;
 
 class SelfAssessmentController extends Controller
@@ -64,6 +65,14 @@ class SelfAssessmentController extends Controller
             'total_score' => $totalScore,
             'result'      => $result,
         ]);
+
+        // ─── Career Streak: catat aktivitas self assessment ───
+        app(StreakService::class)->recordActivity(
+            auth()->user(),
+            'assessment',
+            null,
+            'Self assessment diselesaikan dengan skor ' . $totalScore
+        );
 
         return redirect()->route('assessment.result');
     }

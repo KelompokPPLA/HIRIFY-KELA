@@ -94,6 +94,7 @@ Route::middleware(['auth:api', 'role:jobseeker'])->prefix('mentorship')->group(f
     Route::post('bookings', [MentorshipController::class, 'createBooking']);
     Route::get('bookings/my', [MentorshipController::class, 'myBookings']);
     Route::patch('bookings/{id}/cancel', [MentorshipController::class, 'cancelBooking']);
+    Route::post('bookings/{id}/reviews', [MentorshipController::class, 'storeReview']);
     // Follow / Unfollow mentors
     Route::post('mentors/{mentor}/follow', [MentorFollowerController::class, 'follow']);
     Route::delete('mentors/{mentor}/follow', [MentorFollowerController::class, 'unfollow']);

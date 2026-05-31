@@ -92,6 +92,9 @@
         .menu {
             display: grid;
             gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 4px;
         }
 
         .menu button {
@@ -120,7 +123,7 @@
         }
 
         .profile-mini {
-            margin-top: auto;
+            flex-shrink: 0;
             background: #f8fbff;
             border: 1px solid var(--line);
             border-radius: 14px;
@@ -129,6 +132,9 @@
             align-items: center;
             gap: 10px;
         }
+        .logout-wrap { border-top: 1px solid var(--line); padding-top: 12px; flex-shrink: 0; }
+        .logout-btn { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: .88rem; font-weight: 600; color: #6c7a93; cursor: pointer; padding: 6px 0; transition: color .15s; width: 100%; }
+        .logout-btn:hover { color: #b42318; }
 
         .avatar-mini {
             width: 34px;
@@ -835,6 +841,31 @@
                 justify-content: flex-start;
             }
         }
+
+        /* Star Rating styles */
+        .star-rating {
+            display: inline-flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .star-rating label {
+            font-size: 3.2rem;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: color 0.15s ease, transform 0.1s ease;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: #fbbf24;
+        }
+
+        .star-rating label:active {
+            transform: scale(0.9);
+        }
     </style>
 </head>
 <body>
@@ -868,18 +899,6 @@
                     <span id="miniEmail">{{ auth()->user()->email ?? 'user@email.com' }}</span>
                 </div>
             </div>
-
-            <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="margin-top: 2px;">
-                @csrf
-                <button type="submit" class="logout-btn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    Keluar
-                </button>
-            </form>
         </aside>
 
         <main class="content">
@@ -1006,6 +1025,13 @@
                             <p id="slotDetailLabel" style="margin: 6px 0 0; color: #476186; font-size: 0.9rem; line-height: 1.5;"></p>
                         </div>
                     </div>
+
+                    <div style="margin-top: 20px; border-top: 1px solid var(--line); padding-top: 18px;">
+                        <p class="booking-label">Ulasan Pengguna</p>
+                        <div id="mentorReviewsList" class="upcoming-list" style="max-height: 250px; overflow-y: auto; gap: 8px;">
+                            <!-- Reviews will be rendered here -->
+                        </div>
+                    </div>
                 </div>
 
                 <div class="booking-footer">
@@ -1065,9 +1091,59 @@
                         <strong style="color: #0369a1; font-size: 1.05rem; display: block; margin-bottom: 6px;">Catatan Mentor</strong>
                         <p style="margin: 0; color: #0c4a6e; font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap;" id="detailNotes"></p>
                     </div>
+
+                    <div id="detailReviewBox" class="meta-box" style="margin-top: 14px; display: none; background: #fffbeb; border-color: #fde68a;">
+                        <strong style="color: #b45309; font-size: 1.05rem; display: block; margin-bottom: 6px;">Ulasan Anda</strong>
+                        <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 6px;">
+                            <span id="detailReviewStars" style="color: #fbbf24; font-size: 1.2rem; font-weight: 700;"></span>
+                            <span id="detailReviewRating" style="font-weight: 800; color: #78350f; font-size: 0.95rem;"></span>
+                        </div>
+                        <p style="margin: 0; color: #78350f; font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap;" id="detailReviewComment"></p>
+                    </div>
                 </div>
                 <div class="booking-footer" style="grid-template-columns: 1fr;">
                     <button id="closeDetailBtn" class="btn btn-ghost" style="width: 100%;" type="button">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Review Modal -->
+    <section id="reviewModal" class="modal">
+        <div class="modal-card booking-modal" style="width: min(500px, 100%);">
+            <div class="booking-scroll">
+                <div class="booking-head">
+                    <h3>Berikan Ulasan Mentor</h3>
+                    <p id="reviewModalSubtitle">Bagikan pengalaman mentoring Anda bersama mentor ini</p>
+                </div>
+                <div class="booking-body">
+                    <input type="hidden" id="reviewBookingId">
+
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <p class="booking-label" style="margin-bottom: 10px;">Rating Mentor</p>
+                        <div class="star-rating" style="display: inline-flex; flex-direction: row-reverse; gap: 8px; justify-content: center;">
+                            <input type="radio" id="star5" name="reviewRating" value="5" style="display:none;" />
+                            <label for="star5" class="star-label">★</label>
+                            <input type="radio" id="star4" name="reviewRating" value="4" style="display:none;" />
+                            <label for="star4" class="star-label">★</label>
+                            <input type="radio" id="star3" name="reviewRating" value="3" style="display:none;" />
+                            <label for="star3" class="star-label">★</label>
+                            <input type="radio" id="star2" name="reviewRating" value="2" style="display:none;" />
+                            <label for="star2" class="star-label">★</label>
+                            <input type="radio" id="star1" name="reviewRating" value="1" style="display:none;" />
+                            <label for="star1" class="star-label">★</label>
+                        </div>
+                        <p id="ratingErrorMessage" style="color: var(--danger); font-size: 0.85rem; margin-top: 5px; display: none;">Pilih rating bintang terlebih dahulu.</p>
+                    </div>
+
+                    <div>
+                        <p class="booking-label">Tulis Ulasan</p>
+                        <textarea id="reviewComment" class="textarea" style="min-height: 120px; resize: vertical;" placeholder="Tulis masukan konstruktif untuk mentor Anda (opsional)..."></textarea>
+                    </div>
+                </div>
+                <div class="booking-footer">
+                    <button id="closeReviewModalBtn" class="btn btn-ghost" type="button">Batal</button>
+                    <button id="submitReviewBtn" class="btn btn-solid" type="button">Kirim Ulasan</button>
                 </div>
             </div>
         </div>
@@ -1221,8 +1297,13 @@
                         <div class="mentor-bio">${escapeHtml((mentor.bio || 'Mentor profesional dengan pengalaman industri.').slice(0, 160))}</div>
 
                         <div class="mentor-foot">
-                            <div class="stats">
+                            <div class="stats" style="display: flex; align-items: center; gap: 12px;">
                                 <span>🗓️ ${escapeHtml(mentor.open_slots_count)} Sesi Tersedia</span>
+                                <span style="color: var(--line);">|</span>
+                                <span style="display: inline-flex; align-items: center; gap: 4px;">
+                                    <span style="color: #fbbf24; font-size: 1.1rem;">★</span>
+                                    <strong>${Number(mentor.rating).toFixed(1)}</strong>
+                                </span>
                             </div>
                         </div>
 
@@ -1290,6 +1371,10 @@
 
                 if (canCancel) {
                     buttonsHtml += `<button class="btn btn-danger" type="button" data-cancel-booking="${escapeHtml(booking.id)}">Batalkan</button>`;
+                }
+
+                if (booking.status === 'completed' && !booking.review) {
+                    buttonsHtml += `<button class="btn btn-brand" type="button" data-review-booking="${escapeHtml(booking.id)}">Beri Ulasan</button>`;
                 }
 
                 return `
@@ -1390,6 +1475,21 @@
                         notesBox.style.display = 'none';
                     }
 
+                    // Review details
+                    const reviewBox = document.getElementById('detailReviewBox');
+                    const reviewStarsEl = document.getElementById('detailReviewStars');
+                    const reviewRatingEl = document.getElementById('detailReviewRating');
+                    const reviewCommentEl = document.getElementById('detailReviewComment');
+
+                    if (booking.review) {
+                        reviewBox.style.display = 'block';
+                        reviewStarsEl.textContent = '★'.repeat(booking.review.rating) + '☆'.repeat(5 - booking.review.rating);
+                        reviewRatingEl.textContent = `(${booking.review.rating}/5)`;
+                        reviewCommentEl.textContent = booking.review.comment || 'Tidak ada ulasan tertulis.';
+                    } else {
+                        reviewBox.style.display = 'none';
+                    }
+
                     document.getElementById('detailModal').classList.add('show');
                 });
             });
@@ -1405,6 +1505,10 @@
 
             bookingList.querySelectorAll('[data-cancel-booking]').forEach((button) => {
                 button.addEventListener('click', () => cancelBooking(button.getAttribute('data-cancel-booking')));
+            });
+
+            bookingList.querySelectorAll('[data-review-booking]').forEach((button) => {
+                button.addEventListener('click', () => openReviewModal(button.getAttribute('data-review-booking')));
             });
         }
 
@@ -1498,6 +1602,7 @@
                 const response = await api(`/api/mentorship/mentors/${mentorId}`);
                 activeMentor = response.data?.mentor || null;
                 const slots = response.data?.availability_slots || [];
+                const reviews = response.data?.reviews || [];
                 state.currentSlots = slots;
                 selectedSlotId = null;
 
@@ -1663,6 +1768,25 @@
                     });
                 }
 
+                const reviewsListEl = document.getElementById('mentorReviewsList');
+                if (!reviews.length) {
+                    reviewsListEl.innerHTML = '<div class="empty" style="padding: 15px; grid-column:1/-1;">Belum ada ulasan untuk mentor ini.</div>';
+                } else {
+                    reviewsListEl.innerHTML = reviews.map((rev) => `
+                        <div class="upcoming-item" style="grid-template-columns: 1fr; background: #fafafa; border: 1px solid #eef2f6; border-radius: 12px; padding: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <strong style="font-size: 0.9rem; color: #1e293b;">${escapeHtml(rev.jobseeker_name)}</strong>
+                                <span style="font-size: 0.8rem; color: var(--muted);">${escapeHtml(rev.created_at)}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 2px; margin-bottom: 6px;">
+                                <span style="color: #fbbf24; font-size: 1rem;">${'★'.repeat(rev.rating) + '☆'.repeat(5 - rev.rating)}</span>
+                                <span style="font-size: 0.8rem; font-weight: 700; color: #475569;">(${rev.rating}/5)</span>
+                            </div>
+                            <p style="margin: 0; font-size: 0.85rem; color: #475569; line-height: 1.5;">${escapeHtml(rev.comment || 'Mentee tidak menulis ulasan tertulis.')}</p>
+                        </div>
+                    `).join('');
+                }
+
                 mentorModal.classList.add('show');
             } catch (error) {
                 showToast(error.message || 'Gagal membuka profil mentor.', 'error');
@@ -1723,6 +1847,70 @@
                 await Promise.all([loadMentors(), loadBookings(), loadUpcoming()]);
             } catch (error) {
                 showToast(error.message || 'Booking sesi gagal diproses.', 'error');
+            }
+        }
+
+        function openReviewModal(bookingId) {
+            document.getElementById('reviewBookingId').value = bookingId;
+
+            // Reset stars rating radio selection
+            const ratingInputs = document.getElementsByName('reviewRating');
+            ratingInputs.forEach(input => input.checked = false);
+
+            // Reset comment textarea
+            document.getElementById('reviewComment').value = '';
+
+            // Hide error message
+            document.getElementById('ratingErrorMessage').style.display = 'none';
+
+            // Open modal
+            document.getElementById('reviewModal').classList.add('show');
+        }
+
+        async function submitReview() {
+            const bookingId = document.getElementById('reviewBookingId').value;
+
+            // Find selected rating
+            const ratingInputs = document.getElementsByName('reviewRating');
+            let rating = null;
+            for (const input of ratingInputs) {
+                if (input.checked) {
+                    rating = input.value;
+                    break;
+                }
+            }
+
+            if (!rating) {
+                document.getElementById('ratingErrorMessage').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('ratingErrorMessage').style.display = 'none';
+
+            const comment = document.getElementById('reviewComment').value.trim();
+            const submitBtn = document.getElementById('submitReviewBtn');
+            const originalText = submitBtn.textContent;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Mengirim...';
+
+            try {
+                await api(`/api/mentorship/bookings/${bookingId}/reviews`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        rating: parseInt(rating),
+                        comment: comment || null
+                    })
+                });
+
+                showToast('Ulasan Anda berhasil dikirim!', 'success');
+                document.getElementById('reviewModal').classList.remove('show');
+                await Promise.all([loadBookings(), loadMentors()]);
+            } catch (error) {
+                showToast(error.message || 'Gagal mengirimkan ulasan.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         }
 
@@ -1820,6 +2008,19 @@
             });
 
             document.getElementById('bookBtn').addEventListener('click', submitBooking);
+
+            document.getElementById('closeReviewModalBtn').addEventListener('click', () => {
+                document.getElementById('reviewModal').classList.remove('show');
+            });
+
+            document.getElementById('submitReviewBtn').addEventListener('click', submitReview);
+
+            const reviewModal = document.getElementById('reviewModal');
+            reviewModal.addEventListener('click', (event) => {
+                if (event.target === reviewModal) {
+                    reviewModal.classList.remove('show');
+                }
+            });
 
             document.querySelector('[data-nav="dashboard"]').addEventListener('click', () => {
                 window.location.href = '/dashboard';

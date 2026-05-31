@@ -43,11 +43,14 @@
         }
         .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 28px; letter-spacing: -0.02em; }
         .brand-mark { width: 34px; height: 34px; border-radius: 12px; background: linear-gradient(145deg,#0399b7,#06d8ee); display: grid; place-items: center; color: #fff; font-size: 17px; font-weight: 800; flex-shrink: 0; }
-        .menu { display: grid; gap: 8px; }
+        .menu { display: grid; gap: 8px; flex: 1; overflow-y: auto; padding-bottom: 4px; }
+        .logout-wrap { border-top: 1px solid var(--line); padding-top: 12px; flex-shrink: 0; }
+        .logout-btn { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: .88rem; font-weight: 600; color: var(--muted); cursor: pointer; padding: 6px 0; transition: color .15s; width: 100%; }
+        .logout-btn:hover { color: #b42318; }
         .menu button { border: 0; background: transparent; color: #1a2a4c; font: inherit; font-size: .93rem; text-align: left; border-radius: 12px; padding: 11px 13px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; transition: background .15s; width: 100%; }
         .menu button:hover { background: #f2f8ff; }
         .menu button.active { background: linear-gradient(145deg,#0a1632,#111f45); color: #f2fbff; box-shadow: 0 8px 20px rgba(11,24,54,.2); }
-        .profile-mini { margin-top: auto; background: #f8fbff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 10px; }
+        .profile-mini { flex-shrink: 0; background: #f8fbff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 10px; }
         .avatar-mini { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(140deg,#0499b3,#05d5ef); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: .9rem; flex-shrink: 0; }
         .profile-mini strong { display: block; font-size: .88rem; }
         .profile-mini span { color: var(--muted); font-size: .78rem; }
@@ -199,7 +202,6 @@
             <button type="button" data-goto="/mentorship">Mentorship</button>
             <button type="button" data-goto="/riwayat-feedback">Riwayat Feedback</button>
             <button type="button" data-goto="/notifikasi">Notifikasi</button>
-            <button type="button" id="logoutBtn">Logout</button>
         </div>
         <div class="profile-mini">
             <div class="avatar-mini" id="miniAvatar">U</div>
@@ -207,6 +209,16 @@
                 <strong id="miniName">Loading…</strong>
                 <span id="miniEmail">-</span>
             </div>
+        </div>
+        <div class="logout-wrap">
+            <button type="button" id="logoutBtn" class="logout-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Keluar
+            </button>
         </div>
     </aside>
 

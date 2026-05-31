@@ -18,12 +18,20 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\DownloadController;
-use App\Http\Controllers\JobseekerFeedbackController;
+use App\Http\Controllers\PortofolioController;
+use App\Http\Controllers\StreakController;
+use App\Http\Controllers\JobController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\AdminMentorManagementController;
+use App\Http\Controllers\AdminTrainingModuleController;
+use App\Http\Controllers\JobseekerFeedbackController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Verifikasi sertifikat (publik, tanpa auth)
+Route::get('/sertifikat/verifikasi', [CertificateController::class, 'verify'])->name('certificates.verify');
 
 /* ============================================================
    PUBLIC ROUTES (GUEST ONLY)
@@ -37,14 +45,17 @@ Route::middleware('guest')->group(function () {
     Route::get('/register',  [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    // PASSWORD RESET
+    // PASSWORD RESET — Email Link (DEV-139)
     Route::get('/forgot-password',  [AuthController::class, 'showForgotPassword'])->name('password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendOtp'])->name('password.send-otp');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.send-link');
 
-    Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::get('/reset-password',  [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetWithToken'])->name('password.reset.token');
 
-    Route::get('/reset-password-otp',  [AuthController::class, 'showOtpReset'])->name('password.otp.show');
-    Route::post('/reset-password-otp', [AuthController::class, 'resetWithOtp'])->name('password.otp.reset');
+    // PASSWORD RESET — OTP (existing flow)
+    Route::post('/forgot-password-otp', [AuthController::class, 'sendOtp'])->name('password.send-otp');
+    Route::get('/reset-password-otp',   [AuthController::class, 'showOtpReset'])->name('password.otp.show');
+    Route::post('/reset-password-otp',  [AuthController::class, 'resetWithOtp'])->name('password.otp.reset');
 });
 
 /* ============================================================
@@ -62,8 +73,8 @@ Route::middleware('auth')->group(function () {
 
     /* ---------- CV MANAGEMENT ---------- */
 
-    // halaman list CV
-    Route::view('/manajemen-cv', 'jobseeker.manajemen-cv')->name('manajemen-cv.index');
+    // Halaman list semua CV milik user
+    Route::get('/cv',                [CvController::class, 'index'])   ->name('cv.index');
 
     // halaman buat CV ATS
     Route::get('/buat-cv-ats', [CvController::class, 'create'])->name('buat-cv-ats.index');
@@ -77,24 +88,32 @@ Route::middleware('auth')->group(function () {
     // generate CV
     Route::post('/cv', [GenerateController::class, 'store'])->name('cv.store');
 
-    // download CV
-    Route::get('/cv/{id}/download', [DownloadController::class, 'downloadPdf'])->name('cv.download');
+    // Download CV sebagai PDF
+    Route::get('/cv/{id}/download',  [CvController::class, 'download'])->name('cv.download');
 
-    // resource CV TANPA create (biar ga conflict)
-    Route::resource('cv', CvController::class)->except(['create']);
+    // Hapus CV
+    Route::delete('/cv/{id}',        [CvController::class, 'destroy']) ->name('cv.destroy');
 
-    // CV presentasi
-    Route::view('/buat-cv-presentasi', 'jobseeker.buat-cv-presentasi')->name('buat-cv-presentasi.index');
+    // Halaman manajemen CV (redirect ke cv.index)
+    Route::get('/manajemen-cv',      [CvController::class, 'index'])   ->name('manajemen-cv.index');
 
+    // Generate CV via API
+    Route::post('/cv/generate',      [GenerateController::class, 'store'])->name('cv.generate');
 
+    // CV presentasi (menggunakan CvPresentationController)
+    Route::get('/buat-cv-presentasi', [\App\Http\Controllers\CvPresentationController::class, 'index'])->name('buat-cv-presentasi.index');
+
+    /* ---------- Portofolio Management ---------- */
+    Route::resource('portofolio', PortofolioController::class);
+
+    /* ---------- Roadmap & Assessment ---------- */
     /* ---------- ROADMAP KARIER ---------- */
-    Route::get('/roadmap-karier', [RoadmapController::class, 'index'])->name('roadmap-karier');
-    Route::post('/roadmap-karier', [RoadmapController::class, 'store'])->name('roadmap-karier.store');
+    Route::get('/roadmap-karier',        [RoadmapController::class, 'index'])->name('roadmap-karier.index');
+    Route::post('/roadmap-karier',       [RoadmapController::class, 'store'])->name('roadmap-karier.store');
     Route::patch('/roadmap-karier/{id}', [RoadmapController::class, 'update'])->name('roadmap-karier.update');
 
-
     /* ---------- SELF ASSESSMENT ---------- */
-    Route::get('/self-assessment',   [SelfAssessmentController::class, 'index'])->name('self-assessment');
+    Route::get('/self-assessment',   [SelfAssessmentController::class, 'index'])->name('self-assessment.index');
     Route::post('/self-assessment',  [SelfAssessmentController::class, 'store'])->name('assessment.store');
     Route::get('/assessment/result', [SelfAssessmentController::class, 'result'])->name('assessment.result');
 
@@ -116,10 +135,21 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
     ->name('notifikasi.read');
 
     // Mentorship
-    Route::get('/mentorship', [\App\Http\Controllers\Web\MentorshipPageController::class, 'index'])->name('mentorship.index');
+    Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
 
-    // Jobseeker feedback history
-    Route::get('/riwayat-feedback', [JobseekerFeedbackController::class, 'index'])->name('jobseeker.feedback.index');
+    /* ---------- Career Streak ---------- */
+    Route::get('/streak',         [StreakController::class, 'index'])->name('streak.index');
+    Route::get('/streak/history', [StreakController::class, 'history'])->name('streak.history');
+
+    /* ---------- Lowongan Kerja (DEV-126) ---------- */
+    Route::get('/lowongan',      [JobController::class, 'index'])->name('jobs.index');
+    Route::get('/lowongan/{id}', [JobController::class, 'show'])->name('jobs.show');
+
+    /* ---------- Sertifikat Pelatihan (DEV-133) ---------- */
+    Route::get('/sertifikat',                    [CertificateController::class, 'index'])->name('certificates.index');
+    Route::get('/sertifikat/generate-completed', [CertificateController::class, 'generateForCompleted'])->name('certificates.generate');
+    Route::get('/sertifikat/{id}',               [CertificateController::class, 'show'])->name('certificates.show');
+    Route::get('/sertifikat/{id}/unduh',         [CertificateController::class, 'download'])->name('certificates.download');
 
 
     /* ---------- AUTH ACTION ---------- */
@@ -151,6 +181,22 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
         Route::patch('/admin/training-modules/{trainingModule}', [AdminTrainingModuleController::class, 'update'])->name('admin.training-modules.update');
         Route::delete('/admin/training-modules/{trainingModule}', [AdminTrainingModuleController::class, 'destroy'])->name('admin.training-modules.destroy');
         Route::get('/admin/activity', [AdminStatisticsController::class, 'activity'])->name('admin.activity');
+
+        // Admin Mentor Management
+        Route::get('/admin/mentors', [AdminMentorManagementController::class, 'index'])->name('admin.mentors.index');
+        Route::get('/admin/mentors/create', [AdminMentorManagementController::class, 'create'])->name('admin.mentors.create');
+        Route::post('/admin/mentors', [AdminMentorManagementController::class, 'store'])->name('admin.mentors.store');
+        Route::get('/admin/mentors/{id}/edit', [AdminMentorManagementController::class, 'edit'])->name('admin.mentors.edit');
+        Route::put('/admin/mentors/{id}', [AdminMentorManagementController::class, 'update'])->name('admin.mentors.update');
+        Route::delete('/admin/mentors/{id}', [AdminMentorManagementController::class, 'destroy'])->name('admin.mentors.destroy');
+
+        // Admin Training Module Management
+        Route::get('/admin/training-modules', [AdminTrainingModuleController::class, 'index'])->name('admin.training-modules.index');
+        Route::get('/admin/training-modules/create', [AdminTrainingModuleController::class, 'create'])->name('admin.training-modules.create');
+        Route::post('/admin/training-modules', [AdminTrainingModuleController::class, 'store'])->name('admin.training-modules.store');
+        Route::get('/admin/training-modules/{trainingModule}/edit', [AdminTrainingModuleController::class, 'edit'])->name('admin.training-modules.edit');
+        Route::put('/admin/training-modules/{trainingModule}', [AdminTrainingModuleController::class, 'update'])->name('admin.training-modules.update');
+        Route::delete('/admin/training-modules/{trainingModule}', [AdminTrainingModuleController::class, 'destroy'])->name('admin.training-modules.destroy');
     });
 
 
@@ -162,6 +208,7 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
         Route::post('sesi-jadwal/{id}/notes', [SesiJadwalController::class, 'addNotes'])->name('mentor.sesi-jadwal.notes');
         Route::resource('feedback', FeedbackController::class)->names('mentor.feedback');
         Route::get('/mentee', [MenteeSayaController::class, 'index'])->name('mentor.mentee.index');
+        Route::get('/mentee/{id}', [MenteeSayaController::class, 'show'])->name('mentor.mentee.show');
 
         // availability
         Route::post('/availability',        [MentorDashboardController::class, 'storeAvailability'])->name('availability.store');
@@ -169,9 +216,6 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
         Route::delete('/availability/{id}', [MentorDashboardController::class, 'destroyAvailability'])->name('availability.destroy');
 
         // booking
-        Route::post('/bookings/{id}/accept', [MentorDashboardController::class, 'acceptBooking'])->name('bookings.accept');
-        Route::post('/bookings/{id}/reject', [MentorDashboardController::class, 'rejectBooking'])->name('bookings.reject');
-        // backwards-compatible named routes used in views
         Route::post('/bookings/{id}/accept', [MentorDashboardController::class, 'acceptBooking'])->name('mentor.bookings.accept');
         Route::post('/bookings/{id}/reject', [MentorDashboardController::class, 'rejectBooking'])->name('mentor.bookings.reject');
     });

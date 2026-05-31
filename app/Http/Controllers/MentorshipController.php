@@ -12,6 +12,7 @@ use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
 use App\Models\SesiJadwal;
 use App\Models\UserNotification;
+use App\Services\StreakService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,7 @@ class MentorshipController extends Controller
 
         $query = Mentor::query()
             ->with('user')
+            ->withAvg('reviews', 'rating')
             ->withCount([
                 'availabilities as open_slots_count' => fn ($q) => $q
                     ->where('is_booked', false)
@@ -60,14 +62,8 @@ class MentorshipController extends Controller
 
         if ($request->filled('min_rating')) {
             $minRating = (float) $request->query('min_rating');
-            // Rating simulation: min(5, round(4.5 + ($count / 200), 1))
-            // To get 4.8+, count needs to be >= 60
-            // To get 4.5+, count needs to be >= 0
-            if ($minRating >= 4.8) {
-                $query->where('session_count', '>=', 60);
-            } elseif ($minRating >= 4.5) {
-                $query->where('session_count', '>=', 0);
-            }
+            // E.g., filters based on average reviews rating if reviews exist, or simulated fallback
+            $query->having(DB::raw('COALESCE(reviews_avg_rating, CASE WHEN session_count > 0 THEN LEAST(5, ROUND(4.5 + (session_count / 200), 1)) ELSE 4.8 END)'), '>=', $minRating);
         }
 
         switch ($sort) {
@@ -85,9 +81,10 @@ class MentorshipController extends Controller
         $paginator = $query->paginate($perPage);
 
         $items = $paginator->getCollection()->map(function (Mentor $mentor) {
-            $mentor->rating = $mentor->session_count > 0
+            $actualAvg = $mentor->reviews_avg_rating;
+            $mentor->rating = $actualAvg !== null ? round((float) $actualAvg, 1) : ($mentor->session_count > 0
                 ? min(5, round(4.5 + ($mentor->session_count / 200), 1))
-                : 4.8;
+                : 4.8);
 
             // Combine automated slots and manual slots for the display count
             $mentor->open_slots_count = $mentor->open_slots_count + $mentor->manual_slots_count;
@@ -110,6 +107,7 @@ class MentorshipController extends Controller
     {
         $user = $request->user();
         $mentor = Mentor::with(['user', 'certifications'])
+            ->withAvg('reviews', 'rating')
             ->withCount([
                 'availabilities as open_slots_count' => fn ($q) => $q
                     ->where('is_booked', false)
@@ -123,9 +121,10 @@ class MentorshipController extends Controller
             return ResponseHelper::jsonResponse(false, 'Profil mentor tidak ditemukan.', null, 404);
         }
 
-        $mentor->rating = $mentor->session_count > 0
+        $actualAvg = $mentor->reviews_avg_rating;
+        $mentor->rating = $actualAvg !== null ? round((float) $actualAvg, 1) : ($mentor->session_count > 0
             ? min(5, round(4.5 + ($mentor->session_count / 200), 1))
-            : 4.8;
+            : 4.8);
 
         $slots = MentorAvailability::query()
             ->where('mentor_id', $mentor->id)
@@ -168,6 +167,11 @@ class MentorshipController extends Controller
             ];
         }
 
+        $reviews = \App\Models\MentorReview::with('jobseeker')
+            ->where('mentor_id', $mentor->id)
+            ->orderByDesc('created_at')
+            ->get();
+
         return ResponseHelper::jsonResponse(true, 'Detail mentor berhasil diambil.', [
             'mentor' => (new MentorMarketplaceResource($mentor))->toArray(request()),
             'certifications' => $mentor->certifications->map(fn ($item) => [
@@ -176,6 +180,13 @@ class MentorshipController extends Controller
                 'file_url' => $item->file_path ? asset('storage/' . $item->file_path) : null,
             ])->values()->all(),
             'availability_slots' => $slotItems,
+            'reviews' => $reviews->map(fn ($item) => [
+                'id' => $item->id,
+                'rating' => $item->rating,
+                'comment' => $item->comment,
+                'created_at' => $item->created_at->locale('id')->diffForHumans(),
+                'jobseeker_name' => $item->jobseeker?->name ?? 'User',
+            ])->all(),
         ], 200);
     }
 
@@ -345,6 +356,14 @@ class MentorshipController extends Controller
             'action_url' => '/mentorship',
             'data' => ['booking_id' => $booking->id, 'status' => 'pending'],
         ]);
+
+        // Career Streak: catat aktivitas mentorship
+        app(StreakService::class)->recordActivity(
+            $user,
+            'mentorship',
+            $booking->id,
+            'Sesi mentorship dengan ' . ($booking->mentor?->user?->name ?? 'mentor') . ' berhasil dijadwalkan'
+        );
 
         // Notification for mentor (notify mentor user)
         try {
@@ -522,6 +541,58 @@ class MentorshipController extends Controller
             'Booking berhasil dibatalkan.',
             (new MentorBookingResource($booking))->toArray(request()),
             200
+        );
+    }
+
+    public function storeReview(Request $request, string $id)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
+        ]);
+
+        $user = $request->user();
+
+        $booking = MentorBooking::where('id', $id)
+            ->where('jobseeker_user_id', $user->id)
+            ->first();
+
+        if (! $booking) {
+            return ResponseHelper::jsonResponse(false, 'Booking tidak ditemukan.', null, 404);
+        }
+
+        // Check if booking is completed
+        $isCompleted = $booking->status === 'completed' ||
+            ($booking->sesiJadwal && strtolower($booking->sesiJadwal->status) === 'completed');
+
+        if (! $isCompleted) {
+            return ResponseHelper::jsonResponse(false, 'Anda hanya dapat memberikan ulasan untuk sesi mentoring yang telah selesai.', null, 400);
+        }
+
+        // Check if already reviewed
+        $existingReview = \App\Models\MentorReview::where('mentor_booking_id', $booking->id)->exists();
+        if ($existingReview) {
+            return ResponseHelper::jsonResponse(false, 'Anda sudah memberikan ulasan untuk sesi mentoring ini.', null, 400);
+        }
+
+        $review = \App\Models\MentorReview::create([
+            'mentor_booking_id' => $booking->id,
+            'mentor_id' => $booking->mentor_id,
+            'jobseeker_user_id' => $user->id,
+            'rating' => $request->input('rating'),
+            'comment' => $request->input('comment'),
+        ]);
+
+        return ResponseHelper::jsonResponse(
+            true,
+            'Ulasan berhasil dikirim. Terima kasih atas masukan Anda!',
+            [
+                'id' => $review->id,
+                'rating' => $review->rating,
+                'comment' => $review->comment,
+                'created_at' => $review->created_at->toIso8601String(),
+            ],
+            201
         );
     }
 }

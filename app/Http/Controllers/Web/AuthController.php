@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\LoginRequest;
 use App\Http\Requests\Web\RegisterRequest;
+use App\Mail\ResetPasswordMail;
 use App\Models\PasswordOtp;
+use App\Models\PasswordResetLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
@@ -182,14 +186,120 @@ class AuthController extends Controller
     }
 
     /**
-     * Show reset password form.
+     * Kirim link reset password ke email (token-based, valid 60 menit).
+     */
+    public function sendResetLink(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $email = $request->input('email');
+        $user  = User::where('email', $email)->first();
+
+        // Selalu tampilkan pesan yang sama untuk mencegah email enumeration
+        $genericMessage = 'Jika email terdaftar, link reset password telah dikirim. Periksa kotak masuk Anda.';
+
+        if (! $user) {
+            return back()->with('status', $genericMessage)->withInput();
+        }
+
+        // Hapus token lama yang belum dipakai agar tidak menumpuk
+        PasswordResetLog::where('email', $email)
+            ->where('status', 'requested')
+            ->update(['status' => 'expired']);
+
+        $token     = Str::random(64);
+        $expiresAt = now()->addMinutes(60);
+
+        // Simpan ke tabel password_reset_logs untuk audit
+        PasswordResetLog::create([
+            'email'      => $email,
+            'token'      => hash('sha256', $token),
+            'status'     => 'requested',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'expires_at' => $expiresAt,
+        ]);
+
+        $resetUrl = route('password.reset', [
+            'token' => $token,
+            'email' => $email,
+        ]);
+
+        Mail::to($email)->send(new ResetPasswordMail($resetUrl, $user->name, '60'));
+
+        return back()->with('status', $genericMessage);
+    }
+
+    /**
+     * Show reset password form (token-based dari email link).
      */
     public function showResetPassword(Request $request)
     {
+        $token = $request->query('token');
+        $email = $request->query('email');
+
+        if (! $token || ! $email) {
+            return redirect()->route('password.request')
+                ->with('error', 'Link reset password tidak valid.');
+        }
+
+        $log = PasswordResetLog::where('email', $email)
+            ->where('token', hash('sha256', $token))
+            ->where('status', 'requested')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        if (! $log) {
+            return redirect()->route('password.request')
+                ->with('error', 'Link reset password sudah kadaluarsa atau tidak valid. Silakan minta link baru.');
+        }
+
         return view('auth.reset-password', [
-            'token' => $request->query('token'),
-            'email' => $request->query('email'),
+            'token' => $token,
+            'email' => $email,
         ]);
+    }
+
+    /**
+     * Proses reset password menggunakan token dari email.
+     */
+    public function resetWithToken(Request $request)
+    {
+        $validated = $request->validate([
+            'token'                 => 'required|string',
+            'email'                 => 'required|email',
+            'password'              => 'required|string|min:8|confirmed|regex:/^(?=.*[A-Za-z])(?=.*\d).+$/',
+            'password_confirmation' => 'required|string|min:8',
+        ], [
+            'password.regex' => 'Password harus mengandung minimal 1 huruf dan 1 angka.',
+        ]);
+
+        $log = PasswordResetLog::where('email', $validated['email'])
+            ->where('token', hash('sha256', $validated['token']))
+            ->where('status', 'requested')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        if (! $log) {
+            return back()->withErrors(['token' => 'Link reset password tidak valid atau sudah kadaluarsa.']);
+        }
+
+        $user = User::where('email', $validated['email'])->first();
+
+        if (! $user) {
+            return back()->withErrors(['email' => 'Email tidak ditemukan.']);
+        }
+
+        $user->forceFill([
+            'password' => Hash::make($validated['password']),
+        ])->save();
+
+        $log->markAsUsed();
+
+        return redirect()->route('login')
+            ->with('success', 'Password berhasil diubah. Silakan login dengan password baru Anda.');
     }
 
     /**

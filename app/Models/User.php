@@ -86,8 +86,36 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Cv::class);
     }
 
+    public function portofolios()
+    {
+        return $this->hasMany(Portofolio::class);
+    }
+
+    public function mentorReviews()
+    {
+        return $this->hasMany(MentorReview::class, 'jobseeker_user_id');
+    }
+    
     public function userNotifications()
     {
         return $this->hasMany(UserNotification::class);
+    }
+
+    public function streak()
+    {
+        return $this->hasOne(UserStreak::class);
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    public function streakBadges()
+    {
+        return $this->belongsToMany(StreakBadge::class, 'user_streak_badges')
+                    ->withPivot('earned_at')
+                    ->withTimestamps()
+                    ->orderByPivot('earned_at', 'desc');
     }
 }
