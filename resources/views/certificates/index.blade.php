@@ -9,12 +9,18 @@
             <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Sertifikat Saya</h1>
             <p class="text-gray-500 mt-1">Koleksi sertifikat pelatihan yang telah Anda selesaikan di Hirify.</p>
         </div>
-        @if($totalCertificates > 0)
-        <div class="bg-cyan-50 border border-cyan-200 rounded-2xl px-5 py-3 text-center flex-shrink-0">
-            <p class="text-2xl font-black text-cyan-600">{{ $totalCertificates }}</p>
-            <p class="text-xs text-cyan-500 font-semibold">Sertifikat Diraih</p>
+        <div class="flex items-center gap-3 flex-shrink-0">
+            @if($totalCertificates > 0)
+            <div class="bg-cyan-50 border border-cyan-200 rounded-2xl px-5 py-3 text-center">
+                <p class="text-2xl font-black text-cyan-600">{{ $totalCertificates }}</p>
+                <p class="text-xs text-cyan-500 font-semibold">Sertifikat Diraih</p>
+            </div>
+            @endif
+            <a href="{{ route('certificates.generate') }}"
+               class="bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition">
+                🔄 Sync Sertifikat
+            </a>
         </div>
-        @endif
     </div>
 
     @if(session('success'))

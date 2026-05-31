@@ -18,8 +18,8 @@ return new class extends Migration
             $table->enum('status', ['requested', 'used', 'expired'])->default('requested');
             $table->string('ip_address', 45)->nullable();
             $table->string('user_agent')->nullable();
-            $table->timestamp('used_at')->nullable();
-            $table->timestamp('expires_at');
+            $table->dateTime('used_at')->nullable();
+            $table->dateTime('expires_at');
             $table->timestamps();
 
             $table->index('email');
