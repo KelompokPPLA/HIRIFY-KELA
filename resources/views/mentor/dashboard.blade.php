@@ -301,6 +301,124 @@
 
     </div>
 
+    <!-- ============================================================ -->
+    <!-- Ulasan dari Mentee Section (Full Width)                       -->
+    <!-- ============================================================ -->
+    <div class="mt-10">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                Ulasan dari Mentee
+                @if($mentorReviews->count() > 0)
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-600">{{ $mentorReviews->count() }}</span>
+                @endif
+            </h2>
+            @if($mentorReviews->count() > 0)
+                <div class="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-2">
+                    <div class="flex items-center gap-0.5">
+                        @for($s = 1; $s <= 5; $s++)
+                            <svg class="w-4 h-4 {{ $s <= round($avgRating) ? 'text-amber-400' : 'text-slate-200' }}" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        @endfor
+                    </div>
+                    <span class="text-sm font-black text-amber-600">{{ $avgRating }}</span>
+                    <span class="text-xs text-slate-400 font-semibold">/ 5</span>
+                </div>
+            @endif
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.02)] p-6 sm:p-8">
+            @if($mentorReviews->isEmpty())
+                <div class="py-16 text-center">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                        </svg>
+                    </div>
+                    <p class="text-slate-400 font-semibold text-sm">Belum ada ulasan dari mentee saat ini.</p>
+                    <p class="text-slate-300 text-xs font-medium mt-1">Ulasan akan muncul setelah mentee menyelesaikan sesi dan memberikan penilaian.</p>
+                </div>
+            @else
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    @foreach($mentorReviews as $review)
+                        @php
+                            $reviewerName = $review->jobseeker->name ?? 'Mentee';
+                            $reviewerInitial = strtoupper(substr($reviewerName, 0, 1));
+                            $reviewColors = [
+                                'from-[#00bee4] to-[#0ea5e9]',
+                                'from-[#10b981] to-[#047857]',
+                                'from-[#6366f1] to-[#4338ca]',
+                                'from-[#f59e0b] to-[#d97706]',
+                                'from-[#ec4899] to-[#be185d]',
+                            ];
+                            $reviewGradient = $reviewColors[crc32($reviewerName) % count($reviewColors)];
+                        @endphp
+                        <div class="group relative flex flex-col gap-3 p-5 rounded-2xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:border-slate-200 hover:shadow-md transition-all duration-200">
+                            <!-- Header: Avatar + Name + Date -->
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br {{ $reviewGradient }} text-white flex items-center justify-center font-extrabold text-sm shadow-sm select-none shrink-0">
+                                    {{ $reviewerInitial }}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-slate-800 text-sm leading-tight truncate">{{ $reviewerName }}</h4>
+                                    <p class="text-[10px] text-slate-400 font-semibold mt-0.5 uppercase tracking-wide">
+                                        {{ $review->created_at ? $review->created_at->locale('id')->translatedFormat('d M Y') : '-' }}
+                                    </p>
+                                </div>
+                                <!-- Rating Badge -->
+                                <div class="shrink-0 flex items-center gap-1 bg-amber-50 border border-amber-100/80 rounded-xl px-2.5 py-1">
+                                    <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                    <span class="text-xs font-black text-amber-600">{{ $review->rating }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Star Row -->
+                            <div class="flex items-center gap-0.5">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <svg class="w-4 h-4 {{ $i <= $review->rating ? 'text-amber-400' : 'text-slate-200' }}" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                @endfor
+                            </div>
+
+                            <!-- Comment -->
+                            @if($review->comment)
+                                <p class="text-sm text-slate-600 font-medium leading-relaxed line-clamp-3">
+                                    "{{ $review->comment }}"
+                                </p>
+                            @else
+                                <p class="text-sm text-slate-300 font-medium italic">Tidak ada komentar.</p>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+
+                <!-- Summary Footer -->
+                <div class="mt-6 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-6 text-sm text-slate-500 font-semibold">
+                        <span>Total <strong class="text-slate-800">{{ $mentorReviews->count() }}</strong> ulasan</span>
+                        <span class="hidden sm:block w-px h-4 bg-slate-200"></span>
+                        @php
+                            $ratingDist = $mentorReviews->groupBy('rating')->map->count();
+                        @endphp
+                        @foreach([5,4,3,2,1] as $star)
+                            <span class="flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <span class="text-xs font-bold text-slate-600">{{ $star }}</span>
+                                <span class="text-xs text-slate-400">({{ $ratingDist[$star] ?? 0 }})</span>
+                            </span>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
 </div>
 @endsection
 
