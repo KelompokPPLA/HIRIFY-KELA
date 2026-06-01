@@ -39,6 +39,7 @@ class SesiJadwalController extends Controller
     {
         $data = $request->validate([
             'topic' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'date' => 'required|date',
             'time' => 'required',
             'duration' => 'required|integer|min:1',
@@ -79,6 +80,7 @@ class SesiJadwalController extends Controller
 
         $data = $request->validate([
             'topic' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'date' => 'required|date',
             'time' => 'required',
             'duration' => 'required|integer|min:1',

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->uuid('mentor_id');
             $table->string('topic');
+            $table->text('description')->nullable();
             $table->date('date');
             $table->time('time');
             $table->integer('duration');
