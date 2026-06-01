@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MentorAvailability;
 use App\Models\MentorBooking;
+use App\Models\MentorReview;
 use App\Models\SesiJadwal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,7 @@ class MentorDashboardController extends Controller
         $sessions = collect();
         $pendingBookings = collect();
         $acceptedBookings = collect();
+        $mentorReviews = collect();
         $totalMenteesCount = 0;
         $sessionsThisMonthCount = 0;
         $menteesThisMonthCount = 0;
@@ -70,12 +72,26 @@ class MentorDashboardController extends Controller
             $avgRating = $dbRating ? round($dbRating, 1) : 0.0;
 
             $earningsFormatted = 'Rp ' . number_format(($totalMenteesCount * 200000) / 1000000, 1, ',', '.') . 'jt';
+
+            // Ambil semua ulasan dari Mentee (Jobseeker) untuk mentor ini
+            if ($mentor) {
+                $mentorReviews = MentorReview::where('mentor_id', $mentor->id)
+                    ->with('jobseeker')
+                    ->orderByDesc('created_at')
+                    ->get();
+
+                // Override avgRating dengan data dari mentor_reviews jika ada
+                if ($mentorReviews->isNotEmpty()) {
+                    $avgRating = round($mentorReviews->avg('rating'), 1);
+                }
+            }
         }
 
         return view('mentor.dashboard', compact(
             'sessions',
             'pendingBookings',
             'acceptedBookings',
+            'mentorReviews',
             'totalMenteesCount',
             'sessionsThisMonthCount',
             'menteesThisMonthCount',
