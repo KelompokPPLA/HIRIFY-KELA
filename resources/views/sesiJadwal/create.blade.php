@@ -45,6 +45,14 @@
                         placeholder="Misal: CV Review & Interview Preparation">
                 </div>
 
+                <!-- Description -->
+                <div>
+                    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Deskripsi / Keterangan Sesi</label>
+                    <textarea name="description" rows="3" 
+                        class="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00bee4] outline-none transition duration-200 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-100/50" 
+                        placeholder="Tambahkan detail atau deskripsi mengenai sesi mentoring ini...">{{ old('description') }}</textarea>
+                </div>
+
                 <!-- Date & Time Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>

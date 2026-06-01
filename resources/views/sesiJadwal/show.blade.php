@@ -89,6 +89,14 @@
                             </div>
                         </div>
                     @endif
+
+                    <!-- Deskripsi Sesi -->
+                    @if($session->description)
+                        <div class="pt-4 border-t border-slate-100">
+                            <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Deskripsi / Keterangan Sesi</h4>
+                            <p class="text-slate-600 text-sm font-semibold leading-relaxed whitespace-pre-wrap">{{ $session->description }}</p>
+                        </div>
+                    @endif
                 </div>
 
                 @php

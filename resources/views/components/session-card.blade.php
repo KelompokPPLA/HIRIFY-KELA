@@ -141,6 +141,12 @@
             @endif
         </div>
 
+        @if($session->description)
+            <p class="text-xs text-slate-400 font-semibold mb-4 line-clamp-2 leading-relaxed">
+                {{ $session->description }}
+            </p>
+        @endif
+
         <!-- Card Body Details -->
         <div class="space-y-3 mb-6 flex-1">
             <!-- Date -->
