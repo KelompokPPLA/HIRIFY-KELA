@@ -1022,7 +1022,8 @@
                             <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink);">
                                 <span id="slotDetailDate"></span> <span style="color: var(--line);">|</span> <span id="slotDetailTime"></span>
                             </div>
-                            <p id="slotDetailLabel" style="margin: 6px 0 0; color: #476186; font-size: 0.9rem; line-height: 1.5;"></p>
+                            <p id="slotDetailLabel" style="margin: 6px 0 0; color: #476186; font-size: 0.9rem; line-height: 1.5; font-weight: 700;"></p>
+                            <p id="slotDetailDescription" style="margin: 6px 0 0; color: var(--muted); font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; display: none;"></p>
                         </div>
                     </div>
 
@@ -1065,6 +1066,11 @@
                     <div class="meta-box" style="margin-top: 14px;">
                         <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Topik Sesi</strong>
                         <p style="margin: 0; color: #476186; font-size: 0.9rem; line-height: 1.5;" id="detailLabel"></p>
+                    </div>
+
+                    <div id="detailDescriptionBox" class="meta-box" style="margin-top: 14px; display: none;">
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Deskripsi / Keterangan Sesi</strong>
+                        <p style="margin: 0; color: #476186; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;" id="detailDescription"></p>
                     </div>
 
                     <div id="detailPlatformBox" class="meta-box" style="margin-top: 14px; display: none;">
@@ -1423,6 +1429,16 @@
                     const topic = booking.session_topic || booking.booking_notes || 'Sesi mentoring reguler.';
                     document.getElementById('detailLabel').textContent = topic;
 
+                    // Description
+                    const descBox = document.getElementById('detailDescriptionBox');
+                    const descEl = document.getElementById('detailDescription');
+                    if (booking.session_description) {
+                        descBox.style.display = 'block';
+                        descEl.textContent = booking.session_description;
+                    } else {
+                        descBox.style.display = 'none';
+                    }
+
                     // Platform
                     const platformBox = document.getElementById('detailPlatformBox');
                     const platformEl = document.getElementById('detailPlatform');
@@ -1761,6 +1777,15 @@
                                 document.getElementById('slotDetailDate').textContent = ((selectedSlot.display_date || '-') + (selectedSlot.display_time ? ' • ' + selectedSlot.display_time : ''));
                                 document.getElementById('slotDetailTime').textContent = '';
                                 document.getElementById('slotDetailLabel').textContent = selectedSlot.label || 'Sesi mentoring reguler.';
+                                
+                                const slotDescEl = document.getElementById('slotDetailDescription');
+                                if (selectedSlot.description) {
+                                    slotDescEl.style.display = 'block';
+                                    slotDescEl.textContent = selectedSlot.description;
+                                } else {
+                                    slotDescEl.style.display = 'none';
+                                }
+                                
                                 // enable confirm booking button now that a slot is selected
                                 if (bookBtnEl) bookBtnEl.disabled = false;
                             }

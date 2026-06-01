@@ -14,6 +14,7 @@ class SesiJadwal extends Model
     protected $fillable = [
         'mentor_id',
         'topic',
+        'description',
         'date',
         'time',
         'duration',

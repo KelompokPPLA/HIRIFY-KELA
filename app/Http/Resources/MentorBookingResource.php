@@ -52,6 +52,7 @@ class MentorBookingResource extends JsonResource
             'sesi_jadwal_id' => $this->sesi_jadwal_id,
             'session_topic' => $this->sesiJadwal?->topic,
             'session_notes' => $this->sesiJadwal?->notes,
+            'session_description' => $this->sesiJadwal?->description,
             'platform' => $this->sesiJadwal?->platform,
             'material_url' => $this->sesiJadwal?->material_file ? Storage::url($this->sesiJadwal->material_file) : null,
             'review' => $this->review ? [

@@ -161,6 +161,7 @@ class MentorshipController extends Controller
                 'start_at' => $startAt->toIso8601String(),
                 'end_at' => $endAt->toIso8601String(),
                 'label' => $session->topic,
+                'description' => $session->description,
                 'is_booked' => false,
                 'display_date' => $startAt->locale('id')->translatedFormat('D, d M Y'),
                 'display_time' => $startAt->format('H:i') . ' - ' . $endAt->format('H:i'),
