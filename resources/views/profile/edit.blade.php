@@ -20,7 +20,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+    <form id="profileForm" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8">
@@ -49,55 +49,39 @@
                     <div class="mt-6 grid gap-4 sm:grid-cols-2">
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Nama Lengkap</span>
-                            <input id="nameInput" type="text" name="name" value="{{ old('name', $user->name) }}"
-                                class="w-full rounded-2xl border {{ $errors->has('name') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required
-                                oninvalid="this.setCustomValidity('Nama lengkap wajib di isi.')"
-                                oninput="this.setCustomValidity('')" />
-                            @error('name')
-                                <p class="text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <input id="nameInput" type="text" name="name" value="{{ old('name', $user->name) }}" maxlength="100"
+                                class="w-full rounded-2xl border {{ $errors->has('name') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required />
+                            <p class="text-xs text-slate-500 mt-1">Maksimal 60 karakter.</p>
                         </label>
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Email</span>
                             <input id="emailInput" type="email" name="email" value="{{ old('email', $user->email) }}"
-                                class="w-full rounded-2xl border {{ $errors->has('email') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required
-                                oninvalid="if (this.validity.valueMissing) { this.setCustomValidity('Email wajib di isi.'); } else { this.setCustomValidity('Format email tidak valid.'); }"
-                                oninput="this.setCustomValidity('')" />
-                            @error('email')
-                                <p class="text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                                class="w-full rounded-2xl border {{ $errors->has('email') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required />
+                            <p class="text-xs text-slate-500 mt-1">Gunakan format email yang valid.</p>
                         </label>
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Telepon</span>
                             <input id="phoneInput" type="text" name="phone" value="{{ old('phone', $profile?->phone ?? '') }}"
                                 class="w-full rounded-2xl border {{ $errors->has('phone') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
-                            @error('phone')
-                                <p class="text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <p class="text-xs text-slate-500 mt-1">Gunakan format 08xxxxxxxxxx (10-15 digit).</p>
                         </label>
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Lokasi</span>
-                            <input id="locationInput" type="text" name="location" value="{{ old('location', $profile?->location ?? '') }}"
+                            <input id="locationInput" type="text" name="location" value="{{ old('location', $profile?->location ?? '') }}" maxlength="100"
                                 class="w-full rounded-2xl border {{ $errors->has('location') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
-                            @error('location')
-                                <p class="text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <p class="text-xs text-slate-500 mt-1">Maksimal 50 karakter.</p>
                         </label>
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Foto Profil</span>
-                            <input id="photoInput" type="file" name="photo" accept="image/*"
+                            <input id="photoInput" type="file" name="photo" accept=".jpg,.jpeg,.png"
                                 class="w-full rounded-2xl border {{ $errors->has('photo') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
-                            @error('photo')
-                                <p class="text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <p class="text-xs text-slate-500 mt-1">Format JPG, JPEG, PNG. Maksimal 2 MB.</p>
                         </label>
                         <label class="space-y-2 text-sm sm:col-span-2">
                             <span class="text-slate-600">Bio</span>
-                            <textarea id="bioInput" name="bio" rows="3"
+                            <textarea id="bioInput" name="bio" rows="3" maxlength="500"
                                 class="w-full rounded-2xl border {{ $errors->has('bio') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 resize-none">{{ old('bio', $profile?->bio ?? '') }}</textarea>
-                            @error('bio')
-                                <p class="text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <p class="text-xs text-slate-500 mt-1">Maksimal 500 karakter.</p>
                         </label>
                     </div>
                 </div>
@@ -305,16 +289,19 @@
             <div class="grid gap-4 md:grid-cols-2">
                 <label class="space-y-2 text-sm">
                     <span class="text-slate-600">Institusi</span>
-                    <input name="pendidikan[${index}][institusi]" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Universitas Indonesia" value="${escAttr(data.institusi || '')}" oninvalid="this.setCustomValidity('Institusi pendidikan wajib di isi.')" oninput="this.setCustomValidity('')" />
+                    <input name="pendidikan[${index}][institusi]" required maxlength="100" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Universitas Indonesia" value="${escAttr(data.institusi || '')}" oninvalid="this.setCustomValidity('Institusi pendidikan wajib di isi.')" oninput="this.setCustomValidity('')" />
+                    <p class="text-xs text-slate-500 mt-1">Maksimal 100 karakter.</p>
                 </label>
                 <label class="space-y-2 text-sm">
                     <span class="text-slate-600">Gelar</span>
-                    <input name="pendidikan[${index}][gelar]" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Sarjana Teknik Informatika" value="${escAttr(data.gelar || '')}" oninvalid="this.setCustomValidity('Gelar pendidikan wajib di isi.')" oninput="this.setCustomValidity('')" />
+                    <input name="pendidikan[${index}][gelar]" required maxlength="100" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Sarjana Teknik Informatika" value="${escAttr(data.gelar || '')}" oninvalid="this.setCustomValidity('Gelar pendidikan wajib di isi.')" oninput="this.setCustomValidity('')" />
+                    <p class="text-xs text-slate-500 mt-1">Maksimal 100 karakter.</p>
                 </label>
             </div>
             <label class="mt-4 space-y-2 text-sm block">
                 <span class="text-slate-600">Tahun / Periode</span>
-                <input name="pendidikan[${index}][tahun]" required class="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="2019 - 2023" value="${escAttr(data.tahun || '')}" oninvalid="this.setCustomValidity('Tahun pendidikan wajib di isi.')" oninput="this.setCustomValidity('')" />
+                <input name="pendidikan[${index}][tahun]" required class="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="2019-2023" value="${escAttr(data.tahun || '')}" oninvalid="this.setCustomValidity('Tahun pendidikan wajib di isi.')" oninput="this.setCustomValidity('')" />
+                <p class="text-xs text-slate-500 mt-1">Format: YYYY-YYYY (contoh: 2019-2023).</p>
             </label>
         `;
         educationSection.appendChild(wrapper);
@@ -336,20 +323,26 @@
             <div class="grid gap-4 md:grid-cols-2">
                 <label class="space-y-2 text-sm">
                     <span class="text-slate-600">Posisi</span>
-                    <input name="pengalaman[${index}][posisi]" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Frontend Developer" value="${escAttr(data.posisi || '')}" oninvalid="this.setCustomValidity('Posisi wajib di isi.')" oninput="this.setCustomValidity('')" />
+                    <input name="pengalaman[${index}][posisi]" required maxlength="100" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Frontend Developer" value="${escAttr(data.posisi || '')}" oninvalid="this.setCustomValidity('Posisi wajib di isi.')" oninput="this.setCustomValidity('')" />
+                    <p class="text-xs text-slate-500 mt-1">Maksimal 100 karakter.</p>
                 </label>
                 <label class="space-y-2 text-sm">
                     <span class="text-slate-600">Perusahaan</span>
-                    <input name="pengalaman[${index}][perusahaan]" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Tech Startup Indonesia" value="${escAttr(data.perusahaan || '')}" oninvalid="this.setCustomValidity('Perusahaan wajib di isi.')" oninput="this.setCustomValidity('')" />
+                    <input name="pengalaman[${index}][perusahaan]" required maxlength="100" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Tech Startup Indonesia" value="${escAttr(data.perusahaan || '')}" oninvalid="this.setCustomValidity('Perusahaan wajib di isi.')" oninput="this.setCustomValidity('')" />
+                    <p class="text-xs text-slate-500 mt-1">Maksimal 100 karakter.</p>
                 </label>
             </div>
             <label class="mt-4 space-y-2 text-sm block">
                 <span class="text-slate-600">Periode</span>
                 <input name="pengalaman[${index}][periode]" required class="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" placeholder="Jun 2022 - Des 2022" value="${escAttr(data.periode || '')}" oninvalid="this.setCustomValidity('Periode kerja wajib di isi.')" oninput="this.setCustomValidity('')" />
+                <p class="text-xs text-slate-500 mt-1">Format: MMM YYYY - MMM YYYY (contoh: Jun 2022 - Jul 2026).</p>
             </label>
             <label class="mt-4 space-y-2 text-sm block">
-                <span class="text-slate-600">Deskripsi Pekerjaan</span>
-                <textarea name="pengalaman[${index}][deskripsi]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" rows="3" placeholder="Tuliskan tanggung jawab dan pencapaian utama...">${escHtml(data.deskripsi || '')}</textarea>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-slate-600">Deskripsi Pekerjaan</span>
+                    <span class="text-xs text-slate-400" id="counter-${index}">${data.deskripsi ? data.deskripsi.length : 0}/500 karakter</span>
+                </div>
+                <textarea name="pengalaman[${index}][deskripsi]" maxlength="500" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" rows="3" placeholder="Tuliskan tanggung jawab dan pencapaian utama..." oninput="document.getElementById('counter-${index}').innerText = this.value.length + '/500 karakter'">${escHtml(data.deskripsi || '')}</textarea>
             </label>
         `;
         experienceSection.appendChild(wrapper);
@@ -393,5 +386,110 @@
     }
 
     renderInitialCvSections();
+
+    // Validasi Form & SweetAlert
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('nameInput').value.trim();
+        const email = document.getElementById('emailInput').value.trim();
+        const phone = document.getElementById('phoneInput').value.trim();
+        const location = document.getElementById('locationInput').value.trim();
+        const bio = document.getElementById('bioInput').value.trim();
+        const photo = document.getElementById('photoInput').files[0];
+        
+        let errors = [];
+
+        if (name.length === 0) {
+            errors.push('Nama lengkap wajib diisi.');
+        } else if (name.length > 100) {
+            errors.push('Nama lengkap maksimal 100 karakter.');
+        }
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email.length === 0) {
+            errors.push('Email wajib diisi.');
+        } else if (!emailPattern.test(email)) {
+            errors.push('Format email tidak valid.');
+        }
+
+        if (phone.length > 0) {
+            const phonePattern = /^08[0-9]{8,13}$/;
+            if (!phonePattern.test(phone)) {
+                errors.push('Nomor telepon harus diawali dengan 08 dan terdiri dari 10-15 digit.');
+            }
+        }
+
+        if (location.length > 100) {
+            errors.push('Lokasi maksimal 100 karakter.');
+        }
+
+        if (bio.length > 500) {
+            errors.push('Bio maksimal 500 karakter.');
+        }
+
+        if (photo) {
+            const allowedExtensions = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!allowedExtensions.includes(photo.type)) {
+                errors.push('Format foto profil harus JPG, JPEG, atau PNG.');
+            } else if (photo.size > 2 * 1024 * 1024) {
+                errors.push('Ukuran foto profil maksimal 2 MB.');
+            }
+        }
+
+        const institusis = document.querySelectorAll('input[name^="pendidikan"][name$="[institusi]"]');
+        const gelars = document.querySelectorAll('input[name^="pendidikan"][name$="[gelar]"]');
+        const tahuns = document.querySelectorAll('input[name^="pendidikan"][name$="[tahun]"]');
+
+        institusis.forEach(input => {
+            if(input.value.length > 100) errors.push('Nama institusi maksimal 100 karakter.');
+        });
+        gelars.forEach(input => {
+            if(input.value.length > 100) errors.push('Nama gelar maksimal 100 karakter.');
+        });
+        tahuns.forEach(input => {
+            if(!/^\d{4}-\d{4}$/.test(input.value)) errors.push('Format periode pendidikan harus YYYY-YYYY (contoh: 2019-2023).');
+        });
+
+        const posisis = document.querySelectorAll('input[name^="pengalaman"][name$="[posisi]"]');
+        const perusahaans = document.querySelectorAll('input[name^="pengalaman"][name$="[perusahaan]"]');
+        const periodes = document.querySelectorAll('input[name^="pengalaman"][name$="[periode]"]');
+        const deskripsis = document.querySelectorAll('textarea[name^="pengalaman"][name$="[deskripsi]"]');
+
+        posisis.forEach(input => {
+            if(input.value.length > 100) errors.push('Nama posisi maksimal 100 karakter.');
+        });
+        perusahaans.forEach(input => {
+            if(input.value.length > 100) errors.push('Nama perusahaan maksimal 100 karakter.');
+        });
+        periodes.forEach(input => {
+            if(!/^[a-zA-Z]{3} \d{4} - [a-zA-Z]{3} \d{4}$/.test(input.value)) errors.push('Format periode kerja harus MMM YYYY - MMM YYYY (contoh: Jun 2022 - Jul 2026).');
+        });
+        deskripsis.forEach(input => {
+            if(input.value.length > 500) errors.push('Deskripsi pekerjaan maksimal 500 karakter.');
+        });
+
+        if (errors.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validasi Gagal',
+                html: '<ul class="text-left list-disc list-inside text-sm">' + errors.map(err => `<li>${err}</li>`).join('') + '</ul>',
+                confirmButtonColor: '#0f172a'
+            });
+        } else {
+            this.submit();
+        }
+    });
+
+    // Menampilkan error dari backend menggunakan SweetAlert (jika ada)
+    @if($errors->any())
+        Swal.fire({
+            icon: 'error',
+            title: 'Validasi Gagal',
+            html: '<ul class="text-left list-disc list-inside text-sm">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>',
+            confirmButtonColor: '#0f172a'
+        });
+    @endif
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endsection
