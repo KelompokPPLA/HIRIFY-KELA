@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Models\Cv;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class CvService
 {
@@ -180,7 +183,90 @@ class CvService
             return false;
         }
 
+        // Hapus file dari storage jika ada
+        if ($cv->file_path && Storage::disk('public')->exists($cv->file_path)) {
+            Storage::disk('public')->delete($cv->file_path);
+        }
+
         return (bool) $cv->delete();
+    }
+
+    /**
+     * Upload a PDF file and create a CV entry.
+     */
+    public function uploadFile(UploadedFile $file, string $userId): Cv
+    {
+        // Pastikan direktori cv ada
+        $cvDir = storage_path('app/public/cv');
+        if (!File::isDirectory($cvDir)) {
+            File::makeDirectory($cvDir, 0755, true);
+        }
+
+        $originalName = $file->getClientOriginalName();
+        $uniqueName   = time() . '_' . uniqid() . '_' . $originalName;
+        $path         = $file->storeAs('cv', $uniqueName, 'public');
+
+        if (!$path) {
+            throw new \RuntimeException('Gagal menyimpan file CV.');
+        }
+
+        $namaLengkap = pathinfo($originalName, PATHINFO_FILENAME);
+
+        $cv = Cv::create([
+            'user_id'      => $userId,
+            'nama_lengkap' => $namaLengkap,
+            'email'        => auth()->user()->email ?? '-',
+            'telepon'      => '-',
+            'alamat'       => null,
+            'linkedin'     => null,
+            'ringkasan'    => null,
+            'file_path'    => $path,
+            'file_name'    => $originalName,
+            'file_type'    => $file->getClientMimeType(),
+            'file_size'    => $file->getSize(),
+        ]);
+
+        return $cv->load(['educations', 'experiences', 'skills']);
+    }
+
+    /**
+     * Update/replace the uploaded PDF file for an existing CV.
+     */
+    public function replaceFile(string $id, UploadedFile $file, string $userId): ?Cv
+    {
+        $cv = Cv::where('id', $id)->where('user_id', $userId)->first();
+
+        if (!$cv) {
+            return null;
+        }
+
+        // Hapus file lama jika ada
+        if ($cv->file_path && Storage::disk('public')->exists($cv->file_path)) {
+            Storage::disk('public')->delete($cv->file_path);
+        }
+
+        // Simpan file baru
+        $cvDir = storage_path('app/public/cv');
+        if (!File::isDirectory($cvDir)) {
+            File::makeDirectory($cvDir, 0755, true);
+        }
+
+        $originalName = $file->getClientOriginalName();
+        $uniqueName   = time() . '_' . uniqid() . '_' . $originalName;
+        $path         = $file->storeAs('cv', $uniqueName, 'public');
+
+        if (!$path) {
+            throw new \RuntimeException('Gagal menyimpan file CV.');
+        }
+
+        $cv->update([
+            'file_path' => $path,
+            'file_name' => $originalName,
+            'file_type' => $file->getClientMimeType(),
+            'file_size' => $file->getSize(),
+        ]);
+
+        return $cv->load(['educations', 'experiences', 'skills']);
     }
 
     /* ============================================================

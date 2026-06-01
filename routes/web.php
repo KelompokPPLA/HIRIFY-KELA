@@ -82,7 +82,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/buat-cv-ats', [GenerateController::class, 'store'])->name('buat-cv-ats.store');
     Route::get('/buat-cv-ats', [CvController::class, 'create'])->name('buat-cv-ats.create');
     Route::post('/buat-cv-ats', [CvController::class, 'store'])->name('buat-cv-ats.store');
-    Route::get('/cv/{id}', [CvController::class, 'show'])->name('cv.show');
+
+    // Upload CV (PDF) — specific routes BEFORE {id} catch-all
+    Route::post('/cv/upload',        [CvController::class, 'uploadFile'])->name('cv.upload');
 
     // Legacy/resource-compatible create route (used by some views)
     Route::get('/cv/create', [CvController::class, 'create'])->name('cv.create');
@@ -90,8 +92,17 @@ Route::middleware('auth')->group(function () {
     // generate CV
     Route::post('/cv', [GenerateController::class, 'store'])->name('cv.store');
 
+    // Lihat CV
+    Route::get('/cv/{id}', [CvController::class, 'show'])->name('cv.show');
+
     // Download CV sebagai PDF
     Route::get('/cv/{id}/download',  [CvController::class, 'download'])->name('cv.download');
+
+    // Update data CV
+    Route::put('/cv/{id}',           [CvController::class, 'update'])  ->name('cv.update');
+
+    // Ganti file CV (upload ulang PDF)
+    Route::post('/cv/{id}/replace',  [CvController::class, 'replaceFile'])->name('cv.replace');
 
     // Hapus CV
     Route::delete('/cv/{id}',        [CvController::class, 'destroy']) ->name('cv.destroy');
