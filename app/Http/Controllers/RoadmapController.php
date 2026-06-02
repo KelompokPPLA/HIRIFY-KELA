@@ -144,7 +144,7 @@ class RoadmapController extends Controller
             ]);
         }
 
-        return redirect()->route('roadmap-karier')->with('success', "Roadmap {$careerField} berhasil dibuat!");
+        return redirect()->route('roadmap-karier.index')->with('success', "Roadmap {$careerField} berhasil dibuat!");
     }
 
     private function careerPathOptions(): array
