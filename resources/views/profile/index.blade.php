@@ -76,7 +76,12 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="mt-3 text-sm text-slate-500">Informasi pendidikan akan segera tersedia di versi berikutnya.</p>
+                        <div class="mt-4 p-6 border-2 border-dashed border-slate-100 rounded-2xl text-center">
+                            <p class="text-sm text-slate-500">Anda belum menambahkan riwayat pendidikan apa pun.</p>
+                            <a href="{{ route('profile.edit') }}" class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-slate-900 px-3.5 py-2 rounded-xl hover:bg-slate-800 transition-colors">
+                                + Tambah Pendidikan
+                            </a>
+                        </div>
                     @endif
                 </div>
 
@@ -95,7 +100,12 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="mt-3 text-sm text-slate-500">Informasi pengalaman kerja akan segera tersedia di versi berikutnya.</p>
+                        <div class="mt-4 p-6 border-2 border-dashed border-slate-100 rounded-2xl text-center">
+                            <p class="text-sm text-slate-500">Anda belum menambahkan pengalaman kerja apa pun.</p>
+                            <a href="{{ route('profile.edit') }}" class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-slate-900 px-3.5 py-2 rounded-xl hover:bg-slate-800 transition-colors">
+                                + Tambah Pengalaman Kerja
+                            </a>
+                        </div>
                     @endif
                 </div>
 
