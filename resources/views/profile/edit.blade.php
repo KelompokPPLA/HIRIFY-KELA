@@ -48,10 +48,14 @@
 
                     <div class="mt-6 grid gap-4 sm:grid-cols-2">
                         <label class="space-y-2 text-sm">
-                            <span class="text-slate-600">Nama Lengkap</span>
-                            <input id="nameInput" type="text" name="name" value="{{ old('name', $user->name) }}" maxlength="100"
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-slate-600">Nama Lengkap</span>
+                                <span class="text-xs text-slate-400" id="nameCounter">0/60 karakter</span>
+                            </div>
+                            <input id="nameInput" type="text" name="name" value="{{ old('name', $user->name) }}"
                                 class="w-full rounded-2xl border {{ $errors->has('name') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" required />
-                            <p class="text-xs text-slate-500 mt-1">Maksimal 60 karakter.</p>
+                            <p id="nameError" class="hidden text-xs text-red-500 mt-1">Maksimal 60 karakter.</p>
+                            <p id="nameHint" class="text-xs text-slate-500 mt-1 {{ $errors->has('name') ? 'hidden' : '' }}">Maksimal 60 karakter.</p>
                         </label>
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Email</span>
@@ -63,7 +67,7 @@
                             <span class="text-slate-600">Telepon</span>
                             <input id="phoneInput" type="text" name="phone" value="{{ old('phone', $profile?->phone ?? '') }}"
                                 class="w-full rounded-2xl border {{ $errors->has('phone') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
-                            <p class="text-xs text-slate-500 mt-1">Gunakan format 08xxxxxxxxxx (10-15 digit).</p>
+                            <p class="text-xs text-slate-500 mt-1">Gunakan format 08xxxxxxxxxx (10-13 digit).</p>
                         </label>
                         <label class="space-y-2 text-sm">
                             <span class="text-slate-600">Lokasi</span>
@@ -78,10 +82,14 @@
                             <p class="text-xs text-slate-500 mt-1">Format JPG, JPEG, PNG. Maksimal 2 MB.</p>
                         </label>
                         <label class="space-y-2 text-sm sm:col-span-2">
-                            <span class="text-slate-600">Bio</span>
-                            <textarea id="bioInput" name="bio" rows="3" maxlength="500"
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-slate-600">Bio</span>
+                                <span class="text-xs text-slate-400" id="bioCounter">0/500 karakter</span>
+                            </div>
+                            <textarea id="bioInput" name="bio" rows="3"
                                 class="w-full rounded-2xl border {{ $errors->has('bio') ? 'border-red-500' : 'border-slate-200' }} bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 resize-none">{{ old('bio', $profile?->bio ?? '') }}</textarea>
-                            <p class="text-xs text-slate-500 mt-1">Maksimal 500 karakter.</p>
+                            <p id="bioError" class="hidden text-xs text-red-500 mt-1">Maksimal 500 karakter.</p>
+                            <p id="bioHint" class="text-xs text-slate-500 mt-1 {{ $errors->has('bio') ? 'hidden' : '' }}">Maksimal 500 karakter.</p>
                         </label>
                     </div>
                 </div>
@@ -214,6 +222,67 @@
         previewLocation.textContent = normalizeEmpty(locationInput.value);
         previewBio.textContent = normalizeEmpty(bioInput.value === '' ? '{{ $profile?->bio ?? '' }}' : bioInput.value);
         updateInitials(nameInput.value || '{{ $user->name }}');
+        
+        // Validation length check for Bio
+        const len = bioInput.value.length;
+        const counter = document.getElementById('bioCounter');
+        const errorMsg = document.getElementById('bioError');
+        const hintMsg = document.getElementById('bioHint');
+        
+        if (counter) counter.innerText = len + '/500 karakter';
+        
+        if (len > 500) {
+            bioInput.classList.remove('border-slate-200', 'focus:border-slate-900', 'focus:ring-slate-900/10');
+            bioInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500/10');
+            if (counter) { counter.classList.add('text-red-500'); counter.classList.remove('text-slate-400'); }
+            if (errorMsg) errorMsg.classList.remove('hidden');
+            if (hintMsg) hintMsg.classList.add('hidden');
+        } else {
+            bioInput.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500/10');
+            bioInput.classList.add('border-slate-200', 'focus:border-slate-900', 'focus:ring-slate-900/10');
+            if (counter) { counter.classList.remove('text-red-500'); counter.classList.add('text-slate-400'); }
+            if (errorMsg) errorMsg.classList.add('hidden');
+            if (hintMsg) hintMsg.classList.remove('hidden');
+        }
+        
+        // Validation length check for Name
+        const nameLen = nameInput.value.length;
+        const nameCounter = document.getElementById('nameCounter');
+        const nameErrorMsg = document.getElementById('nameError');
+        const nameHintMsg = document.getElementById('nameHint');
+        
+        if (nameCounter) nameCounter.innerText = nameLen + '/60 karakter';
+        
+        let hasNameError = false;
+        let nameErrMsg = '';
+        
+        if (nameLen > 60) {
+            hasNameError = true;
+            nameErrMsg = 'Maksimal 60 karakter.';
+        } else if (nameLen > 0 && nameLen < 2) {
+            hasNameError = true;
+            nameErrMsg = 'Nama minimal 2 karakter.';
+        } else if (nameInput.value.trim() && !/^[a-zA-Z\s]+$/.test(nameInput.value)) {
+            hasNameError = true;
+            nameErrMsg = 'Nama hanya boleh mengandung huruf.';
+        }
+        
+        if (hasNameError) {
+            nameInput.classList.remove('border-slate-200', 'focus:border-slate-900', 'focus:ring-slate-900/10');
+            nameInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500/10');
+            if (nameCounter) { nameCounter.classList.add('text-red-500'); nameCounter.classList.remove('text-slate-400'); }
+            if (nameErrorMsg) {
+                nameErrorMsg.innerText = nameErrMsg;
+                nameErrorMsg.classList.remove('hidden');
+            }
+            if (nameHintMsg) nameHintMsg.classList.add('hidden');
+        } else {
+            nameInput.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500/10');
+            nameInput.classList.add('border-slate-200', 'focus:border-slate-900', 'focus:ring-slate-900/10');
+            if (nameCounter) { nameCounter.classList.remove('text-red-500'); nameCounter.classList.add('text-slate-400'); }
+            if (nameErrorMsg) nameErrorMsg.classList.add('hidden');
+            if (nameHintMsg) nameHintMsg.classList.remove('hidden');
+        }
     }
 
     nameInput.addEventListener('input', updatePreview);
@@ -221,6 +290,9 @@
     phoneInput.addEventListener('input', updatePreview);
     locationInput.addEventListener('input', updatePreview);
     bioInput.addEventListener('input', updatePreview);
+    
+    // Initial call to set bio counter
+    updatePreview();
 
     photoInput.addEventListener('change', function () {
         const file = this.files?.[0];
@@ -234,6 +306,26 @@
                     previewInitials.classList.toggle('hidden', !!previewAvatar.src);
                 }
             }
+            return;
+        }
+
+        const allowedExtensions = ['image/jpeg', 'image/png', 'image/jpg'];
+        let errorMsg = null;
+        
+        if (!allowedExtensions.includes(file.type)) {
+            errorMsg = 'Format foto profil harus JPG, JPEG, atau PNG.';
+        } else if (file.size > 2 * 1024 * 1024) {
+            errorMsg = 'Ukuran foto maksimal 2MB';
+        }
+
+        if (errorMsg) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validasi Gagal',
+                html: `<ul class="text-left list-disc list-inside text-sm"><li>${errorMsg}</li></ul>`,
+                confirmButtonColor: '#0f172a'
+            });
+            this.value = ''; // Clear the invalid file
             return;
         }
 
@@ -264,6 +356,26 @@
 
     function escHtml(value) {
         return String(value ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function handleDescInput(textarea, index) {
+        const len = textarea.value.length;
+        const counter = document.getElementById('counter-' + index);
+        const errorMsg = document.getElementById('error-desc-' + index);
+        
+        if (counter) counter.innerText = len + '/500 karakter';
+        
+        if (len > 500) {
+            textarea.classList.remove('border-slate-200', 'focus:border-slate-900', 'focus:ring-slate-900/10');
+            textarea.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500/10');
+            if (counter) { counter.classList.add('text-red-500'); counter.classList.remove('text-slate-400'); }
+            if (errorMsg) errorMsg.classList.remove('hidden');
+        } else {
+            textarea.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500/10');
+            textarea.classList.add('border-slate-200', 'focus:border-slate-900', 'focus:ring-slate-900/10');
+            if (counter) { counter.classList.remove('text-red-500'); counter.classList.add('text-slate-400'); }
+            if (errorMsg) errorMsg.classList.add('hidden');
+        }
     }
 
     function removeBlock(id) {
@@ -342,7 +454,8 @@
                     <span class="text-slate-600">Deskripsi Pekerjaan</span>
                     <span class="text-xs text-slate-400" id="counter-${index}">${data.deskripsi ? data.deskripsi.length : 0}/500 karakter</span>
                 </div>
-                <textarea name="pengalaman[${index}][deskripsi]" maxlength="500" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" rows="3" placeholder="Tuliskan tanggung jawab dan pencapaian utama..." oninput="document.getElementById('counter-${index}').innerText = this.value.length + '/500 karakter'">${escHtml(data.deskripsi || '')}</textarea>
+                <textarea name="pengalaman[${index}][deskripsi]" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10" rows="3" placeholder="Tuliskan tanggung jawab dan pencapaian utama..." oninput="handleDescInput(this, ${index})">${escHtml(data.deskripsi || '')}</textarea>
+                <p id="error-desc-${index}" class="hidden text-xs text-red-500 mt-1">Maksimal 500 karakter.</p>
             </label>
         `;
         experienceSection.appendChild(wrapper);
@@ -402,8 +515,12 @@
 
         if (name.length === 0) {
             errors.push('Nama lengkap wajib diisi.');
-        } else if (name.length > 100) {
-            errors.push('Nama lengkap maksimal 100 karakter.');
+        } else if (name.length < 2) {
+            errors.push('Nama minimal 2 karakter.');
+        } else if (name.length > 60) {
+            errors.push('Nama lengkap maksimal 60 karakter.');
+        } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+            errors.push('Nama hanya boleh mengandung huruf.');
         }
 
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -413,10 +530,16 @@
             errors.push('Format email tidak valid.');
         }
 
-        if (phone.length > 0) {
-            const phonePattern = /^08[0-9]{8,13}$/;
+        if (phone.length === 0) {
+            errors.push('Nomor handphone tidak boleh kosong.');
+        } else if (phone.length < 10) {
+            errors.push('Nomor telepon minimal 10 digit.');
+        } else if (phone.length > 13) {
+            errors.push('Nomor telepon maksimal 13 digit.');
+        } else {
+            const phonePattern = /^08[0-9]{8,11}$/;
             if (!phonePattern.test(phone)) {
-                errors.push('Nomor telepon harus diawali dengan 08 dan terdiri dari 10-15 digit.');
+                errors.push('Nomor telepon harus diawali dengan 08 dan hanya terdiri dari angka.');
             }
         }
 
@@ -433,7 +556,7 @@
             if (!allowedExtensions.includes(photo.type)) {
                 errors.push('Format foto profil harus JPG, JPEG, atau PNG.');
             } else if (photo.size > 2 * 1024 * 1024) {
-                errors.push('Ukuran foto profil maksimal 2 MB.');
+                errors.push('Ukuran foto maksimal 2MB');
             }
         }
 
