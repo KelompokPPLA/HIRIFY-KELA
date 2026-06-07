@@ -149,7 +149,7 @@ Route::patch('/notifikasi/{notification}/read', [NotificationController::class, 
 
 Route::get('/riwayat-feedback', [JobseekerFeedbackController::class, 'index'])->name('jobseeker.feedback.index');
     // Mentorship
-    Route::view('/mentorship', 'jobseeker.mentorship')->name('mentorship.index');
+    Route::get('/mentorship', [\App\Http\Controllers\Web\MentorshipPageController::class, 'index'])->name('mentorship.index');
 
     /* ---------- Career Streak ---------- */
     Route::get('/streak',         [StreakController::class, 'index'])->name('streak.index');
