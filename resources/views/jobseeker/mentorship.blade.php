@@ -1,2116 +1,1314 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hirify | Mentorship</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-
-        :root {
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --ink: #0f172a;
-            --muted: #64748b;
-            --line: #e2e8f0;
-            --brand: #06b6d4;
-            --brand-dark: #0891b2;
-            --deep: #020617;
-            --ok: #10b981;
-            --warn: #f59e0b;
-            --danger: #ef4444;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * { box-sizing: border-box; }
-
-        .small-spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(0,0,0,0.12);
-            border-top-color: var(--brand);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            vertical-align: middle;
-            margin-right: 6px;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        body {
-            margin: 0;
-            font-family: 'Manrope', sans-serif;
-            color: var(--ink);
-            background:
-                radial-gradient(circle at 5% 15%, rgba(6, 203, 229, 0.16), transparent 24%),
-                radial-gradient(circle at 95% 5%, rgba(6, 203, 229, 0.12), transparent 20%),
-                var(--bg);
-        }
-
-        .layout {
-            min-height: 100vh;
-            display: grid;
-            grid-template-columns: 250px 1fr;
-        }
-
-        .sidebar {
-            background: #ffffff;
-            border-right: 1px solid var(--line);
-            padding: 22px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 800;
-            font-size: 30px;
-            letter-spacing: -0.02em;
-        }
-
-        .brand-mark {
-            width: 34px;
-            height: 34px;
-            border-radius: 12px;
-            background: linear-gradient(145deg, #0399b7, #06d8ee);
-            display: grid;
-            place-items: center;
-            color: #fff;
-            font-size: 17px;
-            font-weight: 800;
-        }
-
-        .menu {
-            display: grid;
-            gap: 8px;
-            flex: 1;
-            overflow-y: auto;
-            padding-bottom: 4px;
-        }
-
-        .menu button {
-            border: 0;
-            background: transparent;
-            color: #1a2a4c;
-            font: inherit;
-            text-align: left;
-            border-radius: 12px;
-            padding: 11px 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .menu button:hover {
-            background: #f2f8ff;
-        }
-
-        .menu button.active {
-            background: linear-gradient(145deg, #0a1632, #111f45);
-            color: #f2fbff;
-            box-shadow: 0 10px 20px rgba(11, 24, 54, 0.22);
-        }
-
-        .profile-mini {
-            flex-shrink: 0;
-            background: #f8fbff;
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .logout-wrap { border-top: 1px solid var(--line); padding-top: 12px; flex-shrink: 0; }
-        .logout-btn { border: 0; background: transparent; display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: .88rem; font-weight: 600; color: #6c7a93; cursor: pointer; padding: 6px 0; transition: color .15s; width: 100%; }
-        .logout-btn:hover { color: #b42318; }
-
-        .avatar-mini {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            background: linear-gradient(140deg, #0499b3, #05d5ef);
-            color: #fff;
-            display: grid;
-            place-items: center;
-            font-weight: 800;
-        }
-
-        .profile-mini strong {
-            display: block;
-            font-size: .92rem;
-        }
-
-        .profile-mini span {
-            color: var(--muted);
-            font-size: .82rem;
-        }
-
-        .logout-btn {
-            width: 100%;
-            padding: 10px;
-            margin-top: 12px;
-            border: 1px solid #fee2e2;
-            background: #fff5f5;
-            color: #dc2626;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            font-size: 0.85rem;
-        }
-
-        .logout-btn:hover {
-            background: #fecaca;
-            transform: translateY(-1px);
-        }
-
-        .logout-btn svg {
-            flex-shrink: 0;
-        }
-
-        .content {
-            padding: 24px;
-            display: grid;
-            gap: 18px;
-        }
-
-        .title-wrap h1 {
-            margin: 0;
-            font-size: clamp(28px, 4vw, 40px);
-            letter-spacing: -0.03em;
-        }
-
-        .title-wrap p {
-            margin: 6px 0 0;
-            color: var(--muted);
-            font-weight: 500;
-        }
-
-        .card {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 24px;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-
-        .card:hover {
-            box-shadow: var(--shadow-md);
-        }
-
-        .upcoming {
-            padding: 14px;
-            border: 1px solid rgba(6, 203, 229, 0.4);
-            background: linear-gradient(180deg, #f0fdff, #f8feff);
-        }
-
-        .section-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-
-        .section-head h2 {
-            margin: 0;
-            font-size: 1.15rem;
-        }
-
-        .upcoming-list {
-            display: grid;
-            gap: 10px;
-        }
-
-        .upcoming-item {
-            background: #fff;
-            border: 1px solid #dbedf5;
-            border-radius: 14px;
-            padding: 12px;
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .upcoming-meta strong {
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .upcoming-meta small {
-            color: var(--muted);
-        }
-
-        .join-btn {
-            border: 0;
-            border-radius: 10px;
-            background: linear-gradient(140deg, #07c9e2, #00b7d0);
-            color: #fff;
-            font: inherit;
-            font-weight: 700;
-            padding: 10px 16px;
-            cursor: pointer;
-        }
-
-        .join-btn:disabled {
-            opacity: .55;
-            cursor: not-allowed;
-        }
-
-        .search-card {
-            padding: 24px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-
-        .search-row {
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .input, .select, .textarea {
-            width: 100%;
-            border-radius: 12px;
-            border: 1px solid #d5e3f1;
-            background: #fff;
-            padding: 11px 13px;
-            font: inherit;
-            color: var(--ink);
-            outline: none;
-            transition: border-color .2s ease, box-shadow .2s ease;
-        }
-
-        .input:focus, .select:focus, .textarea:focus {
-            border-color: var(--brand);
-            box-shadow: 0 0 0 4px rgba(6, 203, 229, 0.16);
-        }
-
-        .btn {
-            border: 0;
-            border-radius: 12px;
-            padding: 11px 14px;
-            font: inherit;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform .15s ease, box-shadow .2s ease, opacity .2s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .btn-brand {
-            background: linear-gradient(135deg, #06b6d4, #0891b2);
-            color: #fff;
-            box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
-        }
-
-        .btn-brand:hover {
-            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
-            transform: translateY(-2px);
-        }
-
-        .btn-ghost {
-            background: #f3f8fe;
-            color: #17315f;
-            border: 1px solid #dbe8f6;
-        }
-
-        .btn-danger {
-            background: rgba(180, 35, 24, 0.08);
-            color: var(--danger);
-            border: 1px solid rgba(180, 35, 24, 0.24);
-        }
-
-        .filter-panel {
-            margin-top: 18px;
-            display: none;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            padding: 16px;
-            background: rgba(248, 250, 252, 0.5);
-            border-radius: 16px;
-            border: 1px solid var(--line);
-        }
-
-        .filter-panel.show {
-            display: grid;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .section-title {
-            margin: 8px 0 0;
-            font-size: 1.6rem;
-            letter-spacing: -0.02em;
-        }
-
-        .mentor-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .mentor-card {
-            padding: 24px;
-            display: grid;
-            gap: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .mentor-card::before {
-            content: '';
-            position: absolute;
-            top: 0; right: 0;
-            width: 100px; height: 100px;
-            background: radial-gradient(circle at top right, rgba(6, 182, 212, 0.05), transparent);
-            pointer-events: none;
-        }
-
-        .mentor-head {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .mentor-avatar {
-            width: 72px;
-            height: 72px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, #06b6d4, #0891b2);
-            color: #fff;
-            font-weight: 800;
-            font-size: 1.6rem;
-            display: grid;
-            place-items: center;
-            overflow: hidden;
-            box-shadow: 0 8px 16px rgba(6, 182, 212, 0.2);
-        }
-
-        .mentor-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .mentor-head h3 {
-            margin: 0;
-            font-size: 1.8rem;
-            letter-spacing: -0.02em;
-        }
-
-        .mentor-head p {
-            margin: 2px 0;
-            color: #294572;
-            font-weight: 600;
-        }
-
-        .mentor-sub {
-            color: var(--muted);
-            font-size: .9rem;
-        }
-
-        .tag-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 7px;
-        }
-
-        .tag {
-            padding: 4px 9px;
-            border-radius: 999px;
-            font-size: .78rem;
-            background: #edfcff;
-            color: #0494ab;
-            font-weight: 700;
-        }
-
-        .mentor-bio {
-            color: #40567f;
-            line-height: 1.55;
-            min-height: 50px;
-        }
-
-        .mentor-foot {
-            border-top: 1px solid var(--line);
-            padding-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .stats {
-            display: flex;
-            gap: 12px;
-            color: #365179;
-            font-size: .92rem;
-            font-weight: 600;
-        }
-
-        .price {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            color: #0c2553;
-        }
-
-        .empty {
-            padding: 26px;
-            text-align: center;
-            color: var(--muted);
-            background: #fff;
-            border-radius: 16px;
-            border: 1px dashed #cfdded;
-        }
-
-        .booking-panel {
-            padding: 16px;
-            display: grid;
-            gap: 12px;
-        }
-
-        .booking-tabs {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .booking-tabs button {
-            border: 1px solid #d7e5f3;
-            border-radius: 999px;
-            background: #fff;
-            padding: 7px 12px;
-            font: inherit;
-            font-weight: 700;
-            color: #274472;
-            cursor: pointer;
-        }
-
-        .booking-tabs button.active {
-            background: #0f2147;
-            color: #fff;
-            border-color: #0f2147;
-        }
-
-        .booking-list {
-            display: grid;
-            gap: 10px;
-        }
-
-        .booking-item {
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            padding: 12px;
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .booking-item strong {
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .booking-item small {
-            color: var(--muted);
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: .76rem;
-            border-radius: 999px;
-            padding: 5px 10px;
-            font-weight: 700;
-            margin-top: 7px;
-        }
-
-        .badge.pending { background: #fef3c7; color: #92400e; }
-        .badge.confirmed { background: #e0f2fe; color: #075985; }
-        .badge.completed { background: #d1fae5; color: #065f46; }
-        .badge.cancelled, .badge.rejected { background: #fee2e2; color: #991b1b; }
-
-        .booking-actions {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            gap: 8px;
-        }
-
-        .modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(6, 16, 38, 0.52);
-            display: none;
-            place-items: center;
-            z-index: 30;
-            padding: 20px;
-        }
-
-        .modal.show {
-            display: grid;
-            animation: fadeIn .2s ease;
-        }
-
-        .modal-card {
-            width: min(820px, 100%);
-            max-height: calc(100vh - 40px);
-            overflow: auto;
-            background: #fff;
-            border-radius: 20px;
-            border: 1px solid #dce9f6;
-            box-shadow: 0 26px 70px rgba(7, 18, 40, .22);
-            padding: 18px;
-            display: grid;
-            gap: 14px;
-        }
-
-        .booking-modal {
-            width: min(660px, 100%);
-            max-height: calc(100vh - 60px);
-            padding: 0;
-            display: block;
-            overflow: hidden;
-        }
-
-        .booking-scroll {
-            max-height: calc(100vh - 60px);
-            overflow: auto;
-        }
-
-        .booking-head {
-            padding: 20px 22px 14px;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .booking-head h3 {
-            margin: 0;
-            font-size: 2rem;
-            letter-spacing: -0.02em;
-        }
-
-        .booking-head p {
-            margin: 4px 0 0;
-            color: var(--muted);
-            font-weight: 600;
-        }
-
-        .booking-body {
-            padding: 16px 22px 18px;
-            display: grid;
-            gap: 14px;
-        }
-
-        .booking-label {
-            margin: 0 0 8px;
-            font-size: .98rem;
-            font-weight: 800;
-            color: #172c52;
-        }
-
-        .topic-input {
-            min-height: 110px;
-            resize: vertical;
-            background: #f8fbff;
-        }
-
-        .slot {
-            border: 1px solid #d5e5f4;
-            border-radius: 12px;
-            padding: 12px;
-            cursor: pointer;
-            transition: border-color .2s ease, background .2s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-height: 74px;
-        }
-
-        .slot-icon {
-            width: 30px;
-            height: 30px;
-            border-radius: 9px;
-            background: #ecfbff;
-            color: #0ab9d1;
-            display: grid;
-            place-items: center;
-            flex-shrink: 0;
-            font-size: 16px;
-        }
-
-        .slot-time {
-            color: #476186;
-            font-size: .88rem;
-        }
-
-        .summary-box {
-            border: 1px solid #e0eaf5;
-            border-radius: 14px;
-            background: #f7fbff;
-            padding: 12px;
-            display: grid;
-            gap: 9px;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            color: #28446d;
-            font-weight: 600;
-        }
-
-        .summary-total {
-            border-top: 1px solid #d7e4f2;
-            padding-top: 10px;
-            color: #112a54;
-            font-size: 1.05rem;
-            font-weight: 800;
-        }
-
-        .booking-footer {
-            border-top: 1px solid var(--line);
-            padding: 12px 22px 18px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            background: #fff;
-        }
-
-        .btn-solid {
-            background: #07193d;
-            color: #fff;
-        }
-
-        .modal-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            gap: 10px;
-        }
-
-        .slot-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-        }
-
-        .slot input {
-            display: none;
-        }
-
-        .slot.active {
-            border-color: #06c8e1;
-            background: #f0fdff;
-            box-shadow: 0 0 0 4px rgba(6, 203, 229, 0.13);
-        }
-
-        .slot strong {
-            display: block;
-            font-size: .9rem;
-        }
-
-        .slot span {
-            color: #416187;
-            font-size: .83rem;
-        }
-
-        .modal-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .meta-row {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-        }
-
-        .meta-box {
-            background: #f7fbff;
-            border: 1px solid #deebf8;
-            border-radius: 12px;
-            padding: 10px;
-        }
-
-        .meta-box small {
-            color: var(--muted);
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .meta-box strong {
-            font-size: .98rem;
-        }
-
-        .muted {
-            color: var(--muted);
-        }
-
-        .actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 1220px) {
-            .mentor-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .slot-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        @media (max-width: 980px) {
-            .layout {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar {
-                border-right: 0;
-                border-bottom: 1px solid var(--line);
-            }
-
-            .filter-panel {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .search-row {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-grid, .meta-row {
-                grid-template-columns: 1fr;
-            }
-
-            .booking-footer {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .content {
-                padding: 14px;
-            }
-
-            .slot-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .upcoming-item, .booking-item {
-                grid-template-columns: 1fr;
-            }
-
-            .booking-actions {
-                justify-content: flex-start;
-            }
-        }
-
-        /* Star Rating styles */
-        .star-rating {
-            display: inline-flex;
-            flex-direction: row-reverse;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .star-rating label {
-            font-size: 3.2rem;
-            color: #cbd5e1;
-            cursor: pointer;
-            transition: color 0.15s ease, transform 0.1s ease;
-        }
-
-        .star-rating label:hover,
-        .star-rating label:hover ~ label,
-        .star-rating input:checked ~ label {
-            color: #fbbf24;
-        }
-
-        .star-rating label:active {
-            transform: scale(0.9);
-        }
-    </style>
-</head>
-<body>
-    @include('components.auth.toast')
-
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="brand">
-                <span class="brand-mark">H</span>
-                <span>Hirify!</span>
-            </div>
-
-            <div class="menu">
-                <button type="button" data-nav="dashboard">Dashboard</button>
-                <button type="button" data-nav="profile">Profil</button>
-                <button type="button" data-nav="cv">Manajemen CV</button>
-                <button type="button" data-nav="buat-cv">Buat CV ATS</button>
-                <button type="button" data-nav="roadmap">Roadmap Karier</button>
-                <button type="button" data-nav="assessment">Self Assessment</button>
-                <button type="button" data-nav="pelatihan">Pelatihan</button>
-                <button type="button" data-nav="forum">Forum</button>
-                <button type="button" class="active">Mentorship</button>
-                <button type="button" data-nav="feedback">Riwayat Feedback</button>
-                <button type="button" data-nav="notifikasi">Notifikasi</button>
-            </div>
-
-            <div class="profile-mini">
-                <div class="avatar-mini" id="miniAvatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
-                <div>
-                    <strong id="miniName">{{ auth()->user()->name ?? 'User Name' }}</strong>
-                    <span id="miniEmail">{{ auth()->user()->email ?? 'user@email.com' }}</span>
-                </div>
-            </div>
-        </aside>
-
-        <main class="content">
-            <section class="title-wrap">
-                <h1>Mentorship</h1>
-                <p>Telusuri mentor terbaik, booking sesi, dan pantau status pengembangan karier Anda.</p>
-            </section>
-
-            <section class="card upcoming">
-                <div class="section-head">
-                    <h2>Sesi Mendatang</h2>
-                    <button class="btn btn-ghost" type="button" id="refreshUpcomingBtn">Refresh</button>
-                </div>
-                <div id="upcomingList" class="upcoming-list"></div>
-            </section>
-
-            <section class="card search-card">
-                <div class="search-row">
-                    <input id="searchInput" class="input" placeholder="Cari mentor berdasarkan nama, keahlian, atau kata kunci...">
-                    <button id="searchBtn" class="btn btn-brand" type="button">Cari Mentor</button>
-                    <button id="filterToggle" class="btn btn-ghost" type="button">Filter</button>
-                </div>
-
-                <div id="filterPanel" class="filter-panel">
-                    <input id="expertiseInput" class="input" placeholder="Bidang keahlian, contoh: UI/UX">
-                    <select id="experienceInput" class="select">
-                        <option value="">Semua Pengalaman</option>
-                        <option value="1">1+ Tahun</option>
-                        <option value="3">3+ Tahun</option>
-                        <option value="5">5+ Tahun</option>
-                        <option value="10">10+ Tahun</option>
-                    </select>
-                    <select id="ratingInput" class="select">
-                        <option value="">Semua Rating</option>
-                        <option value="4.8">Rating 4.8+</option>
-                        <option value="4.5">Rating 4.5+</option>
-                        <option value="4.0">Rating 4.0+</option>
-                    </select>
-                    <button id="applyFilterBtn" class="btn btn-brand" type="button">Terapkan</button>
-                </div>
-            </section>
-
-            <section>
-                <h2 class="section-title">Daftar Mentor</h2>
-                <div id="mentorGrid" class="mentor-grid" style="margin-top:10px;"></div>
-            </section>
-
-            <section class="card booking-panel">
-                <div class="section-head">
-                    <h2>Status Booking Saya</h2>
-                    <button id="refreshBookingsBtn" class="btn btn-ghost" type="button">Refresh</button>
-                </div>
-
-                <div class="booking-tabs" id="bookingTabs">
-                    <button class="active" data-status="all">Semua</button>
-                    <button data-status="pending">Pending</button>
-                    <button data-status="confirmed">Confirmed</button>
-                    <button data-status="completed">Completed</button>
-                    <button data-status="cancelled">Cancelled</button>
-                    <button data-status="rejected">Rejected</button>
-                </div>
-
-                <div id="bookingList" class="booking-list">
-                    @if(!empty($initialBookings) && count($initialBookings))
-                        @foreach($initialBookings as $booking)
-                            @php
-                                $canCancel = ($booking['status'] ?? '') === 'pending';
-                                $canJoin = ($booking['status'] ?? '') === 'confirmed' && !empty($booking['meeting_url']);
-                            @endphp
-                            <article class="booking-item">
-                                <div>
-                                    <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px;">
-                                        <div style="flex: 1;">
-                                            <strong style="font-size: 1.1rem; color: var(--brand-dark);">{{ $booking['mentor']['name'] ?? 'Mentor' }}</strong>
-                                            @if(!empty($booking['session_topic']))
-                                                <div style="margin-top: 2px; color: var(--brand); font-weight: 600; font-size: 0.95rem; line-height: 1.4;">
-                                                    {{ $booking['session_topic'] }}
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <small style="display: block; color: var(--muted); margin-bottom: 8px;">
-                                        {{ $booking['mentor']['expertise'] ?? '-' }} • {{ $booking['display_date'] ?? '-' }} • {{ $booking['display_time'] ?? '-' }}
-                                    </small>
-                                    <div class="badge {{ $booking['status'] ?? 'pending' }}">{{ $booking['status_label'] ?? $booking['status'] }}</div>
-                                </div>
-                                <div class="booking-actions">
-                                    <button class="btn btn-ghost" type="button" data-detail-id="{{ $booking['id'] }}">Detail</button>
-                                    @if($canJoin)
-                                        <button class="btn btn-brand" type="button" data-join-booking="{{ $booking['meeting_url'] }}">Join</button>
-                                    @endif
-                                    @if($canCancel)
-                                        <button class="btn btn-danger" type="button" data-cancel-booking="{{ $booking['id'] }}">Batalkan</button>
-                                    @endif
-                                </div>
-                            </article>
-                        @endforeach
-                    @else
-                        <div class="empty">Belum ada data booking pada status ini.</div>
-                    @endif
-                </div>
-            </section>
-        </main>
+@extends('layouts.app')
+
+@section('title', 'Mentorship')
+
+@section('content')
+<div class="mentorship-page max-w-6xl mx-auto px-4 py-6">
+    <!-- PAGE HEADER -->
+    <div class="mb-8">
+        <p class="text-xs uppercase tracking-[0.25em] text-sky-600 font-bold mb-2">Mentorship</p>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Mentorship</h1>
+        <p class="text-slate-500 mt-2">Telusuri mentor terbaik, booking sesi, dan pantau status pengembangan karier Anda.</p>
     </div>
 
-    <section id="mentorModal" class="modal">
-        <div class="modal-card booking-modal">
-            <div class="booking-scroll">
-                <div class="booking-head">
-                    <h3>Booking Sesi Mentorship</h3>
-                    <p id="modalSubtitle">dengan Mentor</p>
-                    <button id="modalFollowBtn" class="btn btn-ghost" type="button" style="margin-left:12px;">Follow</button>
-                </div>
+    <!-- SESI MENDATANG -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm mb-8">
+        <div class="flex items-center justify-between gap-4 mb-6">
+            <h2 class="text-lg font-bold text-slate-900">Sesi Mendatang</h2>
+            <button class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition" 
+                    type="button" id="refreshUpcomingBtn">
+                Refresh
+            </button>
+        </div>
+        <div id="upcomingList" class="space-y-4">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
 
-                <div class="booking-body">
-                    <div>
-                        <p class="booking-label">Daftar Sesi</p>
-                        <div id="slotGrid" class="slot-grid"></div>
-                        <div id="slotDetailPanel" class="meta-box" style="margin-top: 14px; display: none;">
-                            <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Detail Sesi Terpilih</strong>
-                            <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink);">
-                                <span id="slotDetailDate"></span> <span style="color: var(--line);">|</span> <span id="slotDetailTime"></span>
+    <!-- SEARCH & FILTER -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm mb-8">
+        <div class="flex flex-col md:flex-row gap-3">
+            <div class="flex-1 relative">
+                <input id="searchInput" type="text" 
+                       class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition text-sm text-slate-800"
+                       placeholder="Cari mentor berdasarkan nama, keahlian, atau kata kunci...">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+            </div>
+            <div class="flex gap-2">
+                <button id="searchBtn" class="bg-sky-600 text-white font-semibold rounded-xl px-5 py-3 text-sm hover:bg-sky-700 transition shadow-sm" type="button">
+                    Cari Mentor
+                </button>
+                <button id="filterToggle" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition" type="button">
+                    Filter
+                </button>
+            </div>
+        </div>
+
+        <!-- Advanced Filters Panel -->
+        <div id="filterPanel" class="hidden grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <input id="expertiseInput" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm" placeholder="Keahlian (cth: UI/UX)">
+            <select id="experienceInput" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm cursor-pointer">
+                <option value="">Semua Pengalaman</option>
+                <option value="1">1+ Tahun</option>
+                <option value="3">3+ Tahun</option>
+                <option value="5">5+ Tahun</option>
+                <option value="10">10+ Tahun</option>
+            </select>
+            <select id="ratingInput" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm cursor-pointer">
+                <option value="">Semua Rating</option>
+                <option value="4.8">Rating 4.8+</option>
+                <option value="4.5">Rating 4.5+</option>
+                <option value="4.0">Rating 4.0+</option>
+            </select>
+            <button id="applyFilterBtn" class="w-full bg-slate-900 text-white font-semibold rounded-lg py-2.5 text-sm hover:bg-slate-800 transition" type="button">
+                Terapkan Filter
+            </button>
+        </div>
+    </div>
+
+    <!-- MENTOR LIST -->
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Daftar Mentor</h2>
+        <div id="mentorGrid" class="grid gap-6 md:grid-cols-2">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+
+    <!-- BOOKINGS STATUS -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4 mb-6">
+            <h2 class="text-lg font-bold text-slate-900">Status Booking Saya</h2>
+            <button id="refreshBookingsBtn" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition" type="button">
+                Refresh
+            </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-100 pb-4" id="bookingTabs">
+            <button class="px-4 py-2 text-sm font-semibold rounded-xl transition bg-slate-900 text-white" data-status="all">Semua</button>
+            <button class="px-4 py-2 text-sm font-semibold rounded-xl transition text-slate-600 hover:bg-slate-100" data-status="pending">Pending</button>
+            <button class="px-4 py-2 text-sm font-semibold rounded-xl transition text-slate-600 hover:bg-slate-100" data-status="confirmed">Confirmed</button>
+            <button class="px-4 py-2 text-sm font-semibold rounded-xl transition text-slate-600 hover:bg-slate-100" data-status="completed">Completed</button>
+            <button class="px-4 py-2 text-sm font-semibold rounded-xl transition text-slate-600 hover:bg-slate-100" data-status="cancelled">Cancelled</button>
+            <button class="px-4 py-2 text-sm font-semibold rounded-xl transition text-slate-600 hover:bg-slate-100" data-status="rejected">Rejected</button>
+        </div>
+
+        <div id="bookingList" class="space-y-4">
+            <!-- Rendered by JS or Controller fallback -->
+            @if(!empty($initialBookings) && count($initialBookings))
+                @foreach($initialBookings as $booking)
+                    @php
+                        $canCancel = ($booking['status'] ?? '') === 'pending';
+                        $canJoin = ($booking['status'] ?? '') === 'confirmed' && !empty($booking['meeting_url']);
+                        $statusClassMap = [
+                            'pending' => 'bg-amber-50 text-amber-700 border-amber-200',
+                            'confirmed' => 'bg-sky-50 text-sky-700 border-sky-200',
+                            'completed' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                            'cancelled' => 'bg-rose-50 text-rose-700 border-rose-200',
+                            'rejected' => 'bg-rose-50 text-rose-700 border-rose-200'
+                        ];
+                        $statusCls = $statusClassMap[$booking['status'] ?? ''] ?? 'bg-slate-50 text-slate-700 border-slate-200';
+                    @endphp
+                    <article class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border border-slate-100 rounded-2xl bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div>
+                            <div class="mb-1">
+                                <strong class="text-base font-bold text-slate-900">{{ $booking['mentor']['name'] ?? 'Mentor' }}</strong>
+                                @if(!empty($booking['session_topic']))
+                                    <div class="text-sm text-sky-600 font-semibold mt-0.5">{{ $booking['session_topic'] }}</div>
+                                @endif
                             </div>
-                            <p id="slotDetailLabel" style="margin: 6px 0 0; color: #476186; font-size: 0.9rem; line-height: 1.5; font-weight: 700;"></p>
-                            <p id="slotDetailDescription" style="margin: 6px 0 0; color: var(--muted); font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; display: none;"></p>
+                            <p class="text-xs text-slate-500 mb-3">
+                                {{ $booking['mentor']['expertise'] ?? '-' }} • {{ $booking['display_date'] ?? '-' }} • {{ $booking['display_time'] ?? '-' }}
+                            </p>
+                            <span class="px-3 py-1 border rounded-full text-xs font-bold uppercase tracking-wider {{ $statusCls }}">
+                                {{ $booking['status_label'] ?? $booking['status'] }}
+                            </span>
                         </div>
-                    </div>
-
-                    <div style="margin-top: 20px; border-top: 1px solid var(--line); padding-top: 18px;">
-                        <p class="booking-label">Ulasan Pengguna</p>
-                        <div id="mentorReviewsList" class="upcoming-list" style="max-height: 250px; overflow-y: auto; gap: 8px;">
-                            <!-- Reviews will be rendered here -->
+                        <div class="flex flex-wrap gap-2 justify-end items-center">
+                            <button class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-50 transition shadow-sm" type="button" data-detail-id="{{ $booking['id'] }}">Detail</button>
+                            @if($canJoin)
+                                <button class="px-4 py-2 bg-sky-600 text-white font-semibold rounded-xl text-xs hover:bg-sky-700 transition shadow-sm" type="button" data-join-booking="{{ $booking['meeting_url'] }}">Join</button>
+                            @endif
+                            @if($canCancel)
+                                <button class="px-4 py-2 bg-rose-50 border border-rose-200 text-rose-700 font-semibold rounded-xl text-xs hover:bg-rose-100 transition shadow-sm" type="button" data-cancel-booking="{{ $booking['id'] }}">Batalkan</button>
+                            @endif
                         </div>
-                    </div>
-                </div>
-
-                <div class="booking-footer">
-                    <button id="closeModalBtn" class="btn btn-ghost" type="button">Batal</button>
-                    <button id="bookBtn" class="btn btn-solid" type="button">Konfirmasi Booking</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="detailModal" class="modal">
-        <div class="modal-card booking-modal">
-            <div class="booking-scroll">
-                <div class="booking-head">
-                    <h3>Detail Booking</h3>
-                    <p id="detailModalSubtitle">Status: <span id="detailModalStatus" style="font-weight:700;"></span></p>
-                </div>
-                <div class="booking-body">
-                    <div class="meta-box">
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Informasi Mentor</strong>
-                        <p style="margin: 0; color: var(--ink); font-weight: 700;" id="detailMentorName"></p>
-                        <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;" id="detailMentorExp"></p>
-                    </div>
-
-                    <div class="meta-box" style="margin-top: 14px;">
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Jadwal Sesi</strong>
-                        <p style="margin: 0; color: var(--ink); font-weight: 700;" id="detailDate"></p>
-                        <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;" id="detailTime"></p>
-                    </div>
-
-                    <div class="meta-box" style="margin-top: 14px;">
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Topik Sesi</strong>
-                        <p style="margin: 0; color: #476186; font-size: 0.9rem; line-height: 1.5;" id="detailLabel"></p>
-                    </div>
-
-                    <div id="detailDescriptionBox" class="meta-box" style="margin-top: 14px; display: none;">
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Deskripsi / Keterangan Sesi</strong>
-                        <p style="margin: 0; color: #476186; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;" id="detailDescription"></p>
-                    </div>
-
-                    <div id="detailPlatformBox" class="meta-box" style="margin-top: 14px; display: none;">
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Tautan / Platform</strong>
-                        <p style="margin: 0; color: #476186; font-size: 0.9rem;" id="detailPlatform"></p>
-                    </div>
-
-                    <div id="detailMeetingBox" class="meta-box" style="margin-top: 14px; display: none;">
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Link Meeting</strong>
-                        <a href="#" target="_blank" style="margin: 0; color: var(--brand); font-size: 0.9rem; font-weight: 700; text-decoration: underline;" id="detailMeetingUrl">Buka Link Sesi Mentorship</a>
-                    </div>
-
-                    <div id="detailRejectionBox" class="meta-box" style="margin-top: 14px; display: none; background: #fff5f5; border-color: #fee2e2;">
-                        <strong style="color: #dc2626; font-size: 1.05rem; display: block; margin-bottom: 6px;">Alasan Penolakan</strong>
-                        <p style="margin: 0; color: #b91c1c; font-size: 0.9rem; line-height: 1.5;" id="detailRejectionReason"></p>
-                    </div>
-
-                    <div id="detailMaterialBox" class="meta-box" style="margin-top: 14px; display: none;">
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem; display: block; margin-bottom: 6px;">Materi Sesi</strong>
-                        <a href="#" target="_blank" style="margin: 0; color: var(--brand); font-size: 0.9rem; font-weight: 700; text-decoration: underline;" id="detailMaterialUrl">Unduh Materi Mentoring</a>
-                    </div>
-
-                    <div id="detailNotesBox" class="meta-box" style="margin-top: 14px; display: none; background: #f0f9ff; border-color: #bae6fd;">
-                        <strong style="color: #0369a1; font-size: 1.05rem; display: block; margin-bottom: 6px;">Catatan Mentor</strong>
-                        <p style="margin: 0; color: #0c4a6e; font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap;" id="detailNotes"></p>
-                    </div>
-
-                    <div id="detailReviewBox" class="meta-box" style="margin-top: 14px; display: none; background: #fffbeb; border-color: #fde68a;">
-                        <strong style="color: #b45309; font-size: 1.05rem; display: block; margin-bottom: 6px;">Ulasan Anda</strong>
-                        <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 6px;">
-                            <span id="detailReviewStars" style="color: #fbbf24; font-size: 1.2rem; font-weight: 700;"></span>
-                            <span id="detailReviewRating" style="font-weight: 800; color: #78350f; font-size: 0.95rem;"></span>
-                        </div>
-                        <p style="margin: 0; color: #78350f; font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap;" id="detailReviewComment"></p>
-                    </div>
-                </div>
-                <div class="booking-footer" style="grid-template-columns: 1fr;">
-                    <button id="closeDetailBtn" class="btn btn-ghost" style="width: 100%;" type="button">Tutup</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Review Modal -->
-    <section id="reviewModal" class="modal">
-        <div class="modal-card booking-modal" style="width: min(500px, 100%);">
-            <div class="booking-scroll">
-                <div class="booking-head">
-                    <h3>Berikan Ulasan Mentor</h3>
-                    <p id="reviewModalSubtitle">Bagikan pengalaman mentoring Anda bersama mentor ini</p>
-                </div>
-                <div class="booking-body">
-                    <input type="hidden" id="reviewBookingId">
-
-                    <div style="text-align: center; margin-bottom: 15px;">
-                        <p class="booking-label" style="margin-bottom: 10px;">Rating Mentor</p>
-                        <div class="star-rating" style="display: inline-flex; flex-direction: row-reverse; gap: 8px; justify-content: center;">
-                            <input type="radio" id="star5" name="reviewRating" value="5" style="display:none;" />
-                            <label for="star5" class="star-label">★</label>
-                            <input type="radio" id="star4" name="reviewRating" value="4" style="display:none;" />
-                            <label for="star4" class="star-label">★</label>
-                            <input type="radio" id="star3" name="reviewRating" value="3" style="display:none;" />
-                            <label for="star3" class="star-label">★</label>
-                            <input type="radio" id="star2" name="reviewRating" value="2" style="display:none;" />
-                            <label for="star2" class="star-label">★</label>
-                            <input type="radio" id="star1" name="reviewRating" value="1" style="display:none;" />
-                            <label for="star1" class="star-label">★</label>
-                        </div>
-                        <p id="ratingErrorMessage" style="color: var(--danger); font-size: 0.85rem; margin-top: 5px; display: none;">Pilih rating bintang terlebih dahulu.</p>
-                    </div>
-
-                    <div>
-                        <p class="booking-label">Tulis Ulasan</p>
-                        <textarea id="reviewComment" class="textarea" style="min-height: 120px; resize: vertical;" placeholder="Tulis masukan konstruktif untuk mentor Anda (opsional)..."></textarea>
-                    </div>
-                </div>
-                <div class="booking-footer">
-                    <button id="closeReviewModalBtn" class="btn btn-ghost" type="button">Batal</button>
-                    <button id="submitReviewBtn" class="btn btn-solid" type="button">Kirim Ulasan</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <script src="/js/hirify-api.js"></script>
-    <script>
-        const showToast = window.hirifyShowToast;
-
-        hirifyInitToken('{{ session("jwt_token") }}');
-        const api = window.hirifyApi;
-        const escapeHtml = window.hirifyEsc;
-        // bookingsByMentor is a map: mentorId => booking object
-        window.bookingsByMentor = @json($bookingsByMentor ?? []);
-        // Debug helpers: inspect these values in browser console if badges not showing
-        try {
-            console.log('bookingsByMentor (server):', window.bookingsByMentor);
-            console.log('initialBookings (server):', @json($initialBookings ?? []));
-            console.log('bookingsByMentor keys:', Object.keys(window.bookingsByMentor || {}));
-        } catch (e) { /* ignore */ }
-        let selectedBookingStatus = 'all';
-        let selectedSlotId = null;
-        let selectedSlotIsManual = false;
-        let activeMentor = null;
-
-        const state = {
-            me: null,
-            mentors: [],
-            bookings: [],
-            upcoming: [],
-            followedMentorIds: [],
-            followLoadingIds: [],
-            currentSlots: [],
-            filters: {
-                search: '',
-                expertise: '',
-                min_experience: '',
-                min_rating: '',
-            },
-        };
-
-        const searchInput = document.getElementById('searchInput');
-        const expertiseInput = document.getElementById('expertiseInput');
-        const experienceInput = document.getElementById('experienceInput');
-        const ratingInput = document.getElementById('ratingInput');
-        const filterPanel = document.getElementById('filterPanel');
-        const mentorGrid = document.getElementById('mentorGrid');
-        const bookingList = document.getElementById('bookingList');
-        const upcomingList = document.getElementById('upcomingList');
-
-        const mentorModal = document.getElementById('mentorModal');
-        const modalSubtitle = document.getElementById('modalSubtitle');
-        const slotGrid = document.getElementById('slotGrid');
-
-        function formatRupiah(value) {
-            return new Intl.NumberFormat('id-ID').format(Number(value || 0));
-        }
-
-        function getInitial(name) {
-            return (name?.trim()?.[0] || 'M').toUpperCase();
-        }
-
-        function statusClass(status) {
-            const value = String(status || '').toLowerCase();
-            if (['pending', 'confirmed', 'completed', 'cancelled', 'rejected'].includes(value)) {
-                return value;
-            }
-            return 'pending';
-        }
-
-        function renderUpcoming() {
-            if (!state.upcoming.length) {
-                upcomingList.innerHTML = '<div class="empty">Belum ada sesi mendatang. Pilih mentor dan lakukan booking sesi pertama Anda.</div>';
-                return;
-            }
-
-            upcomingList.innerHTML = state.upcoming.map((item) => {
-                const joinUrl = item.meeting_url || item.platform;
-                const canJoin = item.status === 'confirmed' && joinUrl;
-
-                return `
-                    <article class="upcoming-item">
-                        <div class="upcoming-meta">
-                            <strong>${escapeHtml(item.mentor?.name || 'Mentor')}</strong>
-                            <small>${escapeHtml(item.mentor?.expertise || '-')} • ${escapeHtml(item.display_date || '')} • ${escapeHtml(item.display_time || '')}</small>
-                        </div>
-                        <button class="join-btn" ${canJoin ? '' : 'disabled'} data-join-url="${escapeHtml(joinUrl || '')}">
-                            ${canJoin ? 'Join' : 'Menunggu'}
-                        </button>
                     </article>
-                `;
-            }).join('');
+                @endforeach
+            @else
+                <div class="p-8 text-center text-slate-500 border border-dashed border-slate-200 rounded-2xl">Belum ada data booking pada status ini.</div>
+            @endif
+        </div>
+    </div>
+</div>
 
-            upcomingList.querySelectorAll('[data-join-url]').forEach((button) => {
-                button.addEventListener('click', () => {
-                    const url = button.getAttribute('data-join-url');
-                    if (url) {
-                        window.open(url, '_blank', 'noopener,noreferrer');
-                    }
-                });
-            });
+<!-- MODALS -->
+
+<!-- BOOKING MODAL -->
+<section id="mentorModal" class="modal">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 shadow-2xl flex flex-col p-6 m-4">
+        <div class="flex justify-between items-start border-b border-slate-100 pb-4 mb-5">
+            <div>
+                <h3 class="text-xl font-bold text-slate-900">Booking Sesi Mentorship</h3>
+                <p id="modalSubtitle" class="text-slate-500 text-sm mt-1">dengan Mentor</p>
+            </div>
+            <button id="modalFollowBtn" class="px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition shadow-sm" type="button">Follow</button>
+        </div>
+
+        <div class="space-y-6 flex-1">
+            <!-- Sesi Grid -->
+            <div>
+                <p class="text-sm font-bold text-slate-900 mb-3">Daftar Sesi</p>
+                <div id="slotGrid" class="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                    <!-- Loaded dynamically -->
+                </div>
+                
+                <div id="slotDetailPanel" class="bg-sky-50 border border-sky-100 rounded-2xl p-4 mt-4 hidden">
+                    <strong class="text-sm font-bold text-sky-800 block mb-2">Detail Sesi Terpilih</strong>
+                    <div class="text-xs font-semibold text-slate-700 flex items-center gap-2 mb-2">
+                        <span id="slotDetailDate"></span> <span class="text-slate-300">|</span> <span id="slotDetailTime"></span>
+                    </div>
+                    <p id="slotDetailLabel" class="text-sm text-slate-800 font-bold"></p>
+                    <p id="slotDetailDescription" class="text-xs text-slate-500 mt-2 leading-relaxed whitespace-pre-wrap"></p>
+                </div>
+            </div>
+
+            <!-- Ulasan Pengguna -->
+            <div class="border-t border-slate-100 pt-5">
+                <p class="text-sm font-bold text-slate-900 mb-3">Ulasan Pengguna</p>
+                <div id="mentorReviewsList" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                    <!-- Reviews will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t border-slate-100 pt-5 mt-6">
+            <button id="closeModalBtn" class="px-5 py-2.5 bg-slate-100 text-slate-800 font-semibold rounded-xl text-sm hover:bg-slate-200 transition" type="button">Batal</button>
+            <button id="bookBtn" class="px-5 py-2.5 bg-slate-900 text-white font-semibold rounded-xl text-sm hover:bg-slate-800 transition" type="button">Konfirmasi Booking</button>
+        </div>
+    </div>
+</section>
+
+<!-- DETAIL MODAL -->
+<section id="detailModal" class="modal">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200 shadow-2xl flex flex-col p-6 m-4">
+        <div class="flex justify-between items-start border-b border-slate-100 pb-4 mb-4">
+            <div>
+                <h3 class="text-lg font-bold text-slate-900">Detail Booking</h3>
+                <p id="detailModalSubtitle" class="text-xs text-slate-500 mt-1">Status: <span id="detailModalStatus"></span></p>
+            </div>
+            <button id="closeDetailBtn" class="text-slate-400 hover:text-slate-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="space-y-4 flex-1">
+            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                <span class="text-xs text-slate-400 uppercase tracking-wider block mb-1">Informasi Mentor</span>
+                <p class="font-bold text-slate-900 text-sm" id="detailMentorName"></p>
+                <p class="text-xs text-slate-500 mt-0.5" id="detailMentorExp"></p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                <span class="text-xs text-slate-400 uppercase tracking-wider block mb-1">Jadwal Sesi</span>
+                <p class="font-bold text-slate-900 text-sm" id="detailDate"></p>
+                <p class="text-xs text-slate-500 mt-0.5" id="detailTime"></p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                <span class="text-xs text-slate-400 uppercase tracking-wider block mb-1">Topik Sesi</span>
+                <p class="text-slate-800 text-sm font-semibold" id="detailLabel"></p>
+            </div>
+
+            <div id="detailDescriptionBox" class="bg-slate-50 border border-slate-100 rounded-2xl p-4 hidden">
+                <span class="text-xs text-slate-400 uppercase tracking-wider block mb-1">Deskripsi / Keterangan Sesi</span>
+                <p class="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap" id="detailDescription"></p>
+            </div>
+
+            <div id="detailPlatformBox" class="bg-slate-50 border border-slate-100 rounded-2xl p-4 hidden">
+                <span class="text-xs text-slate-400 uppercase tracking-wider block mb-1">Tautan / Platform</span>
+                <p class="text-slate-800 text-sm font-semibold" id="detailPlatform"></p>
+            </div>
+
+            <div id="detailMeetingBox" class="bg-sky-50 border border-sky-100 rounded-2xl p-4 hidden">
+                <span class="text-xs text-sky-700 uppercase tracking-wider block mb-1">Link Meeting</span>
+                <a href="#" target="_blank" class="text-sky-600 hover:text-sky-700 text-sm font-bold underline" id="detailMeetingUrl">Buka Link Sesi Mentorship</a>
+            </div>
+
+            <div id="detailRejectionBox" class="bg-rose-50 border border-rose-100 rounded-2xl p-4 hidden">
+                <span class="text-xs text-rose-700 uppercase tracking-wider block mb-1 font-bold">Alasan Penolakan</span>
+                <p class="text-rose-800 text-sm leading-relaxed" id="detailRejectionReason"></p>
+            </div>
+
+            <div id="detailMaterialBox" class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 hidden">
+                <span class="text-xs text-emerald-700 uppercase tracking-wider block mb-1">Materi Sesi</span>
+                <a href="#" target="_blank" class="text-emerald-600 hover:text-emerald-700 text-sm font-bold underline" id="detailMaterialUrl">Unduh Materi Mentoring</a>
+            </div>
+
+            <div id="detailNotesBox" class="bg-sky-50 border border-sky-100 rounded-2xl p-4 hidden">
+                <span class="text-xs text-sky-700 uppercase tracking-wider block mb-1 font-bold">Catatan Mentor</span>
+                <p class="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap" id="detailNotes"></p>
+            </div>
+
+            <div id="detailReviewBox" class="bg-amber-50 border border-amber-100 rounded-2xl p-4 hidden">
+                <span class="text-xs text-amber-700 uppercase tracking-wider block mb-1 font-bold">Ulasan Anda</span>
+                <div class="flex items-center gap-1 text-amber-500 my-1 font-bold" id="detailReviewStars"></div>
+                <p class="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap" id="detailReviewComment"></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- REVIEW MODAL -->
+<section id="reviewModal" class="modal">
+    <div class="bg-white rounded-3xl max-w-md w-full border border-slate-200 shadow-2xl flex flex-col p-6 m-4">
+        <div class="border-b border-slate-100 pb-4 mb-4">
+            <h3 class="text-lg font-bold text-slate-900">Berikan Ulasan Mentor</h3>
+            <p id="reviewModalSubtitle" class="text-xs text-slate-500 mt-1">Bagikan pengalaman mentoring Anda bersama mentor ini</p>
+        </div>
+
+        <div class="space-y-5 flex-1">
+            <input type="hidden" id="reviewBookingId">
+
+            <div class="text-center">
+                <p class="text-sm font-bold text-slate-800 mb-2">Rating Mentor</p>
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="reviewRating" value="5" />
+                    <label for="star5">★</label>
+                    <input type="radio" id="star4" name="reviewRating" value="4" />
+                    <label for="star4">★</label>
+                    <input type="radio" id="star3" name="reviewRating" value="3" />
+                    <label for="star3">★</label>
+                    <input type="radio" id="star2" name="reviewRating" value="2" />
+                    <label for="star2">★</label>
+                    <input type="radio" id="star1" name="reviewRating" value="1" />
+                    <label for="star1">★</label>
+                </div>
+                <p id="ratingErrorMessage" class="text-rose-600 text-xs mt-1 hidden">Pilih rating bintang terlebih dahulu.</p>
+            </div>
+
+            <div>
+                <label class="text-sm font-bold text-slate-850 block mb-2">Tulis Ulasan</label>
+                <textarea id="reviewComment" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm text-slate-800 min-h-[100px] resize-vertical" placeholder="Tulis masukan konstruktif untuk mentor Anda (opsional)..."></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t border-slate-100 pt-4 mt-5">
+            <button id="closeReviewModalBtn" class="px-4 py-2 bg-slate-100 text-slate-800 font-semibold rounded-xl text-xs hover:bg-slate-200 transition" type="button">Batal</button>
+            <button id="submitReviewBtn" class="px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl text-xs hover:bg-slate-800 transition" type="button">Kirim Ulasan</button>
+        </div>
+    </div>
+</section>
+
+@include('components.auth.toast')
+
+<style>
+    /* Star Rating Selector styles */
+    .star-rating {
+        display: inline-flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .star-rating label {
+        font-size: 2.5rem;
+        color: #cbd5e1;
+        cursor: pointer;
+        transition: color 0.15s ease, transform 0.1s ease;
+    }
+
+    .star-rating label:hover,
+    .star-rating label:hover ~ label,
+    .star-rating input:checked ~ label {
+        color: #fbbf24;
+    }
+
+    .star-rating label:active {
+        transform: scale(0.9);
+    }
+    
+    .star-rating input {
+        display: none;
+    }
+
+    /* Modal Backdrop & Toggles */
+    .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        display: none;
+        place-items: center;
+        z-index: 50;
+        padding: 20px;
+    }
+    .modal.show {
+        display: grid;
+        animation: modalFadeIn 0.25s ease-out;
+    }
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Interactive Calendar Slots */
+    .slot {
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #ffffff;
+    }
+    .slot:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+    }
+    .slot.active {
+        border-color: #0ea5e9;
+        background: #f0f9ff;
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+    }
+    .slot input {
+        display: none;
+    }
+
+    /* Spinner animation */
+    .small-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(0,0,0,0.12);
+        border-top-color: #0ea5e9;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        vertical-align: middle;
+        margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+@endsection
+
+@push('scripts')
+<script src="/js/hirify-api.js"></script>
+<script>
+    const showToast = window.hirifyShowToast;
+
+    hirifyInitToken('{{ session("jwt_token") }}');
+    const api = window.hirifyApi;
+    const escapeHtml = window.hirifyEsc;
+    
+    window.bookingsByMentor = @json($bookingsByMentor ?? []);
+    let selectedBookingStatus = 'all';
+    let selectedSlotId = null;
+    let selectedSlotIsManual = false;
+    let activeMentor = null;
+
+    const state = {
+        me: null,
+        mentors: [],
+        bookings: [],
+        upcoming: [],
+        followedMentorIds: [],
+        followLoadingIds: [],
+        currentSlots: [],
+        filters: {
+            search: '',
+            expertise: '',
+            min_experience: '',
+            min_rating: '',
+        },
+    };
+
+    const searchInput = document.getElementById('searchInput');
+    const expertiseInput = document.getElementById('expertiseInput');
+    const experienceInput = document.getElementById('experienceInput');
+    const ratingInput = document.getElementById('ratingInput');
+    const filterPanel = document.getElementById('filterPanel');
+    const mentorGrid = document.getElementById('mentorGrid');
+    const bookingList = document.getElementById('bookingList');
+    const upcomingList = document.getElementById('upcomingList');
+    const mentorModal = document.getElementById('mentorModal');
+    const modalSubtitle = document.getElementById('modalSubtitle');
+    const slotGrid = document.getElementById('slotGrid');
+
+    function formatRupiah(value) {
+        return new Intl.NumberFormat('id-ID').format(Number(value || 0));
+    }
+
+    function getInitial(name) {
+        return (name?.trim()?.[0] || 'M').toUpperCase();
+    }
+
+    function statusClass(status) {
+        const value = String(status || '').toLowerCase();
+        const map = {
+            'pending': 'bg-amber-50 text-amber-700 border-amber-200',
+            'confirmed': 'bg-sky-50 text-sky-700 border-sky-200',
+            'completed': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            'cancelled': 'bg-rose-50 text-rose-700 border-rose-200',
+            'rejected': 'bg-rose-50 text-rose-700 border-rose-200'
+        };
+        return map[value] || 'bg-slate-50 text-slate-700 border-slate-200';
+    }
+
+    function renderUpcoming() {
+        if (!state.upcoming.length) {
+            upcomingList.innerHTML = `
+                <div class="p-8 text-center text-slate-500 border border-dashed border-slate-200 rounded-2xl text-sm">
+                    Belum ada sesi mendatang. Pilih mentor dan lakukan booking sesi pertama Anda.
+                </div>`;
+            return;
         }
 
-        function renderMentors() {
-            if (!state.mentors.length) {
-                mentorGrid.innerHTML = '<div class="empty">Mentor tidak ditemukan. Ubah kata kunci atau filter pencarian Anda.</div>';
-                return;
+        upcomingList.innerHTML = state.upcoming.map((item) => {
+            const joinUrl = item.meeting_url || item.platform;
+            const canJoin = item.status === 'confirmed' && joinUrl;
+
+            return `
+                <article class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border border-slate-100 rounded-2xl bg-sky-50/30 hover:bg-sky-50/50 transition">
+                    <div>
+                        <strong class="text-base font-bold text-slate-900">${escapeHtml(item.mentor?.name || 'Mentor')}</strong>
+                        <p class="text-xs text-slate-500 mt-1">
+                            ${escapeHtml(item.mentor?.expertise || '-')} • ${escapeHtml(item.display_date || '')} • ${escapeHtml(item.display_time || '')}
+                        </p>
+                    </div>
+                    <button class="px-5 py-2.5 text-xs font-bold rounded-xl shadow-sm transition ${canJoin ? 'bg-sky-600 hover:bg-sky-700 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}" 
+                            ${canJoin ? '' : 'disabled'} data-join-url="${escapeHtml(joinUrl || '')}">
+                        ${canJoin ? 'Join Sesi' : 'Menunggu Sesi'}
+                    </button>
+                </article>
+            `;
+        }).join('');
+
+        upcomingList.querySelectorAll('[data-join-url]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const url = button.getAttribute('data-join-url');
+                if (url) {
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                }
+            });
+        });
+    }
+
+    function renderMentors() {
+        if (!state.mentors.length) {
+            mentorGrid.innerHTML = `
+                <div class="col-span-2 p-8 text-center text-slate-500 border border-dashed border-slate-200 rounded-2xl text-sm">
+                    Mentor tidak ditemukan. Ubah kata kunci atau filter pencarian Anda.
+                </div>`;
+            return;
+        }
+
+        mentorGrid.innerHTML = state.mentors.map((mentor) => {
+            const skills = (mentor.skills || []).slice(0, 4)
+                .map((skill) => `<span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-sky-50 text-sky-700">${escapeHtml(skill)}</span>`)
+                .join('');
+
+            const avatar = mentor.avatar_url
+                ? `<img src="${escapeHtml(mentor.avatar_url)}" alt="Avatar mentor" class="w-full h-full object-cover">`
+                : escapeHtml(getInitial(mentor.name));
+
+            const isFollowed = state.followedMentorIds.includes(mentor.id);
+            const isLoading = state.followLoadingIds.includes(mentor.id);
+            const followText = isLoading ? '' : (isFollowed ? 'Following' : 'Follow');
+            const followClass = isFollowed ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50' : 'bg-slate-900 text-white hover:bg-slate-800';
+
+            let booked = null;
+            const bMap = (window.bookingsByMentor && typeof window.bookingsByMentor === 'object') ? window.bookingsByMentor : {};
+            if (bMap[mentor.id]) {
+                booked = bMap[mentor.id];
+            } else if (bMap[String(mentor.id)]) {
+                booked = bMap[String(mentor.id)];
+            } else if (Array.isArray(state.bookings) && state.bookings.length) {
+                booked = state.bookings.find(b => Number(b.mentor?.id) === Number(mentor.id)) || null;
             }
 
-            mentorGrid.innerHTML = state.mentors.map((mentor) => {
-                const skills = (mentor.skills || []).slice(0, 4)
-                    .map((skill) => `<span class="tag">${escapeHtml(skill)}</span>`)
-                    .join('');
+            const bookedBadge = booked 
+                ? `<div class="absolute right-4 top-4 bg-white border border-slate-200 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-600 shadow-sm z-10">
+                       Booked: ${escapeHtml(booked.status_label || booked.status)}
+                   </div>` 
+                : '';
 
-                const avatar = mentor.avatar_url
-                    ? `<img src="${escapeHtml(mentor.avatar_url)}" alt="Avatar mentor">`
-                    : escapeHtml(getInitial(mentor.name));
+            return `
+                <article class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-sky-500 transition-all duration-300 relative overflow-hidden flex flex-col justify-between">
+                    ${bookedBadge}
+                    
+                    <div>
+                        <!-- Head -->
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 text-white font-extrabold text-2xl flex items-center justify-center overflow-hidden shadow-sm flex-shrink-0">
+                                ${avatar}
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="text-lg font-bold text-slate-900 truncate">${escapeHtml(mentor.name || 'Mentor')}</h3>
+                                <p class="text-sm text-sky-600 font-semibold truncate">${escapeHtml(mentor.expertise || '-')}</p>
+                                <span class="text-xs text-slate-400 font-medium">${escapeHtml(mentor.experience_years)} tahun pengalaman</span>
+                            </div>
+                        </div>
 
-                const isFollowed = state.followedMentorIds.includes(mentor.id);
-                const isLoading = state.followLoadingIds.includes(mentor.id);
-                const followText = isLoading ? '' : (isFollowed ? 'Following' : 'Follow');
-                const followClass = isFollowed ? 'btn-ghost' : 'btn-brand';
+                        <!-- Skills -->
+                        <div class="flex flex-wrap gap-1.5 mb-4">${skills || '<span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-500">Professional Mentor</span>'}</div>
 
-                // Resolve booking for this mentor from multiple possible sources
-                let booked = null;
-                const bMap = (window.bookingsByMentor && typeof window.bookingsByMentor === 'object') ? window.bookingsByMentor : {};
-                if (bMap[mentor.id]) {
-                    booked = bMap[mentor.id];
-                } else if (bMap[String(mentor.id)]) {
-                    booked = bMap[String(mentor.id)];
-                } else if (Array.isArray(state.bookings) && state.bookings.length) {
-                    booked = state.bookings.find(b => Number(b.mentor?.id) === Number(mentor.id)) || null;
+                        <!-- Bio -->
+                        <p class="text-sm text-slate-600 leading-relaxed mb-6 font-medium line-clamp-3">
+                            ${escapeHtml(mentor.bio || 'Mentor profesional dengan pengalaman industri.')}
+                        </p>
+                    </div>
+
+                    <!-- Foot & Actions -->
+                    <div class="border-t border-slate-100 pt-4 mt-auto">
+                        <div class="flex justify-between items-center text-xs text-slate-500 mb-4">
+                            <span class="font-bold flex items-center gap-1 text-slate-700">🗓️ ${escapeHtml(mentor.open_slots_count)} Sesi</span>
+                            <span class="flex items-center gap-1 font-bold text-slate-700">
+                                <span class="text-amber-500 text-sm">★</span>
+                                <span>${Number(mentor.rating).toFixed(1)}</span>
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="px-4 py-2.5 text-xs font-bold rounded-xl shadow-sm transition flex items-center justify-center ${followClass}" data-follow-mentor="${escapeHtml(mentor.id)}" type="button" ${isLoading ? 'disabled' : ''}>
+                                ${isLoading ? '<span class="small-spinner !mr-0"></span>' : followText}
+                            </button>
+                            <button class="px-4 py-2.5 bg-sky-600 text-white font-bold rounded-xl text-xs hover:bg-sky-700 transition shadow-sm" data-open-mentor="${escapeHtml(mentor.id)}" type="button">Booking</button>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        mentorGrid.querySelectorAll('[data-open-mentor]').forEach((button) => {
+            button.addEventListener('click', () => openMentorDetail(button.getAttribute('data-open-mentor')));
+        });
+
+        mentorGrid.querySelectorAll('[data-follow-mentor]').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const mentorId = button.getAttribute('data-follow-mentor');
+                if (!mentorId) return;
+
+                const isNowFollowed = state.followedMentorIds.includes(mentorId);
+                try {
+                    state.followLoadingIds.push(mentorId);
+                    renderMentors();
+                    if (isNowFollowed) {
+                        await api(`/api/mentorship/mentors/${mentorId}/follow`, { method: 'DELETE' });
+                        state.followedMentorIds = state.followedMentorIds.filter(id => id !== mentorId);
+                        showToast('Berhasil berhenti mengikuti mentor', 'success');
+                    } else {
+                        await api(`/api/mentorship/mentors/${mentorId}/follow`, { method: 'POST' });
+                        state.followedMentorIds.push(mentorId);
+                        showToast('Berhasil mengikuti mentor', 'success');
+                    }
+                    state.followLoadingIds = state.followLoadingIds.filter(id => id !== mentorId);
+                    renderMentors();
+                } catch (err) {
+                    state.followLoadingIds = state.followLoadingIds.filter(id => id !== mentorId);
+                    renderMentors();
+                    showToast(err.message || 'Gagal melakukan aksi follow', 'error');
+                }
+            });
+        });
+    }
+
+    function renderBookings() {
+        if (!state.bookings.length) {
+            bookingList.innerHTML = '<div class="p-8 text-center text-slate-500 border border-dashed border-slate-200 rounded-2xl text-sm">Belum ada data booking pada status ini.</div>';
+            return;
+        }
+
+        bookingList.innerHTML = state.bookings.map((booking) => {
+            const canCancel = booking.status === 'pending';
+            const canJoin = booking.status === 'confirmed' && booking.meeting_url;
+
+            let buttonsHtml = `<button class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-50 transition shadow-sm" type="button" data-detail-id="${escapeHtml(booking.id)}">Detail</button>`;
+
+            if (canJoin) {
+                buttonsHtml += `<button class="px-4 py-2 bg-sky-600 text-white font-semibold rounded-xl text-xs hover:bg-sky-700 transition shadow-sm" type="button" data-join-booking="${escapeHtml(booking.meeting_url || '')}">Join</button>`;
+            }
+
+            if (canCancel) {
+                buttonsHtml += `<button class="px-4 py-2 bg-rose-50 border border-rose-200 text-rose-700 font-semibold rounded-xl text-xs hover:bg-rose-100 transition shadow-sm" type="button" data-cancel-booking="${escapeHtml(booking.id)}">Batalkan</button>`;
+            }
+
+            if (booking.status === 'completed' && !booking.review) {
+                buttonsHtml += `<button class="px-4 py-2 bg-amber-500 text-white font-semibold rounded-xl text-xs hover:bg-amber-600 transition shadow-sm" type="button" data-review-booking="${escapeHtml(booking.id)}">Beri Ulasan</button>`;
+            }
+
+            return `
+                <article class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border border-slate-100 rounded-2xl bg-slate-50/50 hover:bg-slate-50 transition">
+                    <div>
+                        <div class="mb-1">
+                            <strong class="text-base font-bold text-slate-900">${escapeHtml(booking.mentor?.name || 'Mentor')}</strong>
+                            ${booking.session_topic ? `<div class="text-sm text-sky-600 font-semibold mt-0.5">${escapeHtml(booking.session_topic)}</div>` : ''}
+                        </div>
+                        <p class="text-xs text-slate-500 mb-3">
+                            ${escapeHtml(booking.mentor?.expertise || '-')} • ${escapeHtml(booking.display_date || '-')} • ${escapeHtml(booking.display_time || '-')}
+                        </p>
+                        <span class="px-3 py-1 border rounded-full text-[10px] font-bold uppercase tracking-wider ${statusClass(booking.status)}">
+                            ${escapeHtml(booking.status_label || booking.status)}
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 justify-end items-center">
+                        ${buttonsHtml}
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        bookingList.querySelectorAll('[data-detail-id]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const booking = state.bookings.find((item) => item.id === button.getAttribute('data-detail-id'));
+                if (!booking) return;
+
+                const statusBadge = document.getElementById('detailModalStatus');
+                statusBadge.textContent = booking.status_label || booking.status;
+                statusBadge.className = `px-3 py-1 border rounded-full text-[10px] font-bold uppercase tracking-wider ${statusClass(booking.status)}`;
+                statusBadge.style.display = 'inline-block';
+
+                document.getElementById('detailMentorName').textContent = booking.mentor?.name || '-';
+                document.getElementById('detailMentorExp').textContent = booking.mentor?.expertise || '-';
+                document.getElementById('detailDate').textContent = booking.display_date || '-';
+                document.getElementById('detailTime').textContent = booking.display_time || '-';
+
+                const topic = booking.session_topic || booking.booking_notes || 'Sesi mentoring reguler.';
+                document.getElementById('detailLabel').textContent = topic;
+
+                // Description
+                const descBox = document.getElementById('detailDescriptionBox');
+                const descEl = document.getElementById('detailDescription');
+                if (booking.session_description) {
+                    descBox.classList.remove('hidden');
+                    descEl.textContent = booking.session_description;
+                } else {
+                    descBox.classList.add('hidden');
                 }
 
-                const bookedBadge = booked ? `<div style="position:absolute; right:12px; top:12px; background: #fff; border-radius: 999px; padding:6px 10px; font-weight:800; font-size:12px; border:1px solid #e6f6fb; z-index:6;">${escapeHtml(booked.status_label || booked.status)}</div>` : '';
+                // Platform
+                const platformBox = document.getElementById('detailPlatformBox');
+                const platformEl = document.getElementById('detailPlatform');
+                const showPlatform = booking.platform && (booking.status === 'confirmed' || booking.status === 'completed');
+                if (showPlatform) {
+                    platformBox.classList.remove('hidden');
+                    platformEl.textContent = booking.platform;
+                } else {
+                    platformBox.classList.add('hidden');
+                }
 
-                return `
-                    <article class="card mentor-card">
-                        ${bookedBadge}
-                        <div class="mentor-head">
-                            <div class="mentor-avatar">${avatar}</div>
-                            <div>
-                                <h3>${escapeHtml(mentor.name || 'Mentor')}</h3>
-                                <p>${escapeHtml(mentor.expertise || '-')}</p>
-                                <div class="mentor-sub">${escapeHtml(mentor.experience_years)} tahun pengalaman</div>
-                            </div>
-                        </div>
+                // Meeting URL
+                const meetingBox = document.getElementById('detailMeetingBox');
+                const meetingUrlEl = document.getElementById('detailMeetingUrl');
+                if (booking.status === 'confirmed' && booking.meeting_url) {
+                    meetingBox.classList.remove('hidden');
+                    meetingUrlEl.href = booking.meeting_url;
+                } else {
+                    meetingBox.classList.add('hidden');
+                }
 
-                        <div class="tag-list">${skills || '<span class="tag">Professional Mentor</span>'}</div>
+                // Rejection Reason
+                const rejectionBox = document.getElementById('detailRejectionBox');
+                const rejectionReasonEl = document.getElementById('detailRejectionReason');
+                if (booking.status === 'rejected' && booking.rejection_reason) {
+                    rejectionBox.classList.remove('hidden');
+                    rejectionReasonEl.textContent = booking.rejection_reason;
+                } else {
+                    rejectionBox.classList.add('hidden');
+                }
 
-                        <div class="mentor-bio">${escapeHtml((mentor.bio || 'Mentor profesional dengan pengalaman industri.').slice(0, 160))}</div>
+                // Material
+                const materialBox = document.getElementById('detailMaterialBox');
+                const materialUrlEl = document.getElementById('detailMaterialUrl');
+                const showMaterial = booking.material_url && (booking.status === 'confirmed' || booking.status === 'completed');
+                if (showMaterial) {
+                    materialBox.classList.remove('hidden');
+                    materialUrlEl.href = booking.material_url;
+                } else {
+                    materialBox.classList.add('hidden');
+                }
 
-                        <div class="mentor-foot">
-                            <div class="stats" style="display: flex; align-items: center; gap: 12px;">
-                                <span>🗓️ ${escapeHtml(mentor.open_slots_count)} Sesi Tersedia</span>
-                                <span style="color: var(--line);">|</span>
-                                <span style="display: inline-flex; align-items: center; gap: 4px;">
-                                    <span style="color: #fbbf24; font-size: 1.1rem;">★</span>
-                                    <strong>${Number(mentor.rating).toFixed(1)}</strong>
-                                </span>
-                            </div>
-                        </div>
+                // Mentor Notes
+                const notesBox = document.getElementById('detailNotesBox');
+                const notesEl = document.getElementById('detailNotes');
+                if (booking.session_notes && booking.status === 'completed') {
+                    notesBox.classList.remove('hidden');
+                    notesEl.textContent = booking.session_notes;
+                } else {
+                    notesBox.classList.add('hidden');
+                }
 
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn ${followClass}" data-follow-mentor="${escapeHtml(mentor.id)}" type="button" ${isLoading ? 'disabled' : ''}>
-                                ${isLoading ? '<span class="small-spinner"></span>' : ''}${followText}
-                            </button>
-                            <button class="btn btn-brand" data-open-mentor="${escapeHtml(mentor.id)}" type="button">Booking</button>
-                        </div>
-                    </article>
-                `;
-            }).join('');
+                // Review details
+                const reviewBox = document.getElementById('detailReviewBox');
+                const reviewStarsEl = document.getElementById('detailReviewStars');
+                const reviewCommentEl = document.getElementById('detailReviewComment');
 
-            mentorGrid.querySelectorAll('[data-open-mentor]').forEach((button) => {
-                button.addEventListener('click', () => openMentorDetail(button.getAttribute('data-open-mentor')));
+                if (booking.review) {
+                    reviewBox.classList.remove('hidden');
+                    reviewStarsEl.innerHTML = `
+                        <span class="text-amber-500">${'★'.repeat(booking.review.rating) + '☆'.repeat(5 - booking.review.rating)}</span>
+                        <span class="text-xs text-slate-500 font-bold">(${booking.review.rating}/5)</span>`;
+                    reviewCommentEl.textContent = booking.review.comment || 'Tidak ada ulasan tertulis.';
+                } else {
+                    reviewBox.classList.add('hidden');
+                }
+
+                document.getElementById('detailModal').classList.add('show');
             });
+        });
 
-            // Follow / Unfollow handlers
-            mentorGrid.querySelectorAll('[data-follow-mentor]').forEach((button) => {
-                button.addEventListener('click', async () => {
-                    const mentorId = button.getAttribute('data-follow-mentor');
-                    if (!mentorId) return;
+        bookingList.querySelectorAll('[data-join-booking]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const url = button.getAttribute('data-join-booking');
+                if (url) {
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                }
+            });
+        });
 
-                    const isNowFollowed = state.followedMentorIds.includes(mentorId);
+        bookingList.querySelectorAll('[data-cancel-booking]').forEach((button) => {
+            button.addEventListener('click', () => cancelBooking(button.getAttribute('data-cancel-booking')));
+        });
+
+        bookingList.querySelectorAll('[data-review-booking]').forEach((button) => {
+            button.addEventListener('click', () => openReviewModal(button.getAttribute('data-review-booking')));
+        });
+    }
+
+    async function loadMe() {
+        const me = await api('/api/auth/me');
+        const user = me.data;
+        state.me = user;
+
+        if (!user || user.role !== 'jobseeker') {
+            showToast('Halaman mentorship ini khusus role jobseeker.', 'error');
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 900);
+            return false;
+        }
+
+        try {
+            const followed = await api('/api/mentorship/my-followed-mentors');
+            state.followedMentorIds = (followed.data?.data || []).map(m => m.id);
+        } catch (e) {
+            state.followedMentorIds = [];
+        }
+
+        return true;
+    }
+
+    async function loadMentors() {
+        const params = new URLSearchParams();
+        Object.entries(state.filters).forEach(([key, value]) => {
+            if (String(value || '').trim() !== '') {
+                params.set(key, value);
+            }
+        });
+
+        const endpoint = `/api/mentorship/mentors?${params.toString()}`;
+        const response = await api(endpoint);
+        state.mentors = response.data?.items || [];
+        renderMentors();
+    }
+
+    async function loadUpcoming() {
+        const response = await api('/api/mentorship/bookings/my?status=pending,confirmed&per_page=5');
+        state.upcoming = response.data?.items || [];
+        renderUpcoming();
+    }
+
+    async function loadBookings() {
+        const query = selectedBookingStatus === 'all'
+            ? '/api/mentorship/bookings/my?per_page=12'
+            : `/api/mentorship/bookings/my?status=${encodeURIComponent(selectedBookingStatus)}&per_page=12`;
+        const response = await api(query);
+        state.bookings = response.data?.items || [];
+        renderBookings();
+    }
+
+    function activateTab(status) {
+        selectedBookingStatus = status;
+        document.querySelectorAll('#bookingTabs button').forEach((button) => {
+            const isTarget = button.getAttribute('data-status') === status;
+            button.className = isTarget 
+                ? 'px-4 py-2 text-sm font-semibold rounded-xl transition bg-slate-900 text-white shadow-sm'
+                : 'px-4 py-2 text-sm font-semibold rounded-xl transition text-slate-600 hover:bg-slate-100';
+        });
+    }
+
+    async function cancelBooking(bookingId) {
+        if (!bookingId) return;
+
+        try {
+            await api(`/api/mentorship/bookings/${bookingId}/cancel`, {
+                method: 'PATCH',
+                body: JSON.stringify({}),
+            });
+            showToast('Booking berhasil dibatalkan.', 'success');
+            await Promise.all([loadBookings(), loadUpcoming()]);
+        } catch (error) {
+            showToast(error.message || 'Gagal membatalkan booking.', 'error');
+        }
+    }
+
+    async function openMentorDetail(mentorId) {
+        if (!mentorId) return;
+
+        try {
+            const response = await api(`/api/mentorship/mentors/${mentorId}`);
+            activeMentor = response.data?.mentor || null;
+            const slots = response.data?.availability_slots || [];
+            const reviews = response.data?.reviews || [];
+            state.currentSlots = slots;
+            selectedSlotId = null;
+
+            if (!activeMentor) {
+                showToast('Detail mentor tidak ditemukan.', 'error');
+                return;
+            }
+
+            modalSubtitle.textContent = `dengan ${activeMentor.name || 'Mentor'}`;
+            document.getElementById('slotDetailPanel').classList.add('hidden');
+
+            // Setup follow button in modal
+            const modalFollowBtn = document.getElementById('modalFollowBtn');
+            if (modalFollowBtn) {
+                const isFollowed = state.followedMentorIds.includes(activeMentor.id);
+                modalFollowBtn.textContent = isFollowed ? 'Following' : 'Follow';
+                modalFollowBtn.className = isFollowed 
+                    ? 'px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition shadow-sm' 
+                    : 'px-4 py-2 text-xs font-bold rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm';
+                modalFollowBtn.disabled = false;
+                modalFollowBtn.onclick = async () => {
+                    modalFollowBtn.disabled = true;
+                    const prevText = modalFollowBtn.textContent;
+                    modalFollowBtn.innerHTML = '<span class="small-spinner !mr-0"></span>';
                     try {
-                        // set loading
-                        state.followLoadingIds.push(mentorId);
-                        renderMentors();
-                        if (isNowFollowed) {
-                            await api(`/api/mentorship/mentors/${mentorId}/follow`, { method: 'DELETE' });
-                            state.followedMentorIds = state.followedMentorIds.filter(id => id !== mentorId);
+                        if (state.followedMentorIds.includes(activeMentor.id)) {
+                            await api(`/api/mentorship/mentors/${activeMentor.id}/follow`, { method: 'DELETE' });
+                            state.followedMentorIds = state.followedMentorIds.filter(id => id !== activeMentor.id);
                             showToast('Berhasil berhenti mengikuti mentor', 'success');
                         } else {
-                            await api(`/api/mentorship/mentors/${mentorId}/follow`, { method: 'POST' });
-                            state.followedMentorIds.push(mentorId);
+                            await api(`/api/mentorship/mentors/${activeMentor.id}/follow`, { method: 'POST' });
+                            state.followedMentorIds.push(activeMentor.id);
                             showToast('Berhasil mengikuti mentor', 'success');
                         }
-                        // remove loading
-                        state.followLoadingIds = state.followLoadingIds.filter(id => id !== mentorId);
                         renderMentors();
+                        const nowFollowed = state.followedMentorIds.includes(activeMentor.id);
+                        modalFollowBtn.textContent = nowFollowed ? 'Following' : 'Follow';
+                        modalFollowBtn.className = nowFollowed 
+                            ? 'px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition shadow-sm' 
+                            : 'px-4 py-2 text-xs font-bold rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm';
                     } catch (err) {
-                        state.followLoadingIds = state.followLoadingIds.filter(id => id !== mentorId);
-                        renderMentors();
                         showToast(err.message || 'Gagal melakukan aksi follow', 'error');
+                        modalFollowBtn.textContent = prevText;
+                    } finally {
+                        modalFollowBtn.disabled = false;
                     }
-                });
-            });
-        }
-
-        function renderBookings() {
-            if (!state.bookings.length) {
-                bookingList.innerHTML = '<div class="empty">Belum ada data booking pada status ini.</div>';
-                return;
+                };
             }
 
-            bookingList.innerHTML = state.bookings.map((booking) => {
-                const canCancel = booking.status === 'pending';
-                const canJoin = booking.status === 'confirmed' && booking.meeting_url;
-
-                let buttonsHtml = `<button class="btn btn-ghost" type="button" data-detail-id="${escapeHtml(booking.id)}">Detail</button>`;
-
-                if (canJoin) {
-                    buttonsHtml += `<button class="btn btn-brand" type="button" data-join-booking="${escapeHtml(booking.meeting_url || '')}">Join</button>`;
-                }
-
-                if (canCancel) {
-                    buttonsHtml += `<button class="btn btn-danger" type="button" data-cancel-booking="${escapeHtml(booking.id)}">Batalkan</button>`;
-                }
-
-                if (booking.status === 'completed' && !booking.review) {
-                    buttonsHtml += `<button class="btn btn-brand" type="button" data-review-booking="${escapeHtml(booking.id)}">Beri Ulasan</button>`;
-                }
-
-                return `
-                    <article class="booking-item">
-                        <div>
-                            <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px;">
-                                <div style="flex: 1;">
-                                    <strong style="font-size: 1.1rem; color: var(--brand-dark);">${escapeHtml(booking.mentor?.name || 'Mentor')}</strong>
-                                    ${booking.session_topic ? `
-                                        <div style="margin-top: 2px; color: var(--brand); font-weight: 600; font-size: 0.95rem; line-height: 1.4;">
-                                            ${escapeHtml(booking.session_topic)}
-                                        </div>
-                                    ` : ''}
+            if (!slots.length) {
+                slotGrid.innerHTML = `
+                    <div class="col-span-full bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                        <div class="text-center text-slate-500 text-sm mb-4">Belum ada slot yang dibuka mentor.</div>
+                        <div class="border-t border-slate-200 pt-4 mt-2">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">Minta Jadwal ke Mentor</label>
+                            <div class="grid gap-3 sm:grid-cols-3 items-end mb-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-bold uppercase mb-1">Tanggal</label>
+                                    <input id="requestDate" type="date" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs" />
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-bold uppercase mb-1">Mulai</label>
+                                    <input id="requestStartTime" type="time" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs" />
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-bold uppercase mb-1">Selesai</label>
+                                    <input id="requestEndTime" type="time" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs" />
                                 </div>
                             </div>
-                            <small style="display: block; color: var(--muted); margin-bottom: 8px;">
-                                ${escapeHtml(booking.mentor?.expertise || '-')} • ${escapeHtml(booking.display_date || '-')} • ${escapeHtml(booking.display_time || '-')}
-                            </small>
-                            <div class="badge ${statusClass(booking.status)}">${escapeHtml(booking.status_label || booking.status)}</div>
+                            <textarea id="requestMessage" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs resize-none mb-3" placeholder="Tulis pesan singkat (opsional), mis. 'Saya ingin diskusi tentang roadmap karier'."></textarea>
+                            <div class="flex gap-2">
+                                <button id="requestScheduleBtn" class="px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-xs hover:bg-sky-700 transition" type="button">Minta Jadwal</button>
+                                <button id="requestCancelBtn" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-xs hover:bg-slate-200 transition" type="button">Batal</button>
+                            </div>
                         </div>
-                        <div class="booking-actions">
-                            ${buttonsHtml}
-                        </div>
-                    </article>
+                    </div>
                 `;
-            }).join('');
-
-            bookingList.querySelectorAll('[data-detail-id]').forEach((button) => {
-                button.addEventListener('click', () => {
-                    const booking = state.bookings.find((item) => item.id === button.getAttribute('data-detail-id'));
-                    if (!booking) {
-                        return;
-                    }
-
-                    const statusBadge = document.getElementById('detailModalStatus');
-                    statusBadge.textContent = booking.status_label || booking.status;
-                    statusBadge.className = `badge ${statusClass(booking.status)}`;
-                    statusBadge.style.marginTop = '0';
-                    statusBadge.style.display = 'inline-block';
-
-                    document.getElementById('detailMentorName').textContent = booking.mentor?.name || '-';
-                    document.getElementById('detailMentorExp').textContent = booking.mentor?.expertise || '-';
-                    document.getElementById('detailDate').textContent = booking.display_date || '-';
-                    document.getElementById('detailTime').textContent = booking.display_time || '-';
-
-                    const topic = booking.session_topic || booking.booking_notes || 'Sesi mentoring reguler.';
-                    document.getElementById('detailLabel').textContent = topic;
-
-                    // Description
-                    const descBox = document.getElementById('detailDescriptionBox');
-                    const descEl = document.getElementById('detailDescription');
-                    if (booking.session_description) {
-                        descBox.style.display = 'block';
-                        descEl.textContent = booking.session_description;
-                    } else {
-                        descBox.style.display = 'none';
-                    }
-
-                    // Platform
-                    const platformBox = document.getElementById('detailPlatformBox');
-                    const platformEl = document.getElementById('detailPlatform');
-                    const showPlatform = booking.platform && (booking.status === 'confirmed' || booking.status === 'completed');
-                    if (showPlatform) {
-                        platformBox.style.display = 'block';
-                        platformEl.textContent = booking.platform;
-                    } else {
-                        platformBox.style.display = 'none';
-                    }
-
-                    // Meeting URL
-                    const meetingBox = document.getElementById('detailMeetingBox');
-                    const meetingUrlEl = document.getElementById('detailMeetingUrl');
-                    if (booking.status === 'confirmed' && booking.meeting_url) {
-                        meetingBox.style.display = 'block';
-                        meetingUrlEl.href = booking.meeting_url;
-                    } else {
-                        meetingBox.style.display = 'none';
-                    }
-
-                    // Rejection Reason
-                    const rejectionBox = document.getElementById('detailRejectionBox');
-                    const rejectionReasonEl = document.getElementById('detailRejectionReason');
-                    if (booking.status === 'rejected' && booking.rejection_reason) {
-                        rejectionBox.style.display = 'block';
-                        rejectionReasonEl.textContent = booking.rejection_reason;
-                    } else {
-                        rejectionBox.style.display = 'none';
-                    }
-
-                    // Material
-                    const materialBox = document.getElementById('detailMaterialBox');
-                    const materialUrlEl = document.getElementById('detailMaterialUrl');
-                    const showMaterial = booking.material_url && (booking.status === 'confirmed' || booking.status === 'completed');
-                    if (showMaterial) {
-                        materialBox.style.display = 'block';
-                        materialUrlEl.href = booking.material_url;
-                    } else {
-                        materialBox.style.display = 'none';
-                    }
-
-                    // Mentor Notes
-                    const notesBox = document.getElementById('detailNotesBox');
-                    const notesEl = document.getElementById('detailNotes');
-                    if (booking.session_notes && booking.status === 'completed') {
-                        notesBox.style.display = 'block';
-                        notesEl.textContent = booking.session_notes;
-                    } else {
-                        notesBox.style.display = 'none';
-                    }
-
-                    // Review details
-                    const reviewBox = document.getElementById('detailReviewBox');
-                    const reviewStarsEl = document.getElementById('detailReviewStars');
-                    const reviewRatingEl = document.getElementById('detailReviewRating');
-                    const reviewCommentEl = document.getElementById('detailReviewComment');
-
-                    if (booking.review) {
-                        reviewBox.style.display = 'block';
-                        reviewStarsEl.textContent = '★'.repeat(booking.review.rating) + '☆'.repeat(5 - booking.review.rating);
-                        reviewRatingEl.textContent = `(${booking.review.rating}/5)`;
-                        reviewCommentEl.textContent = booking.review.comment || 'Tidak ada ulasan tertulis.';
-                    } else {
-                        reviewBox.style.display = 'none';
-                    }
-
-                    document.getElementById('detailModal').classList.add('show');
-                });
-            });
-
-            bookingList.querySelectorAll('[data-join-booking]').forEach((button) => {
-                button.addEventListener('click', () => {
-                    const url = button.getAttribute('data-join-booking');
-                    if (url) {
-                        window.open(url, '_blank', 'noopener,noreferrer');
-                    }
-                });
-            });
-
-            bookingList.querySelectorAll('[data-cancel-booking]').forEach((button) => {
-                button.addEventListener('click', () => cancelBooking(button.getAttribute('data-cancel-booking')));
-            });
-
-            bookingList.querySelectorAll('[data-review-booking]').forEach((button) => {
-                button.addEventListener('click', () => openReviewModal(button.getAttribute('data-review-booking')));
-            });
-        }
-
-        async function loadMe() {
-            const me = await api('/api/auth/me');
-            const user = me.data;
-            state.me = user;
-
-            if (!user || user.role !== 'jobseeker') {
-                showToast('Halaman mentorship ini khusus role jobseeker.', 'error');
-                setTimeout(() => {
-                    window.location.href = '/dashboard';
-                }, 900);
-                return false;
-            }
-
-            document.getElementById('miniName').textContent = user.name || 'User';
-            document.getElementById('miniEmail').textContent = user.email || '-';
-            document.getElementById('miniAvatar').textContent = getInitial(user.name);
-
-            // Load mentors the user already follows (so we can mark Follow buttons)
-            try {
-                const followed = await api('/api/mentorship/my-followed-mentors');
-                state.followedMentorIds = (followed.data?.data || []).map(m => m.id);
-            } catch (e) {
-                state.followedMentorIds = [];
-            }
-
-            return true;
-        }
-
-        async function loadMentors() {
-            const params = new URLSearchParams();
-            Object.entries(state.filters).forEach(([key, value]) => {
-                if (String(value || '').trim() !== '') {
-                    params.set(key, value);
-                }
-            });
-
-            const endpoint = `/api/mentorship/mentors?${params.toString()}`;
-            const response = await api(endpoint);
-            state.mentors = response.data?.items || [];
-            renderMentors();
-        }
-
-        async function loadUpcoming() {
-            const response = await api('/api/mentorship/bookings/my?status=pending,confirmed&per_page=5');
-            state.upcoming = response.data?.items || [];
-            renderUpcoming();
-        }
-
-        async function loadBookings() {
-            const query = selectedBookingStatus === 'all'
-                ? '/api/mentorship/bookings/my?per_page=12'
-                : `/api/mentorship/bookings/my?status=${encodeURIComponent(selectedBookingStatus)}&per_page=12`;
-            const response = await api(query);
-            state.bookings = response.data?.items || [];
-            renderBookings();
-        }
-
-        function activateTab(status) {
-            selectedBookingStatus = status;
-            document.querySelectorAll('#bookingTabs button').forEach((button) => {
-                button.classList.toggle('active', button.getAttribute('data-status') === status);
-            });
-        }
-
-        async function cancelBooking(bookingId) {
-            if (!bookingId) {
-                return;
-            }
-
-            try {
-                await api(`/api/mentorship/bookings/${bookingId}/cancel`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({}),
-                });
-                showToast('Booking berhasil dibatalkan.', 'success');
-                await Promise.all([loadBookings(), loadUpcoming()]);
-            } catch (error) {
-                showToast(error.message || 'Gagal membatalkan booking.', 'error');
-            }
-        }
-
-        async function openMentorDetail(mentorId) {
-            if (!mentorId) {
-                return;
-            }
-
-            try {
-                const response = await api(`/api/mentorship/mentors/${mentorId}`);
-                activeMentor = response.data?.mentor || null;
-                const slots = response.data?.availability_slots || [];
-                const reviews = response.data?.reviews || [];
-                state.currentSlots = slots;
-                selectedSlotId = null;
-
-                if (!activeMentor) {
-                    showToast('Detail mentor tidak ditemukan.', 'error');
-                    return;
-                }
-
-                modalSubtitle.textContent = `dengan ${activeMentor.name || 'Mentor'}`;
-                document.getElementById('slotDetailPanel').style.display = 'none';
-
-                // Setup modal follow button
-                try {
-                    const modalFollowBtn = document.getElementById('modalFollowBtn');
-                    if (modalFollowBtn) {
-                        const isFollowed = state.followedMentorIds.includes(activeMentor.id);
-                        modalFollowBtn.textContent = isFollowed ? 'Following' : 'Follow';
-                        modalFollowBtn.className = isFollowed ? 'btn btn-ghost' : 'btn btn-brand';
-                        modalFollowBtn.disabled = false;
-                        modalFollowBtn.onclick = async () => {
-                            modalFollowBtn.disabled = true;
-                            const prevText = modalFollowBtn.textContent;
-                            modalFollowBtn.innerHTML = '<span class="small-spinner"></span>';
-                            try {
-                                if (state.followedMentorIds.includes(activeMentor.id)) {
-                                    await api(`/api/mentorship/mentors/${activeMentor.id}/follow`, { method: 'DELETE' });
-                                    state.followedMentorIds = state.followedMentorIds.filter(id => id !== activeMentor.id);
-                                    showToast('Berhasil berhenti mengikuti mentor', 'success');
-                                } else {
-                                    await api(`/api/mentorship/mentors/${activeMentor.id}/follow`, { method: 'POST' });
-                                    state.followedMentorIds.push(activeMentor.id);
-                                    showToast('Berhasil mengikuti mentor', 'success');
-                                }
-                                renderMentors();
-                                modalFollowBtn.textContent = state.followedMentorIds.includes(activeMentor.id) ? 'Following' : 'Follow';
-                                modalFollowBtn.className = state.followedMentorIds.includes(activeMentor.id) ? 'btn btn-ghost' : 'btn btn-brand';
-                            } catch (err) {
-                                showToast(err.message || 'Gagal melakukan aksi follow', 'error');
-                                modalFollowBtn.textContent = prevText;
-                            } finally {
-                                modalFollowBtn.disabled = false;
-                            }
-                        };
-                    }
-                } catch (e) {
-                    // ignore modal follow setup errors
-                }
-
-                    if (!slots.length) {
-                    slotGrid.innerHTML = `
-                        <div class="empty" style="grid-column:1/-1;">Belum ada slot yang dibuka mentor.</div>
-                        <div class="meta-box" style="grid-column:1/-1; margin-top:12px;">
-                            <label style="display:block; font-weight:600; margin-bottom:6px;">Minta Jadwal ke Mentor (Pilih Rentang Waktu)</label>
-                            <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
-                                <input id="requestDate" type="date" style="padding:8px; border:1px solid var(--line); border-radius:6px;" />
-                                <input id="requestStartTime" type="time" style="padding:8px; border:1px solid var(--line); border-radius:6px; width:120px;" />
-                                <span style="font-weight:700; color:var(--muted);">–</span>
-                                <input id="requestEndTime" type="time" style="padding:8px; border:1px solid var(--line); border-radius:6px; width:120px;" />
-                            </div>
-                            <textarea id="requestMessage" rows="3" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; resize:vertical;" placeholder="Tulis pesan singkat (opsional), mis. 'Saya ingin diskusi tentang roadmap karier minggu depan'."></textarea>
-                            <div style="margin-top:8px; display:flex; gap:8px;">
-                                <button id="requestScheduleBtn" class="btn btn-brand" type="button">Minta Jadwal</button>
-                                <button id="requestCancelBtn" class="btn btn-ghost" type="button">Batal</button>
-                            </div>
-                        </div>
-                    `;
-                    document.getElementById('slotDetailPanel').style.display = 'none';
-                    const bookBtnEl = document.getElementById('bookBtn');
-                    if (bookBtnEl) bookBtnEl.disabled = true;
-
-                    // bind request buttons
-                    setTimeout(() => {
-                        const reqBtn = document.getElementById('requestScheduleBtn');
-                        const cancelReqBtn = document.getElementById('requestCancelBtn');
-                        const dateInput = document.getElementById('requestDate');
-                        const startInput = document.getElementById('requestStartTime');
-                        const endInput = document.getElementById('requestEndTime');
-                        const bookBtnEl = document.getElementById('bookBtn');
-
-                        // prefill date and times with next day 10:00-11:00
-                        const dt = new Date();
-                        const next = new Date(dt.getTime() + 24*60*60*1000);
-                        const yyyy = next.getFullYear();
-                        const mm = String(next.getMonth()+1).padStart(2,'0');
-                        const dd = String(next.getDate()).padStart(2,'0');
-                        if (dateInput && !dateInput.value) dateInput.value = `${yyyy}-${mm}-${dd}`;
-                        if (startInput && !startInput.value) startInput.value = '10:00';
-                        if (endInput && !endInput.value) endInput.value = '11:00';
-
-                        function updateBookButtonState() {
-                            if (!bookBtnEl) return;
-                            // enable if a slot is selected OR date+start+end provided and start < end
-                            const hasSelectedSlot = !!selectedSlotId;
-                            const hasPreferred = (dateInput && dateInput.value) && (startInput && startInput.value) && (endInput && endInput.value);
-                            let validRange = false;
-                            if (hasPreferred) {
-                                const s = startInput.value;
-                                const e = endInput.value;
-                                validRange = s < e;
-                            }
-                            bookBtnEl.disabled = !(hasSelectedSlot || (hasPreferred && validRange));
-                        }
-
-                        if (dateInput) dateInput.addEventListener('change', updateBookButtonState);
-                        if (startInput) startInput.addEventListener('change', updateBookButtonState);
-                        if (endInput) endInput.addEventListener('change', updateBookButtonState);
-
-                        if (reqBtn) {
-                            reqBtn.addEventListener('click', async () => {
-                                await requestSchedule();
-                                updateBookButtonState();
-                            });
-                        }
-                        if (cancelReqBtn) {
-                            cancelReqBtn.addEventListener('click', () => {
-                                if (dateInput) dateInput.value = '';
-                                if (startInput) startInput.value = '';
-                                if (endInput) endInput.value = '';
-                                if (document.getElementById('requestMessage')) document.getElementById('requestMessage').value = '';
-                                updateBookButtonState();
-                            });
-                        }
-
-                        // initial state
-                        updateBookButtonState();
-                    }, 40);
-                } else {
-                    slotGrid.innerHTML = slots.map((slot) => `
-                        <label class="slot" data-slot-id="${escapeHtml(slot.id)}" data-is-manual="${!!slot.is_manual}">
-                            <input type="radio" name="slotChoice" value="${escapeHtml(slot.id)}">
-                            <span class="slot-icon">🗓</span>
-                            <div>
-                                <strong>${escapeHtml((slot.display_date || '-') + (slot.display_time ? ' • ' + slot.display_time : ''))}</strong>
-                            </div>
-                        </label>
-                    `).join('');
-
-                    // disable book button until a slot is selected
-                    const bookBtnEl = document.getElementById('bookBtn');
-                    if (bookBtnEl) bookBtnEl.disabled = true;
-
-                    slotGrid.querySelectorAll('.slot').forEach((slotEl) => {
-                        slotEl.addEventListener('click', () => {
-                            const id = slotEl.getAttribute('data-slot-id');
-                            const isManual = slotEl.getAttribute('data-is-manual') === 'true';
-                            const selectedSlot = slots.find(s => s.id == id && (!!s.is_manual) === isManual);
-
-                            selectedSlotId = id;
-                            selectedSlotIsManual = isManual;
-
-                            slotGrid.querySelectorAll('.slot').forEach((item) => item.classList.remove('active'));
-                            slotEl.classList.add('active');
-
-                            if (selectedSlot) {
-                                document.getElementById('slotDetailPanel').style.display = 'block';
-                                document.getElementById('slotDetailDate').textContent = ((selectedSlot.display_date || '-') + (selectedSlot.display_time ? ' • ' + selectedSlot.display_time : ''));
-                                document.getElementById('slotDetailTime').textContent = '';
-                                document.getElementById('slotDetailLabel').textContent = selectedSlot.label || 'Sesi mentoring reguler.';
-                                
-                                const slotDescEl = document.getElementById('slotDetailDescription');
-                                if (selectedSlot.description) {
-                                    slotDescEl.style.display = 'block';
-                                    slotDescEl.textContent = selectedSlot.description;
-                                } else {
-                                    slotDescEl.style.display = 'none';
-                                }
-                                
-                                // enable confirm booking button now that a slot is selected
-                                if (bookBtnEl) bookBtnEl.disabled = false;
-                            }
-                        });
-                    });
-                }
-
-                const reviewsListEl = document.getElementById('mentorReviewsList');
-                if (!reviews.length) {
-                    reviewsListEl.innerHTML = '<div class="empty" style="padding: 15px; grid-column:1/-1;">Belum ada ulasan untuk mentor ini.</div>';
-                } else {
-                    reviewsListEl.innerHTML = reviews.map((rev) => `
-                        <div class="upcoming-item" style="grid-template-columns: 1fr; background: #fafafa; border: 1px solid #eef2f6; border-radius: 12px; padding: 12px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                <strong style="font-size: 0.9rem; color: #1e293b;">${escapeHtml(rev.jobseeker_name)}</strong>
-                                <span style="font-size: 0.8rem; color: var(--muted);">${escapeHtml(rev.created_at)}</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 2px; margin-bottom: 6px;">
-                                <span style="color: #fbbf24; font-size: 1rem;">${'★'.repeat(rev.rating) + '☆'.repeat(5 - rev.rating)}</span>
-                                <span style="font-size: 0.8rem; font-weight: 700; color: #475569;">(${rev.rating}/5)</span>
-                            </div>
-                            <p style="margin: 0; font-size: 0.85rem; color: #475569; line-height: 1.5;">${escapeHtml(rev.comment || 'Mentee tidak menulis ulasan tertulis.')}</p>
-                        </div>
-                    `).join('');
-                }
-
-                mentorModal.classList.add('show');
-            } catch (error) {
-                showToast(error.message || 'Gagal membuka profil mentor.', 'error');
-            }
-        }
-
-        async function submitBooking() {
-            if (!activeMentor?.id) {
-                showToast('Mentor belum dipilih.', 'error');
-                return;
-            }
-
-            // If there is no selected slot but user provided preferred date + start/end time, treat as schedule request
-            if (!selectedSlotId) {
-                const dateEl = document.getElementById('requestDate');
-                const startEl = document.getElementById('requestStartTime');
-                const endEl = document.getElementById('requestEndTime');
-                const hasPreferred = dateEl && dateEl.value && startEl && startEl.value && endEl && endEl.value && (startEl.value < endEl.value);
-                if (!state.currentSlots || !state.currentSlots.length) {
-                    if (hasPreferred) {
-                        // send schedule request instead of booking
-                        await requestSchedule();
-                        return;
-                    }
-                    showToast('Mentor belum membuka slot. Silakan pilih mentor lain atau hubungi mentor.', 'error');
-                    return;
-                }
-            }
-
-            const payload = {
-                mentor_id: activeMentor.id,
-            };
-
-            if (selectedSlotId) {
-                if (selectedSlotIsManual) {
-                    payload.sesi_jadwal_id = selectedSlotId;
-                } else {
-                    payload.mentor_availability_id = selectedSlotId;
-                }
-            } else {
-                showToast('Pilih salah satu jadwal terlebih dahulu.', 'error');
-                return;
-            }
-
-            try {
-                await api('/api/mentorship/bookings', {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                });
-
-                showToast('Booking sesi berhasil dibuat.', 'success');
-                mentorModal.classList.remove('show');
-                selectedSlotId = null;
-                state.currentSlots = [];
+                document.getElementById('slotDetailPanel').classList.add('hidden');
                 const bookBtnEl = document.getElementById('bookBtn');
-                if (bookBtnEl) bookBtnEl.disabled = false;
+                if (bookBtnEl) bookBtnEl.disabled = true;
 
-                await Promise.all([loadMentors(), loadBookings(), loadUpcoming()]);
-            } catch (error) {
-                showToast(error.message || 'Booking sesi gagal diproses.', 'error');
-            }
-        }
+                setTimeout(() => {
+                    const reqBtn = document.getElementById('requestScheduleBtn');
+                    const cancelReqBtn = document.getElementById('requestCancelBtn');
+                    const dateInput = document.getElementById('requestDate');
+                    const startInput = document.getElementById('requestStartTime');
+                    const endInput = document.getElementById('requestEndTime');
+                    const bookBtnEl = document.getElementById('bookBtn');
 
-        function openReviewModal(bookingId) {
-            document.getElementById('reviewBookingId').value = bookingId;
+                    // Prefill date/times
+                    const dt = new Date();
+                    const next = new Date(dt.getTime() + 24*60*60*1000);
+                    const yyyy = next.getFullYear();
+                    const mm = String(next.getMonth()+1).padStart(2,'0');
+                    const dd = String(next.getDate()).padStart(2,'0');
+                    if (dateInput && !dateInput.value) dateInput.value = `${yyyy}-${mm}-${dd}`;
+                    if (startInput && !startInput.value) startInput.value = '10:00';
+                    if (endInput && !endInput.value) endInput.value = '11:00';
 
-            // Reset stars rating radio selection
-            const ratingInputs = document.getElementsByName('reviewRating');
-            ratingInputs.forEach(input => input.checked = false);
+                    function updateBookButtonState() {
+                        if (!bookBtnEl) return;
+                        const hasSelectedSlot = !!selectedSlotId;
+                        const hasPreferred = (dateInput && dateInput.value) && (startInput && startInput.value) && (endInput && endInput.value);
+                        let validRange = false;
+                        if (hasPreferred) {
+                            validRange = startInput.value < endInput.value;
+                        }
+                        bookBtnEl.disabled = !(hasSelectedSlot || (hasPreferred && validRange));
+                    }
 
-            // Reset comment textarea
-            document.getElementById('reviewComment').value = '';
+                    if (dateInput) dateInput.addEventListener('change', updateBookButtonState);
+                    if (startInput) startInput.addEventListener('change', updateBookButtonState);
+                    if (endInput) endInput.addEventListener('change', updateBookButtonState);
 
-            // Hide error message
-            document.getElementById('ratingErrorMessage').style.display = 'none';
+                    if (reqBtn) {
+                        reqBtn.addEventListener('click', async () => {
+                            await requestSchedule();
+                            updateBookButtonState();
+                        });
+                    }
+                    if (cancelReqBtn) {
+                        cancelReqBtn.addEventListener('click', () => {
+                            if (dateInput) dateInput.value = '';
+                            if (startInput) startInput.value = '';
+                            if (endInput) endInput.value = '';
+                            if (document.getElementById('requestMessage')) document.getElementById('requestMessage').value = '';
+                            updateBookButtonState();
+                        });
+                    }
+                    updateBookButtonState();
+                }, 40);
+            } else {
+                slotGrid.innerHTML = slots.map((slot) => `
+                    <label class="slot" data-slot-id="${escapeHtml(slot.id)}" data-is-manual="${!!slot.is_manual}">
+                        <input type="radio" name="slotChoice" value="${escapeHtml(slot.id)}">
+                        <span class="text-xl">🗓</span>
+                        <div class="min-w-0">
+                            <strong class="text-xs font-bold text-slate-900 block truncate">${escapeHtml(slot.display_date || '-')}</strong>
+                            <span class="text-[10px] text-slate-400 font-semibold block truncate">${escapeHtml(slot.display_time || '')}</span>
+                        </div>
+                    </label>
+                `).join('');
 
-            // Open modal
-            document.getElementById('reviewModal').classList.add('show');
-        }
+                const bookBtnEl = document.getElementById('bookBtn');
+                if (bookBtnEl) bookBtnEl.disabled = true;
 
-        async function submitReview() {
-            const bookingId = document.getElementById('reviewBookingId').value;
+                slotGrid.querySelectorAll('.slot').forEach((slotEl) => {
+                    slotEl.addEventListener('click', () => {
+                        const id = slotEl.getAttribute('data-slot-id');
+                        const isManual = slotEl.getAttribute('data-is-manual') === 'true';
+                        const selectedSlot = slots.find(s => s.id == id && (!!s.is_manual) === isManual);
 
-            // Find selected rating
-            const ratingInputs = document.getElementsByName('reviewRating');
-            let rating = null;
-            for (const input of ratingInputs) {
-                if (input.checked) {
-                    rating = input.value;
-                    break;
-                }
-            }
+                        selectedSlotId = id;
+                        selectedSlotIsManual = isManual;
 
-            if (!rating) {
-                document.getElementById('ratingErrorMessage').style.display = 'block';
-                return;
-            }
+                        slotGrid.querySelectorAll('.slot').forEach((item) => item.classList.remove('active'));
+                        slotEl.classList.add('active');
 
-            document.getElementById('ratingErrorMessage').style.display = 'none';
-
-            const comment = document.getElementById('reviewComment').value.trim();
-            const submitBtn = document.getElementById('submitReviewBtn');
-            const originalText = submitBtn.textContent;
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Mengirim...';
-
-            try {
-                await api(`/api/mentorship/bookings/${bookingId}/reviews`, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        rating: parseInt(rating),
-                        comment: comment || null
-                    })
+                        if (selectedSlot) {
+                            const panel = document.getElementById('slotDetailPanel');
+                            panel.classList.remove('hidden');
+                            document.getElementById('slotDetailDate').textContent = selectedSlot.display_date || '-';
+                            document.getElementById('slotDetailTime').textContent = selectedSlot.display_time || '';
+                            document.getElementById('slotDetailLabel').textContent = selectedSlot.label || 'Sesi mentoring reguler.';
+                            
+                            const slotDescEl = document.getElementById('slotDetailDescription');
+                            if (selectedSlot.description) {
+                                slotDescEl.classList.remove('hidden');
+                                slotDescEl.textContent = selectedSlot.description;
+                            } else {
+                                slotDescEl.classList.add('hidden');
+                            }
+                            if (bookBtnEl) bookBtnEl.disabled = false;
+                        }
+                    });
                 });
-
-                showToast('Ulasan Anda berhasil dikirim!', 'success');
-                document.getElementById('reviewModal').classList.remove('show');
-                await Promise.all([loadBookings(), loadMentors()]);
-            } catch (error) {
-                showToast(error.message || 'Gagal mengirimkan ulasan.', 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
             }
+
+            const reviewsListEl = document.getElementById('mentorReviewsList');
+            if (!reviews.length) {
+                reviewsListEl.innerHTML = '<div class="p-4 text-center text-slate-400 text-xs border border-slate-100 rounded-xl bg-slate-50/50">Belum ada ulasan untuk mentor ini.</div>';
+            } else {
+                reviewsListEl.innerHTML = reviews.map((rev) => `
+                    <div class="p-4 bg-slate-55 border border-slate-100 rounded-2xl bg-slate-50/50">
+                        <div class="flex justify-between items-center mb-2">
+                            <strong class="text-xs font-bold text-slate-900">${escapeHtml(rev.jobseeker_name)}</strong>
+                            <span class="text-[10px] text-slate-400 font-semibold">${escapeHtml(rev.created_at)}</span>
+                        </div>
+                        <div class="flex items-center gap-1 mb-2">
+                            <span class="text-amber-500 text-xs">${'★'.repeat(rev.rating) + '☆'.repeat(5 - rev.rating)}</span>
+                            <span class="text-[10px] font-bold text-slate-500">(${rev.rating}/5)</span>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">${escapeHtml(rev.comment || 'Mentee tidak menulis ulasan tertulis.')}</p>
+                    </div>
+                `).join('');
+            }
+
+            mentorModal.classList.add('show');
+        } catch (error) {
+            showToast(error.message || 'Gagal membuka profil mentor.', 'error');
+        }
+    }
+
+    async function submitBooking() {
+        if (!activeMentor?.id) {
+            showToast('Mentor belum dipilih.', 'error');
+            return;
         }
 
-        async function requestSchedule() {
-            if (!activeMentor?.id) {
-                showToast('Mentor belum dipilih.', 'error');
-                return;
-            }
-
-            const msgEl = document.getElementById('requestMessage');
-            const reqBtn = document.getElementById('requestScheduleBtn');
-            if (reqBtn) reqBtn.disabled = true;
-            const message = msgEl ? msgEl.value.trim() : '';
+        if (!selectedSlotId) {
             const dateEl = document.getElementById('requestDate');
             const startEl = document.getElementById('requestStartTime');
             const endEl = document.getElementById('requestEndTime');
-            const preferred_date = dateEl ? dateEl.value : null;
-            const preferred_start = startEl ? startEl.value : null;
-            const preferred_end = endEl ? endEl.value : null;
-
-            try {
-                if (reqBtn) reqBtn.innerHTML = '<span class="small-spinner"></span> Mengirim...';
-                await api('/api/mentorship/mentor-requests', {
-                    method: 'POST',
-                    body: JSON.stringify({ mentor_id: activeMentor.id, message, preferred_date, preferred_start, preferred_end }),
-                });
-
-                showToast('Permintaan jadwal berhasil dikirim ke mentor.', 'success');
-                if (msgEl) msgEl.value = '';
-            } catch (err) {
-                showToast(err.message || 'Gagal mengirim permintaan jadwal.', 'error');
-            } finally {
-                if (reqBtn) {
-                    reqBtn.disabled = false;
-                    reqBtn.textContent = 'Minta Jadwal';
+            const hasPreferred = dateEl && dateEl.value && startEl && startEl.value && endEl && endEl.value && (startEl.value < endEl.value);
+            if (!state.currentSlots || !state.currentSlots.length) {
+                if (hasPreferred) {
+                    await requestSchedule();
+                    return;
                 }
+                showToast('Mentor belum membuka slot. Silakan hubungi mentor.', 'error');
+                return;
             }
         }
 
-        function bindEvents() {
-            document.getElementById('searchBtn').addEventListener('click', async () => {
+        const payload = { mentor_id: activeMentor.id };
+        if (selectedSlotId) {
+            if (selectedSlotIsManual) {
+                payload.sesi_jadwal_id = selectedSlotId;
+            } else {
+                payload.mentor_availability_id = selectedSlotId;
+            }
+        } else {
+            showToast('Pilih salah satu jadwal terlebih dahulu.', 'error');
+            return;
+        }
+
+        try {
+            await api('/api/mentorship/bookings', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+            });
+
+            showToast('Booking sesi berhasil dibuat.', 'success');
+            mentorModal.classList.remove('show');
+            selectedSlotId = null;
+            state.currentSlots = [];
+            const bookBtnEl = document.getElementById('bookBtn');
+            if (bookBtnEl) bookBtnEl.disabled = false;
+
+            await Promise.all([loadMentors(), loadBookings(), loadUpcoming()]);
+        } catch (error) {
+            showToast(error.message || 'Booking sesi gagal diproses.', 'error');
+        }
+    }
+
+    function openReviewModal(bookingId) {
+        document.getElementById('reviewBookingId').value = bookingId;
+        const ratingInputs = document.getElementsByName('reviewRating');
+        ratingInputs.forEach(input => input.checked = false);
+        document.getElementById('reviewComment').value = '';
+        document.getElementById('ratingErrorMessage').classList.add('hidden');
+        document.getElementById('reviewModal').classList.add('show');
+    }
+
+    async function submitReview() {
+        const bookingId = document.getElementById('reviewBookingId').value;
+        const ratingInputs = document.getElementsByName('reviewRating');
+        let rating = null;
+        for (const input of ratingInputs) {
+            if (input.checked) {
+                rating = input.value;
+                break;
+            }
+        }
+
+        if (!rating) {
+            document.getElementById('ratingErrorMessage').classList.remove('hidden');
+            return;
+        }
+
+        document.getElementById('ratingErrorMessage').classList.add('hidden');
+        const comment = document.getElementById('reviewComment').value.trim();
+        const submitBtn = document.getElementById('submitReviewBtn');
+        const originalText = submitBtn.textContent;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Mengirim...';
+
+        try {
+            await api(`/api/mentorship/bookings/${bookingId}/reviews`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    rating: parseInt(rating),
+                    comment: comment || null
+                })
+            });
+
+            showToast('Ulasan Anda berhasil dikirim!', 'success');
+            document.getElementById('reviewModal').classList.remove('show');
+            await Promise.all([loadBookings(), loadMentors()]);
+        } catch (error) {
+            showToast(error.message || 'Gagal mengirimkan ulasan.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    }
+
+    async function requestSchedule() {
+        if (!activeMentor?.id) {
+            showToast('Mentor belum dipilih.', 'error');
+            return;
+        }
+
+        const msgEl = document.getElementById('requestMessage');
+        const reqBtn = document.getElementById('requestScheduleBtn');
+        if (reqBtn) reqBtn.disabled = true;
+        const message = msgEl ? msgEl.value.trim() : '';
+        const dateEl = document.getElementById('requestDate');
+        const startEl = document.getElementById('requestStartTime');
+        const endEl = document.getElementById('requestEndTime');
+        const preferred_date = dateEl ? dateEl.value : null;
+        const preferred_start = startEl ? startEl.value : null;
+        const preferred_end = endEl ? endEl.value : null;
+
+        try {
+            if (reqBtn) reqBtn.innerHTML = '<span class="small-spinner !mr-0"></span>';
+            await api('/api/mentorship/mentor-requests', {
+                method: 'POST',
+                body: JSON.stringify({ mentor_id: activeMentor.id, message, preferred_date, preferred_start, preferred_end }),
+            });
+
+            showToast('Permintaan jadwal berhasil dikirim ke mentor.', 'success');
+            if (msgEl) msgEl.value = '';
+        } catch (err) {
+            showToast(err.message || 'Gagal mengirim permintaan jadwal.', 'error');
+        } finally {
+            if (reqBtn) {
+                reqBtn.disabled = false;
+                reqBtn.textContent = 'Minta Jadwal';
+            }
+        }
+    }
+
+    function bindEvents() {
+        document.getElementById('searchBtn').addEventListener('click', async () => {
+            state.filters.search = searchInput.value.trim();
+            await loadMentors();
+        });
+
+        searchInput.addEventListener('keydown', async (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
                 state.filters.search = searchInput.value.trim();
                 await loadMentors();
+            }
+        });
+
+        document.getElementById('filterToggle').addEventListener('click', () => {
+            filterPanel.classList.toggle('hidden');
+            filterPanel.classList.toggle('grid');
+        });
+
+        document.getElementById('applyFilterBtn').addEventListener('click', async () => {
+            state.filters.expertise = expertiseInput.value.trim();
+            state.filters.min_experience = experienceInput.value;
+            state.filters.min_rating = ratingInput.value;
+            await loadMentors();
+        });
+
+        document.getElementById('refreshUpcomingBtn').addEventListener('click', loadUpcoming);
+        document.getElementById('refreshBookingsBtn').addEventListener('click', loadBookings);
+
+        document.querySelectorAll('#bookingTabs button').forEach((button) => {
+            button.addEventListener('click', async () => {
+                activateTab(button.getAttribute('data-status') || 'all');
+                await loadBookings();
             });
+        });
 
-            searchInput.addEventListener('keydown', async (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    state.filters.search = searchInput.value.trim();
-                    await loadMentors();
-                }
-            });
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            state.currentSlots = [];
+            selectedSlotId = null;
+            const bookBtnEl = document.getElementById('bookBtn');
+            if (bookBtnEl) bookBtnEl.disabled = false;
+            mentorModal.classList.remove('show');
+        });
 
-            document.getElementById('filterToggle').addEventListener('click', () => {
-                filterPanel.classList.toggle('show');
-            });
+        document.getElementById('closeDetailBtn').addEventListener('click', () => {
+            document.getElementById('detailModal').classList.remove('show');
+        });
 
-            document.getElementById('applyFilterBtn').addEventListener('click', async () => {
-                state.filters.expertise = expertiseInput.value.trim();
-                state.filters.min_experience = experienceInput.value;
-                state.filters.min_rating = ratingInput.value;
-                await loadMentors();
-            });
-
-            document.getElementById('refreshUpcomingBtn').addEventListener('click', loadUpcoming);
-            document.getElementById('refreshBookingsBtn').addEventListener('click', loadBookings);
-
-            document.querySelectorAll('#bookingTabs button').forEach((button) => {
-                button.addEventListener('click', async () => {
-                    activateTab(button.getAttribute('data-status') || 'all');
-                    await loadBookings();
-                });
-            });
-
-            document.getElementById('closeModalBtn').addEventListener('click', () => {
+        mentorModal.addEventListener('click', (event) => {
+            if (event.target === mentorModal) {
                 state.currentSlots = [];
                 selectedSlotId = null;
                 const bookBtnEl = document.getElementById('bookBtn');
                 if (bookBtnEl) bookBtnEl.disabled = false;
                 mentorModal.classList.remove('show');
-            });
-
-            document.getElementById('closeDetailBtn').addEventListener('click', () => {
-                document.getElementById('detailModal').classList.remove('show');
-            });
-
-            mentorModal.addEventListener('click', (event) => {
-                if (event.target === mentorModal) {
-                    state.currentSlots = [];
-                    selectedSlotId = null;
-                    const bookBtnEl = document.getElementById('bookBtn');
-                    if (bookBtnEl) bookBtnEl.disabled = false;
-                    mentorModal.classList.remove('show');
-                }
-            });
-
-            document.getElementById('bookBtn').addEventListener('click', submitBooking);
-
-            document.getElementById('closeReviewModalBtn').addEventListener('click', () => {
-                document.getElementById('reviewModal').classList.remove('show');
-            });
-
-            document.getElementById('submitReviewBtn').addEventListener('click', submitReview);
-
-            const reviewModal = document.getElementById('reviewModal');
-            reviewModal.addEventListener('click', (event) => {
-                if (event.target === reviewModal) {
-                    reviewModal.classList.remove('show');
-                }
-            });
-
-            document.querySelector('[data-nav="dashboard"]').addEventListener('click', () => {
-                window.location.href = '/dashboard';
-            });
-            document.querySelector('[data-nav="profile"]').addEventListener('click', () => {
-                window.location.href = '/profile';
-            });
-            document.querySelector('[data-nav="cv"]').addEventListener('click', () => {
-                window.location.href = '/manajemen-cv';
-            });
-            document.querySelector('[data-nav="buat-cv"]').addEventListener('click', () => {
-                window.location.href = '/buat-cv-ats';
-            });
-            document.querySelector('[data-nav="roadmap"]').addEventListener('click', () => {
-                window.location.href = '/roadmap-karier';
-            });
-            document.querySelector('[data-nav="assessment"]').addEventListener('click', () => {
-                window.location.href = '/self-assessment';
-            });
-            document.querySelector('[data-nav="pelatihan"]').addEventListener('click', () => {
-                window.location.href = '/pelatihan';
-            });
-            document.querySelector('[data-nav="forum"]').addEventListener('click', () => {
-                window.location.href = '/forum';
-            });
-            document.querySelector('[data-nav="feedback"]').addEventListener('click', () => {
-                window.location.href = '/riwayat-feedback';
-            });
-            document.querySelector('[data-nav="notifikasi"]').addEventListener('click', () => {
-                window.location.href = '/notifikasi';
-            });
-
-            // Logout Logic
-            const logoutForm = document.getElementById('logoutForm');
-            if (logoutForm) {
-                logoutForm.addEventListener('submit', (e) => {
-                    // Clear any stored auth tokens if they exist
-                    if (typeof clearAuthStorage === 'function') {
-                        clearAuthStorage();
-                    }
-                });
             }
-        }
+        });
 
-        async function boot() {
-            try {
-                const roleOk = await loadMe();
-                if (!roleOk) {
-                    return;
-                }
+        document.getElementById('bookBtn').addEventListener('click', submitBooking);
 
-                bindEvents();
-                await Promise.all([loadMentors(), loadBookings(), loadUpcoming()]);
-            } catch (error) {
-                if (error.message.toLowerCase().includes('unauthenticated')) {
-                    clearAuthStorage();
-                    window.location.href = '/login';
-                    return;
-                }
+        document.getElementById('closeReviewModalBtn').addEventListener('click', () => {
+            document.getElementById('reviewModal').classList.remove('show');
+        });
 
-                showToast(error.message || 'Gagal memuat halaman mentorship.', 'error');
+        document.getElementById('submitReviewBtn').addEventListener('click', submitReview);
+
+        const reviewModal = document.getElementById('reviewModal');
+        reviewModal.addEventListener('click', (event) => {
+            if (event.target === reviewModal) {
+                reviewModal.classList.remove('show');
             }
-        }
+        });
+    }
 
-        boot();
-    </script>
-</body>
-</html>
+    function clearAuthStorage() {
+        if (typeof window.hirifyClearAuth === 'function') {
+            window.hirifyClearAuth();
+        }
+    }
+
+    async function boot() {
+        try {
+            const roleOk = await loadMe();
+            if (!roleOk) return;
+
+            bindEvents();
+            await Promise.all([loadMentors(), loadBookings(), loadUpcoming()]);
+        } catch (error) {
+            if (error.message.toLowerCase().includes('unauthenticated')) {
+                clearAuthStorage();
+                window.location.href = '/login';
+                return;
+            }
+            showToast(error.message || 'Gagal memuat halaman mentorship.', 'error');
+        }
+    }
+
+    boot();
+</script>
+@endpush
