@@ -105,6 +105,7 @@ class MentorshipController extends Controller
 
     public function mentorDetail(Request $request, string $id)
     {
+        SesiJadwal::autoCheckCompleted();
         $user = $request->user();
         $mentor = Mentor::with(['user', 'certifications'])
             ->withAvg('reviews', 'rating')
@@ -218,6 +219,7 @@ class MentorshipController extends Controller
 
     public function createBooking(StoreMentorBookingRequest $request)
     {
+        SesiJadwal::autoCheckCompleted();
         $validated = $request->validated();
         $user = $request->user();
 
@@ -394,6 +396,7 @@ class MentorshipController extends Controller
 
     public function myBookings(Request $request)
     {
+        SesiJadwal::autoCheckCompleted();
         $user = $request->user();
         $limit = max(5, min((int) $request->query('per_page', 10), 50));
         $statusFilter = collect(explode(',', (string) $request->query('status')))

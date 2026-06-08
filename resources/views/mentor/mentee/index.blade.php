@@ -12,7 +12,7 @@
     </div>
 
     <!-- Stats Row -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Total Mentee Card -->
         <div class="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.05)] hover:-translate-y-0.5 transition duration-300 flex items-center gap-5 border border-slate-200">
             <div class="w-14 h-14 rounded-2xl bg-cyan-50 text-[#00bee4] flex items-center justify-center shrink-0 shadow-sm shadow-cyan-500/5">
@@ -55,6 +55,19 @@
                 <div class="text-sm text-slate-400 font-bold mt-1">Mentee Ditolak</div>
             </div>
         </div>
+
+        <!-- Followers Card -->
+        <div class="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.05)] hover:-translate-y-0.5 transition duration-300 flex items-center gap-5 border border-slate-200">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/5">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $stats['followers'] }}</div>
+                <div class="text-sm text-slate-400 font-bold mt-1">Jumlah Followers</div>
+            </div>
+        </div>
     </div>
 
     <!-- Search & Filter Controls -->
@@ -72,7 +85,7 @@
 
         <!-- Filter Selector Switcher -->
         <div class="flex items-center bg-white p-1 rounded-full border border-slate-200/80 shadow-sm gap-1 self-start lg:self-center">
-            @foreach(['all' => 'Semua', 'confirmed' => 'Diterima', 'rejected' => 'Ditolak'] as $val => $label)
+            @foreach(['all' => 'Semua', 'confirmed' => 'Diterima', 'rejected' => 'Ditolak', 'followers' => 'Followers'] as $val => $label)
                 <button type="submit" name="status" value="{{ $val }}"
                     class="px-6 py-2 rounded-full font-extrabold text-sm transition duration-200 {{ ($filterStatus ?? 'all') === $val ? 'bg-[#00bee4] text-white shadow-md shadow-cyan-500/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
                     {{ $label }}
@@ -126,7 +139,11 @@
                         </div>
 
                         <!-- Status Pill Badge -->
-                        @if($mentee['latest_status'] === 'confirmed' || $mentee['latest_status'] === 'completed')
+                        @if(($filterStatus ?? 'all') === 'followers')
+                            <span class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-indigo-50 text-indigo-600 border border-indigo-100/30">
+                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block animate-pulse"></span> Followers
+                            </span>
+                        @elseif($mentee['latest_status'] === 'confirmed' || $mentee['latest_status'] === 'completed')
                             <span class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-100/30">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Diterima
                             </span>

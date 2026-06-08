@@ -102,7 +102,6 @@
                 @php
                     $statusClasses = [
                         'Pending' => 'bg-amber-50 text-amber-600 border border-amber-100/50',
-                        'Confirmed' => 'bg-cyan-50 text-cyan-600 border border-cyan-100/50',
                         'Completed' => 'bg-emerald-50 text-emerald-600 border border-emerald-100/50',
                         'Cancelled' => 'bg-rose-50 text-rose-600 border border-rose-100/50'
                     ];

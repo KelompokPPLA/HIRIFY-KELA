@@ -91,7 +91,6 @@
                             <select name="status" 
                                 class="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00bee4] outline-none transition duration-200 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-100/50 appearance-none">
                                 <option value="Pending" {{ old('status', $session->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="Confirmed" {{ old('status', $session->status) == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
                                 <option value="Completed" {{ old('status', $session->status) == 'Completed' ? 'selected' : '' }}>Completed</option>
                                 <option value="Cancelled" {{ old('status', $session->status) == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
                             </select>

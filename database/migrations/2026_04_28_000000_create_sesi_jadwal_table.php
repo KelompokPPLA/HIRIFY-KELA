@@ -20,7 +20,7 @@ return new class extends Migration
             $table->time('time');
             $table->integer('duration');
             $table->string('platform')->nullable();
-            $table->enum('status', ['Pending', 'Confirmed', 'Completed', 'Cancelled'])->default('Pending');
+            $table->enum('status', ['Pending', 'Completed', 'Cancelled'])->default('Pending');
             $table->text('notes')->nullable();
             $table->timestamps();
 

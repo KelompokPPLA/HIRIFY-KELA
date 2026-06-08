@@ -43,7 +43,7 @@
     </div>
 
     <!-- Main Stat Cards Row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         <!-- Total Mentee Card -->
         <div class="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 transition duration-300 flex items-center justify-between">
             <div>
@@ -73,6 +73,20 @@
                 <div class="text-xs text-slate-400 font-semibold mt-0.5">{{ $sessionsThisWeekCount }} sesi minggu ini</div>
             </div>
             <div class="text-3xl font-black text-slate-800 tracking-tight">{{ $sessionsThisMonthCount }}</div>
+        </div>
+
+        <!-- Total Followers Card -->
+        <div class="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 transition duration-300 flex items-center justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center mb-3 border border-rose-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </div>
+                <div class="text-sm font-bold text-slate-800">Total Followers</div>
+                <div class="text-xs text-slate-400 font-semibold mt-0.5">Pengikut profil Anda</div>
+            </div>
+            <div class="text-3xl font-black text-slate-800 tracking-tight">{{ $followersCount }}</div>
         </div>
     </div>
 
@@ -215,8 +229,8 @@
                                 </div>
                             </div>
                             
-                            <span class="shrink-0 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide {{ $session->status === 'Confirmed' ? 'bg-cyan-50 text-cyan-600 border border-cyan-100/50' : 'bg-amber-50 text-amber-600 border border-amber-100/50' }}">
-                                {{ $session->status === 'Confirmed' ? 'Terkonfirmasi' : 'Pending' }}
+                            <span class="shrink-0 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-amber-50 text-amber-600 border border-amber-100/50">
+                                Pending
                             </span>
                         </div>
                     @empty
@@ -240,24 +254,39 @@
             <div class="bg-white rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.01)] p-6 flex flex-col justify-between min-h-[400px]">
                 <div class="space-y-5">
                     @php
-                        // Dynamically render activities based on real pending or accepted bookings
+                        // Dynamically render activities based on real pending or accepted bookings, and follows
                         $activities = collect();
-                        foreach($pendingBookings->take(2) as $p) {
+                        foreach($pendingBookings as $p) {
                             $activities->push([
                                 'name' => $p->jobseeker->name ?? 'Mentee',
                                 'action' => 'membooking sesi baru',
                                 'topic' => $p->booking_notes ?? 'Sesi Mentorship',
-                                'time' => $p->created_at ? $p->created_at->diffForHumans() : 'Baru saja'
+                                'time' => $p->created_at ? $p->created_at->diffForHumans() : 'Baru saja',
+                                'timestamp' => $p->created_at ?: now()
                             ]);
                         }
-                        foreach($acceptedBookings->take(1) as $a) {
+                        foreach($acceptedBookings as $a) {
+                            $actionLabel = $a->status === 'completed' ? 'menyelesaikan sesi' : 'booking sesi disetujui';
+                            $topicLabel = $a->sesiJadwal->topic ?? ($a->availability->label ?? 'Career Consultation');
                             $activities->push([
                                 'name' => $a->jobseeker->name ?? 'Mentee',
-                                'action' => 'menyelesaikan sesi',
-                                'topic' => 'Career Consultation',
-                                'time' => '2 jam yang lalu'
+                                'action' => $actionLabel,
+                                'topic' => $topicLabel,
+                                'time' => $a->updated_at ? $a->updated_at->diffForHumans() : 'Baru saja',
+                                'timestamp' => $a->updated_at ?: now()
                             ]);
                         }
+                        foreach($recentFollowers as $rf) {
+                            $activities->push([
+                                'name' => $rf->name,
+                                'action' => 'mulai mengikuti Anda',
+                                'topic' => 'Pengikut Baru',
+                                'time' => $rf->pivot->created_at ? $rf->pivot->created_at->diffForHumans() : 'Baru saja',
+                                'timestamp' => $rf->pivot->created_at ?: now()
+                            ]);
+                        }
+                        // Sort chronological descending
+                        $activities = $activities->sortByDesc('timestamp');
                     @endphp
                     
                     @forelse($activities->take(3) as $act)

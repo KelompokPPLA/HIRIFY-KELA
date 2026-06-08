@@ -75,4 +75,9 @@ class Mentor extends Model
     {
         return $this->reviews()->count();
     }
+
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'mentor_followers', 'mentor_id', 'user_id')->withTimestamps();
+    }
 }

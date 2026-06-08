@@ -27,8 +27,18 @@ class MentorDashboardController extends Controller
         $sessionsThisWeekCount = 0;
         $avgRating = 0.0;
         $earningsFormatted = 'Rp 0,0jt';
+        $followersCount = 0;
+        $recentFollowers = collect();
 
         if ($mentor) {
+            SesiJadwal::autoCheckCompleted();
+
+            // Auto complete past bookings
+            MentorBooking::where('mentor_id', $mentor->id)
+                ->where('status', 'confirmed')
+                ->where('scheduled_end', '<', now())
+                ->update(['status' => 'completed']);
+
             $sessions = SesiJadwal::with('bookings.jobseeker')->where('mentor_id', $user->id)
                 ->whereIn('status', ['Pending', 'Confirmed'])
                 ->orderBy('date', 'asc')
@@ -42,8 +52,8 @@ class MentorDashboardController extends Controller
                 ->get();
 
             $acceptedBookings = MentorBooking::where('mentor_id', $mentor->id)
-                ->where('status', 'confirmed')
-                ->with('jobseeker', 'availability')
+                ->whereIn('status', ['confirmed', 'completed'])
+                ->with(['jobseeker', 'availability', 'sesiJadwal'])
                 ->orderBy('scheduled_start')
                 ->get();
 
@@ -85,6 +95,11 @@ class MentorDashboardController extends Controller
                     $avgRating = round($mentorReviews->avg('rating'), 1);
                 }
             }
+            $followersCount = $mentor->followers()->count();
+            $recentFollowers = $mentor->followers()
+                ->orderByPivot('created_at', 'desc')
+                ->limit(5)
+                ->get();
         }
 
         return view('mentor.dashboard', compact(
@@ -97,7 +112,9 @@ class MentorDashboardController extends Controller
             'menteesThisMonthCount',
             'sessionsThisWeekCount',
             'avgRating',
-            'earningsFormatted'
+            'earningsFormatted',
+            'followersCount',
+            'recentFollowers'
         ));
     }
 
@@ -172,6 +189,17 @@ class MentorDashboardController extends Controller
         $booking = MentorBooking::where('mentor_id', $mentor->id)
             ->where('status', 'pending')
             ->findOrFail($id);
+
+        if ($booking->sesi_jadwal_id) {
+            $session = $booking->sesiJadwal;
+            if ($session && in_array($session->status, ['Completed', 'Cancelled'])) {
+                $booking->update([
+                    'status' => 'rejected',
+                    'rejection_reason' => 'Sesi sudah selesai atau dibatalkan.',
+                ]);
+                return back()->with('error', 'Sesi sudah selesai atau dibatalkan. Permintaan booking otomatis ditolak.');
+            }
+        }
 
         $booking->update(['status' => 'confirmed']);
 

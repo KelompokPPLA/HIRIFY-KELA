@@ -16,11 +16,16 @@ class SesiJadwalController extends Controller
         $tab = request('tab', 'mendatang');
 
         if ($user) {
+            SesiJadwal::autoCheckCompleted();
             $query = SesiJadwal::with(['bookings.jobseeker'])->where('mentor_id', $user->id);
-            if ($tab === 'riwayat') {
+            if ($tab === 'completed') {
+                $query->where('status', 'Completed')->orderBy('date', 'desc');
+            } elseif ($tab === 'cancelled') {
+                $query->where('status', 'Cancelled')->orderBy('date', 'desc');
+            } elseif ($tab === 'riwayat') {
                 $query->whereIn('status', ['Completed', 'Cancelled'])->orderBy('date', 'desc');
             } else {
-                $query->whereIn('status', ['Pending', 'Confirmed'])->orderBy('date', 'asc');
+                $query->where('status', 'Pending')->orderBy('date', 'asc');
             }
             $sessions = $query->paginate(12)->withQueryString();
         } else {
@@ -44,7 +49,7 @@ class SesiJadwalController extends Controller
             'time' => 'required',
             'duration' => 'required|integer|min:1',
             'platform' => 'nullable|string|max:255',
-            'status' => 'required|in:Pending,Confirmed,Completed,Cancelled',
+            'status' => 'required|in:Pending,Completed,Cancelled',
             'material_file' => 'nullable|file|mimes:pdf,mp4,mov,avi|max:51200', // max 50MB
         ]);
 
@@ -61,6 +66,7 @@ class SesiJadwalController extends Controller
 
     public function show($id)
     {
+        SesiJadwal::autoCheckCompleted();
         $session = SesiJadwal::with(['bookings.jobseeker'])->findOrFail($id);
         if ($session->mentor_id !== auth()->id()) abort(403);
         return view('sesiJadwal.show', compact('session'));
@@ -85,7 +91,7 @@ class SesiJadwalController extends Controller
             'time' => 'required',
             'duration' => 'required|integer|min:1',
             'platform' => 'nullable|string|max:255',
-            'status' => 'required|in:Pending,Confirmed,Completed,Cancelled',
+            'status' => 'required|in:Pending,Completed,Cancelled',
             'material_file' => 'nullable|file|mimes:pdf,mp4,mov,avi|max:51200',
         ]);
 
@@ -101,11 +107,21 @@ class SesiJadwalController extends Controller
 
         // Sync status with related bookings (only for active bookings)
         if ($session->status === 'Completed') {
-            $session->bookings()->whereIn('status', ['pending', 'confirmed'])
+            $session->bookings()->where('status', 'confirmed')
                 ->update(['status' => 'completed']);
+            $session->bookings()->where('status', 'pending')
+                ->update([
+                    'status' => 'rejected',
+                    'rejection_reason' => 'Sesi sudah selesai.',
+                ]);
         } elseif ($session->status === 'Cancelled') {
-            $session->bookings()->whereIn('status', ['pending', 'confirmed'])
+            $session->bookings()->where('status', 'confirmed')
                 ->update(['status' => 'cancelled']);
+            $session->bookings()->where('status', 'pending')
+                ->update([
+                    'status' => 'rejected',
+                    'rejection_reason' => 'Sesi dibatalkan.',
+                ]);
         }
 
         return redirect()->route('mentor.sesi-jadwal.show', $session->id)->with('success', 'Sesi diperbarui.');
