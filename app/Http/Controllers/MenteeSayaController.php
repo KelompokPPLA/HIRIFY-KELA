@@ -17,6 +17,7 @@ class MenteeSayaController extends Controller
 {
     public function index(Request $request)
     {
+        \App\Models\SesiJadwal::autoCheckCompleted();
         $user = Auth::user();
 
         // Get mentor profile for this user
@@ -35,15 +36,15 @@ class MenteeSayaController extends Controller
             ]);
         }
 
-        // Build query: get all bookings for this mentor grouped by mentee
-        $query = MentorBooking::with('jobseeker.profile')
-            ->where('mentor_id', $mentor->id);
-
         // Apply status filter
         $filterStatus = $request->input('status', 'all');
         $search = $request->input('search', '');
 
-        // Get unique mentee IDs from bookings
+        // Get unique follower IDs
+        $followerIds = $mentor->followers()->pluck('users.id')->toArray();
+        $followersCount = count($followerIds);
+
+        // Get unique mentee IDs and session stats from bookings
         $menteeData = MentorBooking::where('mentor_id', $mentor->id)
             ->whereNotNull('jobseeker_user_id')
             ->selectRaw('
@@ -57,8 +58,11 @@ class MenteeSayaController extends Controller
             ->get()
             ->keyBy('jobseeker_user_id');
 
-        // Get mentee user records
-        $menteeIds = $menteeData->keys();
+        if ($filterStatus === 'followers') {
+            $menteeIds = $followerIds;
+        } else {
+            $menteeIds = $menteeData->keys()->toArray();
+        }
 
         $menteesQuery = User::whereIn('id', $menteeIds)->with('profile');
 
@@ -72,31 +76,31 @@ class MenteeSayaController extends Controller
         // Build enriched mentee list
         $mentorId     = $mentor->id;
         $mentorUserId = $user->id;
-        $mentees = $menteeUsers->map(function ($user) use ($menteeData, $mentorId, $mentorUserId) {
-            $data             = $menteeData->get($user->id);
+        $mentees = $menteeUsers->map(function ($u) use ($menteeData, $mentorId, $mentorUserId) {
+            $data             = $menteeData->get($u->id);
             $totalSessions    = $data ? (int)$data->total_sessions : 0;
             $completedSessions= $data ? (int)$data->completed_sessions : 0;
             $progress         = $totalSessions > 0 ? round(($completedSessions / $totalSessions) * 100) : 0;
 
             // Get the latest booking status
             $latestBooking = MentorBooking::where('mentor_id', $mentorId)
-                            ->where('jobseeker_user_id', $user->id)
+                            ->where('jobseeker_user_id', $u->id)
                             ->orderBy('created_at', 'desc')
                             ->first();
             $latestStatus = $latestBooking ? strtolower($latestBooking->status) : 'pending';
 
             // Average mentee_rating given by this mentor for this mentee
             $avgMenteeRating = Feedback::where('mentor_id', $mentorUserId)
-                            ->where('mentee_id', $user->id)
+                            ->where('mentee_id', $u->id)
                             ->whereNotNull('mentee_rating')
                             ->avg('mentee_rating');
 
             return [
-                'id'                => $user->id,
-                'name'              => $user->name,
-                'email'             => $user->email,
-                'avatar'            => strtoupper(substr($user->name, 0, 2)),
-                'bidang'            => optional($user->profile)->posisi_kerja ?? 'Tidak Ada',
+                'id'                => $u->id,
+                'name'              => $u->name,
+                'email'             => $u->email,
+                'avatar'            => strtoupper(substr($u->name, 0, 2)),
+                'bidang'            => optional($u->profile)->posisi_kerja ?? 'Tidak Ada',
                 'total_sessions'    => $totalSessions,
                 'completed_sessions'=> $completedSessions,
                 'progress'          => $progress,
@@ -106,7 +110,7 @@ class MenteeSayaController extends Controller
             ];
         });
 
-        // Apply status filter on collection
+        // Apply status filter on collection (not needed for followers, since we already queried only followers)
         if ($filterStatus === 'confirmed') {
             $mentees = $mentees->filter(fn($m) => in_array($m['latest_status'], ['confirmed', 'completed']));
         } elseif ($filterStatus === 'rejected') {
@@ -115,8 +119,8 @@ class MenteeSayaController extends Controller
 
         $mentees = $mentees->values();
 
-        // Stats calculation based on mapped list
-        $allMenteeUsers = User::whereIn('id', $menteeIds)->get();
+        // Stats calculation based on unique bookings
+        $allMenteeUsers = User::whereIn('id', $menteeData->keys())->get();
         $statsCalculated = $allMenteeUsers->map(function ($u) use ($mentorId) {
             $latestBooking = MentorBooking::where('mentor_id', $mentorId)
                             ->where('jobseeker_user_id', $u->id)
@@ -129,6 +133,7 @@ class MenteeSayaController extends Controller
             'total'     => $statsCalculated->count(),
             'confirmed' => $statsCalculated->filter(fn($s) => in_array($s, ['confirmed', 'completed']))->count(),
             'rejected'  => $statsCalculated->filter(fn($s) => $s === 'rejected')->count(),
+            'followers' => $followersCount,
         ];
 
         return view('mentor.mentee.index', compact('mentees', 'stats', 'search', 'filterStatus'));
@@ -136,6 +141,7 @@ class MenteeSayaController extends Controller
 
     public function show($id)
     {
+        \App\Models\SesiJadwal::autoCheckCompleted();
         $user = Auth::user();
         $mentor = Mentor::where('user_id', $user->id)->firstOrFail();
 
