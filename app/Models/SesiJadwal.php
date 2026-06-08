@@ -38,4 +38,26 @@ class SesiJadwal extends Model
     {
         return $this->hasMany(MentorBooking::class, 'sesi_jadwal_id');
     }
+
+    public static function autoCheckCompleted()
+    {
+        $pendingSessions = self::where('status', 'Pending')->get();
+
+        foreach ($pendingSessions as $session) {
+            $endDateTime = \Carbon\Carbon::parse($session->date . ' ' . $session->time)->addMinutes($session->duration);
+            if ($endDateTime->isPast()) {
+                $session->status = 'Completed';
+                $session->save();
+
+                // Sync status with related bookings
+                $session->bookings()->where('status', 'confirmed')
+                    ->update(['status' => 'completed']);
+                $session->bookings()->where('status', 'pending')
+                    ->update([
+                        'status' => 'rejected',
+                        'rejection_reason' => 'Sesi sudah selesai.',
+                    ]);
+            }
+        }
+    }
 }
