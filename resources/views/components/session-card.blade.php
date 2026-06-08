@@ -104,15 +104,7 @@
                 <h3 class="font-extrabold text-slate-800 text-lg tracking-tight leading-tight truncate">{{ $session->topic }}</h3>
             </div>
 
-            @if($status === 'Confirmed')
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-blue-50 text-blue-600 border border-blue-100/50 shrink-0">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    Scheduled
-                </span>
-            @elseif($status === 'Pending')
+            @if($status === 'Pending')
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-amber-50 text-amber-600 border border-amber-100/50 shrink-0">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="10"></circle>

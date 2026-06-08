@@ -11,9 +11,11 @@
 
         <div class="flex flex-wrap items-center gap-4">
             <!-- Switcher Pills -->
-            <div class="flex items-center bg-white p-1 rounded-full border border-slate-200/80 shadow-sm gap-1">
-                <a href="{{ route('mentor.sesi-jadwal.index', ['tab' => 'mendatang']) }}" class="px-6 py-2 rounded-full font-extrabold text-sm transition duration-200 {{ $tab === 'mendatang' ? 'bg-[#00bee4] text-white shadow-md shadow-cyan-500/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">Mendatang</a>
-                <a href="{{ route('mentor.sesi-jadwal.index', ['tab' => 'riwayat']) }}" class="px-6 py-2 rounded-full font-extrabold text-sm transition duration-200 {{ $tab === 'riwayat' ? 'bg-[#00bee4] text-white shadow-md shadow-cyan-500/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">Riwayat</a>
+            <div class="flex flex-wrap items-center bg-white p-1 rounded-[2rem] md:rounded-full border border-slate-200/80 shadow-sm gap-1">
+                <a href="{{ route('mentor.sesi-jadwal.index', ['tab' => 'mendatang']) }}" class="px-5 py-2 rounded-full font-extrabold text-sm transition duration-200 {{ $tab === 'mendatang' ? 'bg-[#00bee4] text-white shadow-md shadow-cyan-500/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">Mendatang</a>
+                <a href="{{ route('mentor.sesi-jadwal.index', ['tab' => 'completed']) }}" class="px-5 py-2 rounded-full font-extrabold text-sm transition duration-200 {{ $tab === 'completed' ? 'bg-[#00bee4] text-white shadow-md shadow-cyan-500/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">Completed</a>
+                <a href="{{ route('mentor.sesi-jadwal.index', ['tab' => 'cancelled']) }}" class="px-5 py-2 rounded-full font-extrabold text-sm transition duration-200 {{ $tab === 'cancelled' ? 'bg-[#00bee4] text-white shadow-md shadow-cyan-500/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">Cancelled</a>
+                <a href="{{ route('mentor.sesi-jadwal.index', ['tab' => 'riwayat']) }}" class="px-5 py-2 rounded-full font-extrabold text-sm transition duration-200 {{ $tab === 'riwayat' ? 'bg-[#00bee4] text-white shadow-md shadow-cyan-500/15' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">Riwayat</a>
             </div>
 
             <!-- Create Button -->
