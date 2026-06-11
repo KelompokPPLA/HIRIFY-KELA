@@ -319,7 +319,20 @@ function openEditModal(id, data) {
     document.getElementById('editTelepon').value = data.telepon || '';
     document.getElementById('editAlamat').value = data.alamat || '';
     document.getElementById('editLinkedin').value = data.linkedin || '';
-    document.getElementById('editRingkasan').value = data.ringkasan || '';
+    const ringkasanEl = document.getElementById('editRingkasan');
+    ringkasanEl.value = data.ringkasan || '';
+    
+    // Reset validation styles
+    ['editNamaLengkap', 'editTelepon', 'editRingkasan'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('border-red-500', 'focus:ring-red-500');
+        el.classList.add('border-slate-300', 'focus:ring-sky-500');
+    });
+    ['nama-error', 'telepon-error', 'ringkasan-error'].forEach(id => {
+        const errorMsg = document.getElementById(id);
+        if (errorMsg) errorMsg.remove();
+    });
+
     document.getElementById('editModal').classList.remove('hidden');
 }
 
@@ -340,6 +353,136 @@ function openDeleteModal(id, name) {
     document.getElementById(id).addEventListener('click', function(e) {
         if (e.target === this) this.classList.add('hidden');
     });
+});
+
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    let isValid = true;
+
+    const namaEl = document.getElementById('editNamaLengkap');
+    const namaVal = namaEl.value.trim();
+    if (namaVal === '' || namaVal.length > 100) {
+        isValid = false;
+        namaEl.classList.remove('border-slate-300', 'focus:ring-sky-500');
+        namaEl.classList.add('border-red-500', 'focus:ring-red-500');
+        let errorMsg = document.getElementById('nama-error');
+        if (!errorMsg) {
+            errorMsg = document.createElement('p');
+            errorMsg.id = 'nama-error';
+            errorMsg.className = 'text-red-500 text-sm mt-1';
+            namaEl.parentNode.appendChild(errorMsg);
+        }
+        if (namaVal === '') {
+            errorMsg.textContent = 'Nama lengkap tidak boleh kosong.';
+        } else {
+            errorMsg.textContent = 'Nama lengkap maksimal 100 karakter.';
+        }
+    }
+
+    const teleponEl = document.getElementById('editTelepon');
+    const teleponVal = teleponEl.value.trim();
+    if (teleponVal.length < 10 || teleponVal.length > 15) {
+        isValid = false;
+        teleponEl.classList.remove('border-slate-300', 'focus:ring-sky-500');
+        teleponEl.classList.add('border-red-500', 'focus:ring-red-500');
+        let errorMsg = document.getElementById('telepon-error');
+        if (!errorMsg) {
+            errorMsg = document.createElement('p');
+            errorMsg.id = 'telepon-error';
+            errorMsg.className = 'text-red-500 text-sm mt-1';
+            teleponEl.parentNode.appendChild(errorMsg);
+        }
+        if (teleponVal.length < 10) {
+            errorMsg.textContent = 'Nomor telepon tidak boleh kurang dari 10 karakter.';
+        } else {
+            errorMsg.textContent = 'Nomor telepon tidak boleh lebih dari 15 karakter.';
+        }
+    }
+
+    const ringkasanEl = document.getElementById('editRingkasan');
+    if (ringkasanEl.value.length > 500) {
+        isValid = false;
+        ringkasanEl.classList.remove('border-slate-300', 'focus:ring-sky-500');
+        ringkasanEl.classList.add('border-red-500', 'focus:ring-red-500');
+        let errorMsg = document.getElementById('ringkasan-error');
+        if (!errorMsg) {
+            errorMsg = document.createElement('p');
+            errorMsg.id = 'ringkasan-error';
+            errorMsg.className = 'text-red-500 text-sm mt-1';
+            ringkasanEl.parentNode.appendChild(errorMsg);
+        }
+        errorMsg.textContent = 'Karakter melebihi batas maksimal (' + ringkasanEl.value.length + '/500).';
+    }
+
+    if (!isValid) {
+        e.preventDefault();
+    }
+});
+
+document.getElementById('editNamaLengkap').addEventListener('input', function() {
+    let errorMsg = document.getElementById('nama-error');
+    const val = this.value.trim();
+    if (val === '' || val.length > 100) {
+        this.classList.remove('border-slate-300', 'focus:ring-sky-500');
+        this.classList.add('border-red-500', 'focus:ring-red-500');
+        if (!errorMsg) {
+            errorMsg = document.createElement('p');
+            errorMsg.id = 'nama-error';
+            errorMsg.className = 'text-red-500 text-sm mt-1';
+            this.parentNode.appendChild(errorMsg);
+        }
+        if (val === '') {
+            errorMsg.textContent = 'Nama lengkap tidak boleh kosong.';
+        } else {
+            errorMsg.textContent = 'Nama lengkap maksimal 100 karakter.';
+        }
+    } else {
+        this.classList.remove('border-red-500', 'focus:ring-red-500');
+        this.classList.add('border-slate-300', 'focus:ring-sky-500');
+        if (errorMsg) errorMsg.remove();
+    }
+});
+
+document.getElementById('editTelepon').addEventListener('input', function() {
+    let errorMsg = document.getElementById('telepon-error');
+    const val = this.value.trim();
+    if (val.length > 0 && (val.length < 10 || val.length > 15)) {
+        this.classList.remove('border-slate-300', 'focus:ring-sky-500');
+        this.classList.add('border-red-500', 'focus:ring-red-500');
+        if (!errorMsg) {
+            errorMsg = document.createElement('p');
+            errorMsg.id = 'telepon-error';
+            errorMsg.className = 'text-red-500 text-sm mt-1';
+            this.parentNode.appendChild(errorMsg);
+        }
+        if (val.length < 10) {
+            errorMsg.textContent = 'Nomor telepon tidak boleh kurang dari 10 karakter.';
+        } else {
+            errorMsg.textContent = 'Nomor telepon tidak boleh lebih dari 15 karakter.';
+        }
+    } else {
+        this.classList.remove('border-red-500', 'focus:ring-red-500');
+        this.classList.add('border-slate-300', 'focus:ring-sky-500');
+        if (errorMsg) errorMsg.remove();
+    }
+});
+
+document.getElementById('editRingkasan').addEventListener('input', function() {
+    let errorMsg = document.getElementById('ringkasan-error');
+    if (this.value.length > 500) {
+        this.classList.remove('border-slate-300', 'focus:ring-sky-500');
+        this.classList.add('border-red-500', 'focus:ring-red-500');
+        if (!errorMsg) {
+            errorMsg = document.createElement('p');
+            errorMsg.id = 'ringkasan-error';
+            errorMsg.className = 'text-red-500 text-sm mt-1';
+            this.parentNode.appendChild(errorMsg);
+        }
+        errorMsg.textContent = 'Karakter melebihi batas maksimal (' + this.value.length + '/500).';
+    } else {
+        this.classList.remove('border-red-500', 'focus:ring-red-500');
+        this.classList.add('border-slate-300', 'focus:ring-sky-500');
+        if (errorMsg) errorMsg.remove();
+    }
 });
 </script>
 @endpush
