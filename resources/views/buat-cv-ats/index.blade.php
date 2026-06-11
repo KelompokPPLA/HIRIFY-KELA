@@ -359,7 +359,8 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
     let isValid = true;
 
     const namaEl = document.getElementById('editNamaLengkap');
-    if (namaEl.value.trim() === '') {
+    const namaVal = namaEl.value.trim();
+    if (namaVal === '' || namaVal.length > 100) {
         isValid = false;
         namaEl.classList.remove('border-slate-300', 'focus:ring-sky-500');
         namaEl.classList.add('border-red-500', 'focus:ring-red-500');
@@ -370,12 +371,16 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
             errorMsg.className = 'text-red-500 text-sm mt-1';
             namaEl.parentNode.appendChild(errorMsg);
         }
-        errorMsg.textContent = 'Nama lengkap tidak boleh kosong.';
+        if (namaVal === '') {
+            errorMsg.textContent = 'Nama lengkap tidak boleh kosong.';
+        } else {
+            errorMsg.textContent = 'Nama lengkap maksimal 100 karakter.';
+        }
     }
 
     const teleponEl = document.getElementById('editTelepon');
     const teleponVal = teleponEl.value.trim();
-    if (teleponVal.length < 10 || teleponVal.length > 13) {
+    if (teleponVal.length < 10 || teleponVal.length > 15) {
         isValid = false;
         teleponEl.classList.remove('border-slate-300', 'focus:ring-sky-500');
         teleponEl.classList.add('border-red-500', 'focus:ring-red-500');
@@ -389,7 +394,7 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
         if (teleponVal.length < 10) {
             errorMsg.textContent = 'Nomor telepon tidak boleh kurang dari 10 karakter.';
         } else {
-            errorMsg.textContent = 'Nomor telepon tidak boleh lebih dari 13 karakter.';
+            errorMsg.textContent = 'Nomor telepon tidak boleh lebih dari 15 karakter.';
         }
     }
 
@@ -415,7 +420,8 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
 
 document.getElementById('editNamaLengkap').addEventListener('input', function() {
     let errorMsg = document.getElementById('nama-error');
-    if (this.value.trim() === '') {
+    const val = this.value.trim();
+    if (val === '' || val.length > 100) {
         this.classList.remove('border-slate-300', 'focus:ring-sky-500');
         this.classList.add('border-red-500', 'focus:ring-red-500');
         if (!errorMsg) {
@@ -424,7 +430,11 @@ document.getElementById('editNamaLengkap').addEventListener('input', function() 
             errorMsg.className = 'text-red-500 text-sm mt-1';
             this.parentNode.appendChild(errorMsg);
         }
-        errorMsg.textContent = 'Nama lengkap tidak boleh kosong.';
+        if (val === '') {
+            errorMsg.textContent = 'Nama lengkap tidak boleh kosong.';
+        } else {
+            errorMsg.textContent = 'Nama lengkap maksimal 100 karakter.';
+        }
     } else {
         this.classList.remove('border-red-500', 'focus:ring-red-500');
         this.classList.add('border-slate-300', 'focus:ring-sky-500');
@@ -435,7 +445,7 @@ document.getElementById('editNamaLengkap').addEventListener('input', function() 
 document.getElementById('editTelepon').addEventListener('input', function() {
     let errorMsg = document.getElementById('telepon-error');
     const val = this.value.trim();
-    if (val.length > 0 && (val.length < 10 || val.length > 13)) {
+    if (val.length > 0 && (val.length < 10 || val.length > 15)) {
         this.classList.remove('border-slate-300', 'focus:ring-sky-500');
         this.classList.add('border-red-500', 'focus:ring-red-500');
         if (!errorMsg) {
@@ -447,7 +457,7 @@ document.getElementById('editTelepon').addEventListener('input', function() {
         if (val.length < 10) {
             errorMsg.textContent = 'Nomor telepon tidak boleh kurang dari 10 karakter.';
         } else {
-            errorMsg.textContent = 'Nomor telepon tidak boleh lebih dari 13 karakter.';
+            errorMsg.textContent = 'Nomor telepon tidak boleh lebih dari 15 karakter.';
         }
     } else {
         this.classList.remove('border-red-500', 'focus:ring-red-500');
