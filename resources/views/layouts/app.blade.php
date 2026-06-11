@@ -79,11 +79,23 @@
         }
         .sidebar-overlay.open { display: block; }
 
+        /* Sidebar sticky on desktop */
+        @media (min-width: 1025px) {
+            .sidebar {
+                position: sticky;
+                top: 0;
+                height: 100vh;
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+        }
+
         @media (max-width: 1024px) {
             .sidebar {
                 position: fixed;
                 left: -300px;
                 top: 0;
+                height: 100vh;
                 z-index: 50;
                 transition: left 0.3s ease;
                 box-shadow: 0 0 0 transparent;
