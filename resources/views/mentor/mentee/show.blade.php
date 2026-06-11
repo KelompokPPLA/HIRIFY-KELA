@@ -4,10 +4,20 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header Section -->
+    <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Detail Mentee</h1>
+            <p class="text-slate-500 mt-1.5 font-medium">Informasi lengkap dan progres belajar mentee Anda</p>
+        </div>
+        <a href="{{ route('mentor.mentee.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-200 bg-white text-xs font-extrabold uppercase tracking-wider text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm transition duration-200 self-start sm:self-center">
+            ← Kembali ke Mentee Saya
+        </a>
+    </header>
+
     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-            <a href="{{ route('mentor.mentee.index') }}" class="text-sm font-semibold text-sky-600 hover:text-sky-700">Kembali ke Mentee Saya</a>
-            <h1 class="mt-2 text-3xl font-bold text-gray-900">{{ $mentee->name }}</h1>
+            <h1 class="text-3xl font-bold text-gray-900">{{ $mentee->name }}</h1>
             <p class="text-sm text-gray-500">{{ $mentee->email }} - {{ $mentee->profile?->posisi_kerja ?? 'Bidang belum diisi' }}</p>
         </div>
         <div class="rounded-2xl bg-slate-900 px-5 py-4 text-white">
