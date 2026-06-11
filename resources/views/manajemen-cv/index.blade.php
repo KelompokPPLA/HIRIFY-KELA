@@ -13,7 +13,7 @@
         <!-- Drag Drop -->
         <div id="dropArea"
              class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition">
-
+         
             <p id="fileText" class="text-gray-500">
                 Drag & drop atau klik untuk pilih file
             </p>
