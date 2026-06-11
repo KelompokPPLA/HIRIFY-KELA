@@ -636,6 +636,14 @@ function openEditModal(id) {
     document.getElementById('editAlamat').value      = cv.alamat       ?? '';
     document.getElementById('editLinkedin').value    = cv.linkedin     ?? '';
     document.getElementById('editRingkasan').value   = cv.ringkasan    ?? '';
+
+    // Reset validation style
+    const ringkasanEl = document.getElementById('editRingkasan');
+    ringkasanEl.classList.remove('border-red-500', 'focus:ring-red-500');
+    ringkasanEl.classList.add('border-slate-300', 'focus:ring-sky-500');
+    const errorMsg = document.getElementById('ringkasan-error');
+    if (errorMsg) errorMsg.remove();
+
     document.getElementById('editModal').classList.remove('hidden');
 }
 function closeEditModal() {
@@ -644,6 +652,15 @@ function closeEditModal() {
 }
 async function saveEdit() {
     if (!currentEditId) return;
+
+    const ringkasanEl = document.getElementById('editRingkasan');
+    if (ringkasanEl.value.length > 500) {
+        ringkasanEl.classList.remove('border-slate-300', 'focus:ring-sky-500');
+        ringkasanEl.classList.add('border-red-500', 'focus:ring-red-500');
+        alert('Ringkasan maksimal 500 karakter!');
+        return;
+    }
+
     const btn       = document.getElementById('saveEditBtn');
     btn.textContent = 'Menyimpan...';
     btn.disabled    = true;
@@ -726,5 +743,17 @@ function escapeHtml(str) {
    INIT — aman, tidak ada redirect di sini
 ============================================================ */
 document.addEventListener('DOMContentLoaded', loadCV);
+
+document.getElementById('editRingkasan').addEventListener('input', function() {
+    this.classList.remove('border-red-500', 'focus:ring-red-500');
+    this.classList.add('border-slate-300', 'focus:ring-sky-500');
+    const errorMsg = document.getElementById('ringkasan-error');
+    if (errorMsg) errorMsg.remove();
+
+    if (this.value.length > 500) {
+        alert('Ringkasan maksimal 500 karakter!');
+        this.value = this.value.substring(0, 500);
+    }
+});
 </script>
 @endpush
