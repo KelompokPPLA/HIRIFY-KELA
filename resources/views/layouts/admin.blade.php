@@ -50,7 +50,7 @@
     <div class="flex min-h-screen">
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-        <aside class="sidebar w-[280px] min-h-screen bg-white border-r border-slate-200 flex flex-col" id="sidebar">
+        <aside class="sidebar w-[280px] h-screen bg-white border-r border-slate-200 flex flex-col lg:sticky lg:top-0 lg:shrink-0" id="sidebar">
             <div class="px-6 py-5 border-b border-slate-100">
                 <a href="/admin/statistics" class="flex items-center gap-3">
                     <div class="w-[36px] h-[36px] rounded-xl flex items-center justify-center text-white text-[17px] font-extrabold flex-shrink-0" style="background: linear-gradient(145deg, #0399b7, #06d8ee); box-shadow: 0 6px 18px rgba(3, 153, 183, 0.25);">H</div>
@@ -61,7 +61,7 @@
                 </a>
             </div>
 
-            <nav class="flex-1 px-3 py-5 space-y-1">
+            <nav class="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
                 <p class="px-3 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Administrasi</p>
 
                 @php

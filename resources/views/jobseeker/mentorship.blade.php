@@ -77,12 +77,13 @@
         <div id="mentorGrid" class="grid gap-6 md:grid-cols-2">
             <!-- Rendered by JS -->
         </div>
+        <div id="mentorPagination" class="mt-8 flex flex-wrap items-center justify-center gap-2"></div>
     </div>
 
     <!-- BOOKINGS STATUS -->
     <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
         <div class="flex items-center justify-between gap-4 mb-6">
-            <h2 class="text-lg font-bold text-slate-900">Status Booking Saya</h2>
+            <h2 class="text-lg font-bold text-slate-900">Riwayat Booking</h2>
             <button id="refreshBookingsBtn" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition" type="button">
                 Refresh
             </button>
@@ -144,6 +145,7 @@
                 <div class="p-8 text-center text-slate-500 border border-dashed border-slate-200 rounded-2xl">Belum ada data booking pada status ini.</div>
             @endif
         </div>
+        <div id="bookingPagination" class="mt-8 flex flex-wrap items-center justify-center gap-2"></div>
     </div>
 </div>
 
@@ -178,12 +180,23 @@
                 </div>
             </div>
 
-            <!-- Ulasan Pengguna -->
+            <!-- Ulasan Mentee -->
             <div class="border-t border-slate-100 pt-5">
-                <p class="text-sm font-bold text-slate-900 mb-3">Ulasan Pengguna</p>
-                <div id="mentorReviewsList" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                <div class="flex justify-between items-center mb-3">
+                    <p id="reviewSectionTitle" class="text-sm font-bold text-slate-900">Ulasan Mentee (0)</p>
+                    <select id="reviewStarFilter" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 outline-none text-slate-600 font-semibold cursor-pointer">
+                        <option value="0">Semua Bintang</option>
+                        <option value="5">Bintang 5</option>
+                        <option value="4">Bintang 4</option>
+                        <option value="3">Bintang 3</option>
+                        <option value="2">Bintang 2</option>
+                        <option value="1">Bintang 1</option>
+                    </select>
+                </div>
+                <div id="mentorReviewsList" class="space-y-3 max-h-[220px] overflow-y-auto pr-2">
                     <!-- Reviews will be loaded here -->
                 </div>
+                <div id="mentorReviewsPagination" class="mt-3 flex items-center justify-center gap-1"></div>
             </div>
         </div>
 
@@ -418,11 +431,18 @@
     const state = {
         me: null,
         mentors: [],
+        mentorPage: 1,
+        mentorMeta: null,
         bookings: [],
+        bookingPage: 1,
+        bookingMeta: null,
         upcoming: [],
         followedMentorIds: [],
         followLoadingIds: [],
         currentSlots: [],
+        activeMentorReviews: [],
+        reviewPage: 1,
+        reviewFilter: 0,
         filters: {
             search: '',
             expertise: '',
@@ -508,6 +528,8 @@
                 <div class="col-span-2 p-8 text-center text-slate-500 border border-dashed border-slate-200 rounded-2xl text-sm">
                     Mentor tidak ditemukan. Ubah kata kunci atau filter pencarian Anda.
                 </div>`;
+            const pgContainer = document.getElementById('mentorPagination');
+            if (pgContainer) pgContainer.innerHTML = '';
             return;
         }
 
@@ -525,25 +547,8 @@
             const followText = isLoading ? '' : (isFollowed ? 'Following' : 'Follow');
             const followClass = isFollowed ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50' : 'bg-slate-900 text-white hover:bg-slate-800';
 
-            let booked = null;
-            const bMap = (window.bookingsByMentor && typeof window.bookingsByMentor === 'object') ? window.bookingsByMentor : {};
-            if (bMap[mentor.id]) {
-                booked = bMap[mentor.id];
-            } else if (bMap[String(mentor.id)]) {
-                booked = bMap[String(mentor.id)];
-            } else if (Array.isArray(state.bookings) && state.bookings.length) {
-                booked = state.bookings.find(b => Number(b.mentor?.id) === Number(mentor.id)) || null;
-            }
-
-            const bookedBadge = booked 
-                ? `<div class="absolute right-4 top-4 bg-white border border-slate-200 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-600 shadow-sm z-10">
-                       Booked: ${escapeHtml(booked.status_label || booked.status)}
-                   </div>` 
-                : '';
-
             return `
-                <article class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-sky-500 transition-all duration-300 relative overflow-hidden flex flex-col justify-between">
-                    ${bookedBadge}
+                <article class="h-full bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-sky-500 transition-all duration-300 relative overflow-hidden flex flex-col justify-between">
                     
                     <div>
                         <!-- Head -->
@@ -619,11 +624,59 @@
                 }
             });
         });
+
+        renderMentorPagination();
+    }
+
+    function renderMentorPagination() {
+        const paginationContainer = document.getElementById('mentorPagination');
+        if (!paginationContainer || !state.mentorMeta) return;
+
+        const { current_page, last_page } = state.mentorMeta;
+        if (last_page <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        
+        // Prev button
+        html += `<button class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold transition-colors ${current_page > 1 ? 'text-slate-700 bg-white hover:bg-slate-50 shadow-sm' : 'text-slate-400 bg-slate-50 cursor-not-allowed'}" data-page="${current_page - 1}" ${current_page <= 1 ? 'disabled' : ''}>Prev</button>`;
+
+        html += `<div class="flex items-center gap-1 mx-2">`;
+        for (let i = 1; i <= last_page; i++) {
+            if (i === current_page) {
+                html += `<button class="w-10 h-10 rounded-xl bg-sky-600 text-white text-sm font-bold flex items-center justify-center shadow-sm" disabled>${i}</button>`;
+            } else if (i === 1 || i === last_page || Math.abs(i - current_page) <= 1) {
+                html += `<button class="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-sm font-semibold flex items-center justify-center transition-colors shadow-sm" data-page="${i}">${i}</button>`;
+            } else if (Math.abs(i - current_page) === 2) {
+                html += `<span class="px-2 text-slate-400 font-medium">...</span>`;
+            }
+        }
+        html += `</div>`;
+
+        // Next button
+        html += `<button class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold transition-colors ${current_page < last_page ? 'text-slate-700 bg-white hover:bg-slate-50 shadow-sm' : 'text-slate-400 bg-slate-50 cursor-not-allowed'}" data-page="${current_page + 1}" ${current_page >= last_page ? 'disabled' : ''}>Next</button>`;
+
+        paginationContainer.innerHTML = html;
+
+        paginationContainer.querySelectorAll('button[data-page]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const page = parseInt(btn.getAttribute('data-page'));
+                if (page && page !== current_page) {
+                    state.mentorPage = page;
+                    document.getElementById('mentorGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    loadMentors();
+                }
+            });
+        });
     }
 
     function renderBookings() {
         if (!state.bookings.length) {
             bookingList.innerHTML = '<div class="p-8 text-center text-slate-500 border border-dashed border-slate-200 rounded-2xl text-sm">Belum ada data booking pada status ini.</div>';
+            const pgContainer = document.getElementById('bookingPagination');
+            if (pgContainer) pgContainer.innerHTML = '';
             return;
         }
 
@@ -781,6 +834,52 @@
         bookingList.querySelectorAll('[data-review-booking]').forEach((button) => {
             button.addEventListener('click', () => openReviewModal(button.getAttribute('data-review-booking')));
         });
+
+        renderBookingPagination();
+    }
+
+    function renderBookingPagination() {
+        const paginationContainer = document.getElementById('bookingPagination');
+        if (!paginationContainer || !state.bookingMeta) return;
+
+        const { current_page, last_page } = state.bookingMeta;
+        if (last_page <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        
+        // Prev button
+        html += `<button class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold transition-colors ${current_page > 1 ? 'text-slate-700 bg-white hover:bg-slate-50 shadow-sm' : 'text-slate-400 bg-slate-50 cursor-not-allowed'}" data-page="${current_page - 1}" ${current_page <= 1 ? 'disabled' : ''}>Prev</button>`;
+
+        html += `<div class="flex items-center gap-1 mx-2">`;
+        for (let i = 1; i <= last_page; i++) {
+            if (i === current_page) {
+                html += `<button class="w-10 h-10 rounded-xl bg-sky-600 text-white text-sm font-bold flex items-center justify-center shadow-sm" disabled>${i}</button>`;
+            } else if (i === 1 || i === last_page || Math.abs(i - current_page) <= 1) {
+                html += `<button class="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-sm font-semibold flex items-center justify-center transition-colors shadow-sm" data-page="${i}">${i}</button>`;
+            } else if (Math.abs(i - current_page) === 2) {
+                html += `<span class="px-2 text-slate-400 font-medium">...</span>`;
+            }
+        }
+        html += `</div>`;
+
+        // Next button
+        html += `<button class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold transition-colors ${current_page < last_page ? 'text-slate-700 bg-white hover:bg-slate-50 shadow-sm' : 'text-slate-400 bg-slate-50 cursor-not-allowed'}" data-page="${current_page + 1}" ${current_page >= last_page ? 'disabled' : ''}>Next</button>`;
+
+        paginationContainer.innerHTML = html;
+
+        paginationContainer.querySelectorAll('button[data-page]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const page = parseInt(btn.getAttribute('data-page'));
+                if (page && page !== current_page) {
+                    state.bookingPage = page;
+                    document.getElementById('bookingTabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    loadBookings();
+                }
+            });
+        });
     }
 
     async function loadMe() {
@@ -814,9 +913,13 @@
             }
         });
 
+        params.set('page', state.mentorPage || 1);
+        params.set('per_page', 6);
+
         const endpoint = `/api/mentorship/mentors?${params.toString()}`;
         const response = await api(endpoint);
         state.mentors = response.data?.items || [];
+        state.mentorMeta = response.data?.meta || null;
         renderMentors();
     }
 
@@ -827,16 +930,20 @@
     }
 
     async function loadBookings() {
+        const perPage = 4;
+        const page = state.bookingPage || 1;
         const query = selectedBookingStatus === 'all'
-            ? '/api/mentorship/bookings/my?per_page=12'
-            : `/api/mentorship/bookings/my?status=${encodeURIComponent(selectedBookingStatus)}&per_page=12`;
+            ? `/api/mentorship/bookings/my?page=${page}&per_page=${perPage}`
+            : `/api/mentorship/bookings/my?status=${encodeURIComponent(selectedBookingStatus)}&page=${page}&per_page=${perPage}`;
         const response = await api(query);
         state.bookings = response.data?.items || [];
+        state.bookingMeta = response.data?.meta || null;
         renderBookings();
     }
 
     function activateTab(status) {
         selectedBookingStatus = status;
+        state.bookingPage = 1;
         document.querySelectorAll('#bookingTabs button').forEach((button) => {
             const isTarget = button.getAttribute('data-status') === status;
             button.className = isTarget 
@@ -860,6 +967,87 @@
         }
     }
 
+    function renderMentorReviews() {
+        const reviewsListEl = document.getElementById('mentorReviewsList');
+        const paginationEl = document.getElementById('mentorReviewsPagination');
+        const titleEl = document.getElementById('reviewSectionTitle');
+
+        if (!reviewsListEl) return;
+
+        let filteredReviews = state.activeMentorReviews || [];
+        if (state.reviewFilter > 0) {
+            filteredReviews = filteredReviews.filter(r => Math.round(Number(r.rating)) === state.reviewFilter);
+        }
+
+        if (titleEl) {
+            titleEl.textContent = `Ulasan Mentee (${filteredReviews.length})`;
+        }
+
+        if (!filteredReviews.length) {
+            reviewsListEl.innerHTML = '<div class="p-4 text-center text-slate-400 text-xs border border-slate-100 rounded-xl bg-slate-50/50">Belum ada ulasan untuk filter ini.</div>';
+            if (paginationEl) paginationEl.innerHTML = '';
+            return;
+        }
+
+        const perPage = 4;
+        const totalPages = Math.ceil(filteredReviews.length / perPage);
+        if (state.reviewPage > totalPages) state.reviewPage = totalPages;
+        if (state.reviewPage < 1) state.reviewPage = 1;
+
+        const startIdx = (state.reviewPage - 1) * perPage;
+        const currentReviews = filteredReviews.slice(startIdx, startIdx + perPage);
+
+        reviewsListEl.innerHTML = currentReviews.map((rev) => `
+            <div class="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl">
+                <div class="flex justify-between items-center mb-2">
+                    <strong class="text-xs font-bold text-slate-900">${escapeHtml(rev.jobseeker_name)}</strong>
+                    <span class="text-[10px] text-slate-400 font-semibold">${escapeHtml(rev.created_at)}</span>
+                </div>
+                <div class="flex items-center gap-1 mb-2">
+                    <span class="text-amber-500 text-xs">${'★'.repeat(Math.round(rev.rating)) + '☆'.repeat(5 - Math.round(rev.rating))}</span>
+                    <span class="text-[10px] font-bold text-slate-500">(${rev.rating}/5)</span>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">${escapeHtml(rev.comment || 'Mentee tidak menulis ulasan tertulis.')}</p>
+            </div>
+        `).join('');
+
+        // Pagination
+        if (totalPages <= 1) {
+            if (paginationEl) paginationEl.innerHTML = '';
+        } else {
+            let html = '';
+            html += `<button class="px-2 py-1 rounded border border-slate-200 text-[10px] font-semibold transition-colors ${state.reviewPage > 1 ? 'text-slate-700 bg-white hover:bg-slate-50 shadow-sm' : 'text-slate-300 bg-slate-50 cursor-not-allowed'}" data-rev-page="${state.reviewPage - 1}" ${state.reviewPage <= 1 ? 'disabled' : ''}>Prev</button>`;
+            
+            html += `<div class="flex items-center gap-1 mx-1">`;
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === state.reviewPage) {
+                    html += `<button class="w-6 h-6 rounded bg-sky-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm" disabled>${i}</button>`;
+                } else if (i === 1 || i === totalPages || Math.abs(i - state.reviewPage) <= 1) {
+                    html += `<button class="w-6 h-6 rounded border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-[10px] font-semibold flex items-center justify-center transition-colors shadow-sm" data-rev-page="${i}">${i}</button>`;
+                } else if (Math.abs(i - state.reviewPage) === 2) {
+                    html += `<span class="px-1 text-slate-400 text-[10px] font-medium">...</span>`;
+                }
+            }
+            html += `</div>`;
+
+            html += `<button class="px-2 py-1 rounded border border-slate-200 text-[10px] font-semibold transition-colors ${state.reviewPage < totalPages ? 'text-slate-700 bg-white hover:bg-slate-50 shadow-sm' : 'text-slate-300 bg-slate-50 cursor-not-allowed'}" data-rev-page="${state.reviewPage + 1}" ${state.reviewPage >= totalPages ? 'disabled' : ''}>Next</button>`;
+
+            if (paginationEl) {
+                paginationEl.innerHTML = html;
+                paginationEl.querySelectorAll('button[data-rev-page]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const page = parseInt(btn.getAttribute('data-rev-page'));
+                        if (page && page !== state.reviewPage) {
+                            state.reviewPage = page;
+                            renderMentorReviews();
+                            reviewsListEl.scrollTo({top: 0, behavior: 'smooth'});
+                        }
+                    });
+                });
+            }
+        }
+    }
+
     async function openMentorDetail(mentorId) {
         if (!mentorId) return;
 
@@ -869,6 +1057,11 @@
             const slots = response.data?.availability_slots || [];
             const reviews = response.data?.reviews || [];
             state.currentSlots = slots;
+            state.activeMentorReviews = reviews;
+            state.reviewPage = 1;
+            state.reviewFilter = 0;
+            const starFilterEl = document.getElementById('reviewStarFilter');
+            if (starFilterEl) starFilterEl.value = "0";
             selectedSlotId = null;
 
             if (!activeMentor) {
@@ -920,85 +1113,12 @@
             if (!slots.length) {
                 slotGrid.innerHTML = `
                     <div class="col-span-full bg-slate-50 rounded-2xl p-6 border border-slate-100">
-                        <div class="text-center text-slate-500 text-sm mb-4">Belum ada slot yang dibuka mentor.</div>
-                        <div class="border-t border-slate-200 pt-4 mt-2">
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">Minta Jadwal ke Mentor</label>
-                            <div class="grid gap-3 sm:grid-cols-3 items-end mb-3">
-                                <div>
-                                    <label class="block text-[10px] text-slate-400 font-bold uppercase mb-1">Tanggal</label>
-                                    <input id="requestDate" type="date" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs" />
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] text-slate-400 font-bold uppercase mb-1">Mulai</label>
-                                    <input id="requestStartTime" type="time" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs" />
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] text-slate-400 font-bold uppercase mb-1">Selesai</label>
-                                    <input id="requestEndTime" type="time" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs" />
-                                </div>
-                            </div>
-                            <textarea id="requestMessage" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs resize-none mb-3" placeholder="Tulis pesan singkat (opsional), mis. 'Saya ingin diskusi tentang roadmap karier'."></textarea>
-                            <div class="flex gap-2">
-                                <button id="requestScheduleBtn" class="px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-xs hover:bg-sky-700 transition" type="button">Minta Jadwal</button>
-                                <button id="requestCancelBtn" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-xs hover:bg-slate-200 transition" type="button">Batal</button>
-                            </div>
-                        </div>
+                        <div class="text-center text-slate-500 text-sm">Belum ada slot yang dibuka mentor.</div>
                     </div>
                 `;
                 document.getElementById('slotDetailPanel').classList.add('hidden');
                 const bookBtnEl = document.getElementById('bookBtn');
                 if (bookBtnEl) bookBtnEl.disabled = true;
-
-                setTimeout(() => {
-                    const reqBtn = document.getElementById('requestScheduleBtn');
-                    const cancelReqBtn = document.getElementById('requestCancelBtn');
-                    const dateInput = document.getElementById('requestDate');
-                    const startInput = document.getElementById('requestStartTime');
-                    const endInput = document.getElementById('requestEndTime');
-                    const bookBtnEl = document.getElementById('bookBtn');
-
-                    // Prefill date/times
-                    const dt = new Date();
-                    const next = new Date(dt.getTime() + 24*60*60*1000);
-                    const yyyy = next.getFullYear();
-                    const mm = String(next.getMonth()+1).padStart(2,'0');
-                    const dd = String(next.getDate()).padStart(2,'0');
-                    if (dateInput && !dateInput.value) dateInput.value = `${yyyy}-${mm}-${dd}`;
-                    if (startInput && !startInput.value) startInput.value = '10:00';
-                    if (endInput && !endInput.value) endInput.value = '11:00';
-
-                    function updateBookButtonState() {
-                        if (!bookBtnEl) return;
-                        const hasSelectedSlot = !!selectedSlotId;
-                        const hasPreferred = (dateInput && dateInput.value) && (startInput && startInput.value) && (endInput && endInput.value);
-                        let validRange = false;
-                        if (hasPreferred) {
-                            validRange = startInput.value < endInput.value;
-                        }
-                        bookBtnEl.disabled = !(hasSelectedSlot || (hasPreferred && validRange));
-                    }
-
-                    if (dateInput) dateInput.addEventListener('change', updateBookButtonState);
-                    if (startInput) startInput.addEventListener('change', updateBookButtonState);
-                    if (endInput) endInput.addEventListener('change', updateBookButtonState);
-
-                    if (reqBtn) {
-                        reqBtn.addEventListener('click', async () => {
-                            await requestSchedule();
-                            updateBookButtonState();
-                        });
-                    }
-                    if (cancelReqBtn) {
-                        cancelReqBtn.addEventListener('click', () => {
-                            if (dateInput) dateInput.value = '';
-                            if (startInput) startInput.value = '';
-                            if (endInput) endInput.value = '';
-                            if (document.getElementById('requestMessage')) document.getElementById('requestMessage').value = '';
-                            updateBookButtonState();
-                        });
-                    }
-                    updateBookButtonState();
-                }, 40);
             } else {
                 slotGrid.innerHTML = slots.map((slot) => `
                     <label class="slot" data-slot-id="${escapeHtml(slot.id)}" data-is-manual="${!!slot.is_manual}">
@@ -1046,24 +1166,7 @@
                 });
             }
 
-            const reviewsListEl = document.getElementById('mentorReviewsList');
-            if (!reviews.length) {
-                reviewsListEl.innerHTML = '<div class="p-4 text-center text-slate-400 text-xs border border-slate-100 rounded-xl bg-slate-50/50">Belum ada ulasan untuk mentor ini.</div>';
-            } else {
-                reviewsListEl.innerHTML = reviews.map((rev) => `
-                    <div class="p-4 bg-slate-55 border border-slate-100 rounded-2xl bg-slate-50/50">
-                        <div class="flex justify-between items-center mb-2">
-                            <strong class="text-xs font-bold text-slate-900">${escapeHtml(rev.jobseeker_name)}</strong>
-                            <span class="text-[10px] text-slate-400 font-semibold">${escapeHtml(rev.created_at)}</span>
-                        </div>
-                        <div class="flex items-center gap-1 mb-2">
-                            <span class="text-amber-500 text-xs">${'★'.repeat(rev.rating) + '☆'.repeat(5 - rev.rating)}</span>
-                            <span class="text-[10px] font-bold text-slate-500">(${rev.rating}/5)</span>
-                        </div>
-                        <p class="text-xs text-slate-600 leading-relaxed">${escapeHtml(rev.comment || 'Mentee tidak menulis ulasan tertulis.')}</p>
-                    </div>
-                `).join('');
-            }
+            renderMentorReviews();
 
             mentorModal.classList.add('show');
         } catch (error) {
@@ -1078,15 +1181,7 @@
         }
 
         if (!selectedSlotId) {
-            const dateEl = document.getElementById('requestDate');
-            const startEl = document.getElementById('requestStartTime');
-            const endEl = document.getElementById('requestEndTime');
-            const hasPreferred = dateEl && dateEl.value && startEl && startEl.value && endEl && endEl.value && (startEl.value < endEl.value);
             if (!state.currentSlots || !state.currentSlots.length) {
-                if (hasPreferred) {
-                    await requestSchedule();
-                    return;
-                }
                 showToast('Mentor belum membuka slot. Silakan hubungi mentor.', 'error');
                 return;
             }
@@ -1176,45 +1271,20 @@
         }
     }
 
-    async function requestSchedule() {
-        if (!activeMentor?.id) {
-            showToast('Mentor belum dipilih.', 'error');
-            return;
-        }
-
-        const msgEl = document.getElementById('requestMessage');
-        const reqBtn = document.getElementById('requestScheduleBtn');
-        if (reqBtn) reqBtn.disabled = true;
-        const message = msgEl ? msgEl.value.trim() : '';
-        const dateEl = document.getElementById('requestDate');
-        const startEl = document.getElementById('requestStartTime');
-        const endEl = document.getElementById('requestEndTime');
-        const preferred_date = dateEl ? dateEl.value : null;
-        const preferred_start = startEl ? startEl.value : null;
-        const preferred_end = endEl ? endEl.value : null;
-
-        try {
-            if (reqBtn) reqBtn.innerHTML = '<span class="small-spinner !mr-0"></span>';
-            await api('/api/mentorship/mentor-requests', {
-                method: 'POST',
-                body: JSON.stringify({ mentor_id: activeMentor.id, message, preferred_date, preferred_start, preferred_end }),
-            });
-
-            showToast('Permintaan jadwal berhasil dikirim ke mentor.', 'success');
-            if (msgEl) msgEl.value = '';
-        } catch (err) {
-            showToast(err.message || 'Gagal mengirim permintaan jadwal.', 'error');
-        } finally {
-            if (reqBtn) {
-                reqBtn.disabled = false;
-                reqBtn.textContent = 'Minta Jadwal';
-            }
-        }
-    }
 
     function bindEvents() {
+        const starFilterEl = document.getElementById('reviewStarFilter');
+        if (starFilterEl) {
+            starFilterEl.addEventListener('change', (e) => {
+                state.reviewFilter = parseInt(e.target.value) || 0;
+                state.reviewPage = 1;
+                renderMentorReviews();
+            });
+        }
+
         document.getElementById('searchBtn').addEventListener('click', async () => {
             state.filters.search = searchInput.value.trim();
+            state.mentorPage = 1;
             await loadMentors();
         });
 
@@ -1222,6 +1292,7 @@
             if (event.key === 'Enter') {
                 event.preventDefault();
                 state.filters.search = searchInput.value.trim();
+                state.mentorPage = 1;
                 await loadMentors();
             }
         });
@@ -1235,6 +1306,7 @@
             state.filters.expertise = expertiseInput.value.trim();
             state.filters.min_experience = experienceInput.value;
             state.filters.min_rating = ratingInput.value;
+            state.mentorPage = 1;
             await loadMentors();
         });
 
