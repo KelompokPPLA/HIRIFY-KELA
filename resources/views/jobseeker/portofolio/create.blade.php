@@ -81,6 +81,7 @@
                 <label for="title" class="text-xs font-bold uppercase tracking-wider text-slate-500" id="title-label">Nama Proyek / Hasil Karya</label>
                 <input type="text" name="title" id="title" value="{{ old('title', $portofolio->title ?? '') }}" 
                        placeholder="Contoh: E-Commerce Platform dengan Laravel & Vue" 
+                       required minlength="3" maxlength="150"
                        class="block w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent transition-all @error('title') border-red-300 focus:ring-red-500 @enderror">
                 @error('title')
                     <p class="text-xs text-red-600 font-medium mt-1">{{ $message }}</p>
@@ -92,6 +93,7 @@
                 <label for="description" class="text-xs font-bold uppercase tracking-wider text-slate-500">Deskripsi Detail</label>
                 <textarea name="description" id="description" rows="5" 
                           placeholder="Jelaskan detail proyek, peran Anda, teknologi yang digunakan, serta fitur utama atau pencapaian yang diraih..." 
+                          required minlength="30" maxlength="2000"
                           class="block w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent transition-all @error('description') border-red-300 focus:ring-red-500 @enderror">{{ old('description', $portofolio->description ?? '') }}</textarea>
                 @error('description')
                     <p class="text-xs text-red-600 font-medium mt-1">{{ $message }}</p>
@@ -135,6 +137,7 @@
                     <label for="start_date" class="text-xs font-bold uppercase tracking-wider text-slate-500" id="start-date-label">Tanggal Mulai</label>
                     <input type="date" name="start_date" id="start_date" 
                            value="{{ old('start_date', isset($portofolio->start_date) ? $portofolio->start_date->format('Y-m-d') : '') }}" 
+                           required
                            class="block w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent transition-all @error('start_date') border-red-300 focus:ring-red-500 @enderror">
                     @error('start_date')
                         <p class="text-xs text-red-600 font-medium mt-1">{{ $message }}</p>
@@ -144,6 +147,7 @@
                     <label for="end_date" class="text-xs font-bold uppercase tracking-wider text-slate-500" id="end-date-label">Tanggal Selesai</label>
                     <input type="date" name="end_date" id="end_date" 
                            value="{{ old('end_date', isset($portofolio->end_date) ? $portofolio->end_date->format('Y-m-d') : '') }}" 
+                           required
                            class="block w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent transition-all @error('end_date') border-red-300 focus:ring-red-500 @enderror">
                     @error('end_date')
                         <p class="text-xs text-red-600 font-medium mt-1">{{ $message }}</p>
@@ -303,9 +307,11 @@
         if (isOngoing) {
             endDateInput.value = '';
             endDateInput.disabled = true;
+            endDateInput.removeAttribute('required');
             endDateGroup.classList.add('opacity-50');
         } else {
             endDateInput.disabled = false;
+            endDateInput.setAttribute('required', 'required');
             endDateGroup.classList.remove('opacity-50');
         }
     }

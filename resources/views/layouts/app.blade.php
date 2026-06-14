@@ -127,7 +127,7 @@
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
         {{-- Sidebar --}}
-        <aside class="sidebar w-[280px] min-h-screen bg-white border-r border-slate-200 flex flex-col" id="sidebar">
+        <aside class="sidebar w-[280px] h-screen bg-white border-r border-slate-200 flex flex-col lg:sticky lg:top-0 lg:shrink-0" id="sidebar">
             {{-- Brand --}}
             <div class="px-6 py-5 border-b border-slate-100">
                 <a href="/dashboard" class="flex items-center gap-3">
@@ -177,16 +177,20 @@
 
             {{-- User Footer --}}
             <div class="px-4 py-5 border-t border-slate-100">
-                <div class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-navy text-white grid place-items-center font-semibold text-sm flex-shrink-0">
-                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
-                    </div>
+                <a href="/profile" class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 hover:bg-slate-100 transition cursor-pointer">
+                    @if(auth()->user()->profile && auth()->user()->profile->photo)
+                        <img src="{{ str_starts_with(auth()->user()->profile->photo, 'http') ? auth()->user()->profile->photo : asset('storage/' . auth()->user()->profile->photo) }}" alt="Profile" class="w-10 h-10 rounded-xl object-cover flex-shrink-0">
+                    @else
+                        <div class="w-10 h-10 rounded-xl bg-navy text-white grid place-items-center font-semibold text-sm flex-shrink-0">
+                            {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                        </div>
+                    @endif
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold text-slate-900 truncate">{{ auth()->user()->name ?? 'User' }}</p>
                         <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email ?? 'user@email.com' }}</p>
                     </div>
-                </div>
-                <form method="POST" action="{{ route('logout') }}" class="mt-3">
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="mt-3 px-1">
                     @csrf
                     <button type="submit" class="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-red-600 transition-colors">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

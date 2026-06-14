@@ -163,17 +163,26 @@
 
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="input-group">
-                                <label class="input-label" for="jobTitle">Posisi / Jabatan</label>
+                                <label class="input-label" for="jobTitle">
+                                    Posisi / Jabatan
+                                    <span class="input-required">*</span>
+                                </label>
                                 <input type="text" id="jobTitle" class="cv-input" placeholder="Cth: Senior Backend Engineer">
                             </div>
                             <div class="input-group">
-                                <label class="input-label" for="targetRole">Target Posisi</label>
+                                <label class="input-label" for="targetRole">
+                                    Target Posisi
+                                    <span class="input-required">*</span>
+                                </label>
                                 <input type="text" id="targetRole" class="cv-input" placeholder="Cth: Lead Developer">
                             </div>
                         </div>
 
                         <div class="input-group">
-                            <label class="input-label" for="keySkills">Keahlian Utama</label>
+                            <label class="input-label" for="keySkills">
+                                Keahlian Utama
+                                <span class="input-required">*</span>
+                            </label>
                             <input type="text" id="keySkills" class="cv-input" placeholder="Cth: Laravel, Vue.js, MySQL, Docker (pisahkan dengan koma)">
                         </div>
                     </div>
@@ -387,6 +396,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
 /* =========================================================
    FONTS
@@ -1979,6 +1989,57 @@ document.addEventListener('DOMContentLoaded', function () {
             summaryInput.focus();
             showToast('Harap isi ringkasan profil Anda.', 'error');
             return false;
+        }
+
+        // Validate Posisi / Jabatan
+        const jobTitleInput = document.getElementById('jobTitle');
+        if (jobTitleInput && jobTitleInput.value.trim().length === 0) {
+            jobTitleInput.classList.add('input-error');
+            jobTitleInput.focus();
+            showToast('Harap isi Posisi / Jabatan Anda.', 'error');
+            return false;
+        } else if (jobTitleInput) {
+            jobTitleInput.classList.remove('input-error');
+        }
+
+        // Validate Target Posisi
+        const targetRoleInput = document.getElementById('targetRole');
+        if (targetRoleInput && targetRoleInput.value.trim().length === 0) {
+            targetRoleInput.classList.add('input-error');
+            targetRoleInput.focus();
+            showToast('Harap isi Target Posisi Anda.', 'error');
+            return false;
+        } else if (targetRoleInput) {
+            targetRoleInput.classList.remove('input-error');
+        }
+
+        // Validate Keahlian Utama
+        const keySkillsInput = document.getElementById('keySkills');
+        if (keySkillsInput) {
+            const skillsValue = keySkillsInput.value.trim();
+            if (skillsValue.length === 0) {
+                keySkillsInput.classList.add('input-error');
+                keySkillsInput.focus();
+                showToast('Harap isi Keahlian Utama Anda.', 'error');
+                return false;
+            } else {
+                keySkillsInput.classList.remove('input-error');
+                // Check if multiple skills without comma
+                if (!skillsValue.includes(',') && skillsValue.includes(' ')) {
+                    keySkillsInput.classList.add('input-error');
+                    keySkillsInput.focus();
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Format Tidak Sesuai',
+                            text: 'Mohon pisahkan keahlian utama dengan koma (contoh: Laravel, Vue.js, MySQL)'
+                        });
+                    } else {
+                        alert('Mohon pisahkan keahlian utama dengan koma (contoh: Laravel, Vue.js, MySQL)');
+                    }
+                    return false;
+                }
+            }
         }
 
         return valid;

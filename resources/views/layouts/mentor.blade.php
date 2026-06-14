@@ -74,16 +74,7 @@
         }
         .sidebar-overlay.open { display: block; }
 
-        /* Sidebar sticky on desktop */
-        @media (min-width: 1025px) {
-            .sidebar {
-                position: sticky;
-                top: 0;
-                height: 100vh;
-                overflow-y: auto;
-                flex-shrink: 0;
-            }
-        }
+
 
         @media (max-width: 1024px) {
             .sidebar {
@@ -124,7 +115,7 @@
         @include('components.auth.toast')
 
         {{-- Sidebar --}}
-        <aside class="sidebar w-[280px] min-h-screen bg-white border-r border-slate-200 flex flex-col" id="sidebar">
+        <aside class="sidebar w-[280px] h-screen bg-white border-r border-slate-200 flex flex-col lg:sticky lg:top-0 lg:shrink-0" id="sidebar">
             {{-- Brand --}}
             <div class="px-6 py-5 border-b border-slate-100">
                 <a href="/mentor/dashboard" class="flex items-center gap-3">
@@ -161,16 +152,20 @@
 
             {{-- User Footer --}}
             <div class="px-4 py-5 border-t border-slate-100">
-                <div class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-navy text-white grid place-items-center font-semibold text-sm flex-shrink-0">
-                        {{ strtoupper(substr(auth()->user()->name ?? 'M', 0, 1)) }}
-                    </div>
+                <a href="/mentor/settings" class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 hover:bg-slate-100 transition cursor-pointer">
+                    @if(auth()->user()->mentorProfile && auth()->user()->mentorProfile->profile_picture)
+                        <img src="{{ str_starts_with(auth()->user()->mentorProfile->profile_picture, 'http') ? auth()->user()->mentorProfile->profile_picture : asset('storage/' . auth()->user()->mentorProfile->profile_picture) }}" alt="Profile" class="w-10 h-10 rounded-xl object-cover flex-shrink-0">
+                    @else
+                        <div class="w-10 h-10 rounded-xl bg-navy text-white grid place-items-center font-semibold text-sm flex-shrink-0">
+                            {{ strtoupper(substr(auth()->user()->name ?? 'M', 0, 1)) }}
+                        </div>
+                    @endif
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold text-slate-900 truncate">{{ auth()->user()->name ?? 'Mentor' }}</p>
                         <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email ?? 'mentor@email.com' }}</p>
                     </div>
-                </div>
-                <button id="logoutBtn" class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-red-600 transition-colors cursor-pointer border-0 bg-transparent">
+                </a>
+                <button id="logoutBtn" class="mt-3 px-1 inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-red-600 transition-colors cursor-pointer border-0 bg-transparent">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                     Keluar
                 </button>

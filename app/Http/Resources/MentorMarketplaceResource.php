@@ -24,7 +24,7 @@ class MentorMarketplaceResource extends JsonResource
             'price_per_session' => (float) ($this->price_per_session ?? 0),
             'open_slots_count' => (int) ($this->open_slots_count ?? 0),
             'session_count' => (int) ($this->session_count ?? 0),
-            'rating' => (float) ($this->rating ?? 4.8),
+            'rating' => (float) ($this->rating ?? 0),
         ];
     }
 }

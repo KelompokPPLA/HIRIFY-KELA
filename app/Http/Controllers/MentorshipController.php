@@ -62,8 +62,8 @@ class MentorshipController extends Controller
 
         if ($request->filled('min_rating')) {
             $minRating = (float) $request->query('min_rating');
-            // E.g., filters based on average reviews rating if reviews exist, or simulated fallback
-            $query->having(DB::raw('COALESCE(reviews_avg_rating, CASE WHEN session_count > 0 THEN LEAST(5, ROUND(4.5 + (session_count / 200), 1)) ELSE 4.8 END)'), '>=', $minRating);
+            // E.g., filters based on average reviews rating if reviews exist, or 0 fallback
+            $query->having(DB::raw('COALESCE(reviews_avg_rating, 0)'), '>=', $minRating);
         }
 
         switch ($sort) {
@@ -82,9 +82,7 @@ class MentorshipController extends Controller
 
         $items = $paginator->getCollection()->map(function (Mentor $mentor) {
             $actualAvg = $mentor->reviews_avg_rating;
-            $mentor->rating = $actualAvg !== null ? round((float) $actualAvg, 1) : ($mentor->session_count > 0
-                ? min(5, round(4.5 + ($mentor->session_count / 200), 1))
-                : 4.8);
+            $mentor->rating = $actualAvg !== null ? round((float) $actualAvg, 1) : 0;
 
             // Combine automated slots and manual slots for the display count
             $mentor->open_slots_count = $mentor->open_slots_count + $mentor->manual_slots_count;
@@ -123,9 +121,7 @@ class MentorshipController extends Controller
         }
 
         $actualAvg = $mentor->reviews_avg_rating;
-        $mentor->rating = $actualAvg !== null ? round((float) $actualAvg, 1) : ($mentor->session_count > 0
-            ? min(5, round(4.5 + ($mentor->session_count / 200), 1))
-            : 4.8);
+        $mentor->rating = $actualAvg !== null ? round((float) $actualAvg, 1) : 0;
 
         $slots = MentorAvailability::query()
             ->where('mentor_id', $mentor->id)
@@ -398,7 +394,7 @@ class MentorshipController extends Controller
     {
         SesiJadwal::autoCheckCompleted();
         $user = $request->user();
-        $limit = max(5, min((int) $request->query('per_page', 10), 50));
+        $limit = max(4, min((int) $request->query('per_page', 10), 50));
         $statusFilter = collect(explode(',', (string) $request->query('status')))
             ->map(fn ($item) => trim($item))
             ->filter()

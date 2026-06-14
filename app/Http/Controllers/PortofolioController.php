@@ -50,15 +50,15 @@ class PortofolioController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'required|string|min:3|max:150',
             'type' => 'required|in:project,certificate',
-            'description' => 'nullable|string|max:5000',
+            'description' => 'required|string|min:30|max:2000',
             'link' => 'nullable|url|max:255',
             'skills' => 'nullable|string|max:255',
             'file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'is_ongoing' => 'nullable|boolean',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|required_without:is_ongoing|date|after_or_equal:start_date',
+            'is_ongoing' => 'nullable',
         ]);
 
         $data = $request->only([
@@ -112,15 +112,15 @@ class PortofolioController extends Controller
         $portofolio = Portofolio::where('user_id', Auth::id())->findOrFail($id);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'required|string|min:3|max:150',
             'type' => 'required|in:project,certificate',
-            'description' => 'nullable|string|max:5000',
+            'description' => 'required|string|min:30|max:2000',
             'link' => 'nullable|url|max:255',
             'skills' => 'nullable|string|max:255',
             'file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'is_ongoing' => 'nullable|boolean',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|required_without:is_ongoing|date|after_or_equal:start_date',
+            'is_ongoing' => 'nullable',
         ]);
 
         $data = $request->only([
