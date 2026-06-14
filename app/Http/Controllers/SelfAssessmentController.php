@@ -66,15 +66,16 @@ class SelfAssessmentController extends Controller
             'result'      => $result,
         ]);
 
-        // ─── Career Streak: catat aktivitas self assessment ───
+        // ─── Career Streak: catat aktivitas self assessment ───────────────
+        // Kondisi B otomatis ditangani oleh StreakService (tidak ada duplikasi).
         app(StreakService::class)->recordActivity(
             auth()->user(),
-            'assessment',
+            'self_assessment',
             null,
-            'Self assessment diselesaikan dengan skor ' . $totalScore
+            'Self assessment diselesaikan dengan skor ' . $totalScore . ' (' . $result . ')'
         );
 
-        return redirect()->route('assessment.result');
+        return redirect()->route('assessment.result')->with('streak_recorded', true);
     }
 
     /**

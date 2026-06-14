@@ -172,9 +172,9 @@
     <div class="grid gap-4 sm:grid-cols-3">
         @php
             $activityTypes = [
-                ['key' => 'training',   'label' => 'Pelatihan',      'icon' => '📚', 'color' => 'cyan'],
-                ['key' => 'assessment', 'label' => 'Self Assessment', 'icon' => '✅', 'color' => 'pink'],
-                ['key' => 'mentorship', 'label' => 'Mentorship',      'icon' => '🤝', 'color' => 'purple'],
+                ['key' => 'training',        'label' => 'Pelatihan',      'icon' => '📚', 'color' => 'cyan'],
+                ['key' => 'self_assessment', 'label' => 'Self Assessment', 'icon' => '✅', 'color' => 'pink'],
+                ['key' => 'mentorship',      'label' => 'Mentorship',      'icon' => '🤝', 'color' => 'purple'],
             ];
             $colorMap = [
                 'cyan'   => 'bg-cyan-50 text-cyan-700 border-cyan-100',
@@ -309,13 +309,16 @@
             @forelse($recentActivities as $activity)
             @php
                 $typeColors = [
-                    'training'   => ['bg' => 'bg-cyan-50',   'text' => 'text-cyan-600',   'border' => 'border-cyan-100'],
-                    'assessment' => ['bg' => 'bg-pink-50',   'text' => 'text-pink-600',   'border' => 'border-pink-100'],
-                    'mentorship' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-600', 'border' => 'border-purple-100'],
+                    'training'        => ['bg' => 'bg-cyan-50',   'text' => 'text-cyan-600',   'border' => 'border-cyan-100'],
+                    'self_assessment' => ['bg' => 'bg-pink-50',   'text' => 'text-pink-600',   'border' => 'border-pink-100'],
+                    'assessment'      => ['bg' => 'bg-pink-50',   'text' => 'text-pink-600',   'border' => 'border-pink-100'], // backward compat
+                    'mentorship'      => ['bg' => 'bg-purple-50', 'text' => 'text-purple-600', 'border' => 'border-purple-100'],
+                    'portofolio'      => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-600', 'border' => 'border-indigo-100'],
+                    'cv'              => ['bg' => 'bg-teal-50',   'text' => 'text-teal-600',   'border' => 'border-teal-100'],
                 ];
                 $palette  = $typeColors[$activity->activity_type] ?? $typeColors['training'];
-                $typeIcon = ['training' => '📚', 'assessment' => '✅', 'mentorship' => '🤝'][$activity->activity_type] ?? '⚡';
-                $typeLabel = ['training' => 'Pelatihan', 'assessment' => 'Self Assessment', 'mentorship' => 'Mentorship'][$activity->activity_type] ?? '-';
+                $typeIcon  = ['training' => '📚', 'self_assessment' => '✅', 'assessment' => '✅', 'mentorship' => '🤝', 'portofolio' => '🗂️', 'cv' => '📄'][$activity->activity_type] ?? '⚡';
+                $typeLabel = ['training' => 'Pelatihan', 'self_assessment' => 'Self Assessment', 'assessment' => 'Self Assessment', 'mentorship' => 'Mentorship', 'portofolio' => 'Portofolio', 'cv' => 'CV'][$activity->activity_type] ?? ucfirst(str_replace('_', ' ', $activity->activity_type));
             @endphp
             <div class="flex items-center gap-3 rounded-xl border p-3.5 hover:bg-slate-50/70 transition {{ $palette['border'] }}">
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg {{ $palette['bg'] }} flex-shrink-0">

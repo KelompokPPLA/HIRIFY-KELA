@@ -40,20 +40,26 @@ class ActivityLog extends Model
     public function getTypeLabelAttribute(): string
     {
         return match ($this->activity_type) {
-            'training'   => 'Pelatihan',
-            'assessment' => 'Self Assessment',
-            'mentorship' => 'Mentorship',
-            default      => ucfirst($this->activity_type),
+            'training'        => 'Pelatihan',
+            'self_assessment' => 'Self Assessment',
+            'assessment'      => 'Self Assessment', // backward compat
+            'mentorship'      => 'Mentorship',
+            'portofolio'      => 'Portofolio',
+            'cv'              => 'CV',
+            default           => ucfirst(str_replace('_', ' ', $this->activity_type)),
         };
     }
 
     public function getTypeIconAttribute(): string
     {
         return match ($this->activity_type) {
-            'training'   => '📚',
-            'assessment' => '✅',
-            'mentorship' => '🤝',
-            default      => '⚡',
+            'training'        => '📚',
+            'self_assessment' => '✅',
+            'assessment'      => '✅', // backward compat
+            'mentorship'      => '🤝',
+            'portofolio'      => '🗂️',
+            'cv'              => '📄',
+            default           => '⚡',
         };
     }
 }
