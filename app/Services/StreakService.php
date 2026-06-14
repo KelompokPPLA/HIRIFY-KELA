@@ -16,12 +16,22 @@ class StreakService
     /**
      * Catat aktivitas pengguna dan perbarui streak.
      *
-     * Dipanggil setelah user menyelesaikan: pelatihan, assessment, atau mentorship.
+     * Dipanggil setelah user menyelesaikan:
+     * training, self_assessment, mentorship, portofolio, atau cv.
      *
-     * @param  User 
-     * @param  string      $training, assessment, mentorship
-     * @param  string|null $UUID entitas terkait (lesson id, assessment id, booking id)
-     * @param  string|null $Deskripsi aktivitas
+     * Kondisi A — belum ada aktivitas tipe ini hari ini:
+     *   - Buat ActivityLog baru
+     *   - Update streak counter (current, longest, total_activity_days)
+     *   - Award badge jika memenuhi milestone
+     *
+     * Kondisi B — sudah ada aktivitas tipe ini hari ini:
+     *   - Early return, tidak membuat record duplikat
+     *   - Streak tidak berubah
+     *
+     * @param  User        $user
+     * @param  string      $type  training|self_assessment|mentorship|portofolio|cv
+     * @param  string|null $referenceId  UUID entitas terkait
+     * @param  string|null $description  Deskripsi singkat aktivitas
      */
     public function recordActivity(
         User $user,
@@ -32,11 +42,18 @@ class StreakService
         $today = now()->toDateString();
 
         DB::transaction(function () use ($user, $type, $referenceId, $description, $today) {
+            // ── Kondisi B: Cegah duplikasi aktivitas per tipe per hari ──────
             $alreadyLoggedToday = ActivityLog::where('user_id', $user->id)
                 ->where('activity_type', $type)
                 ->where('activity_date', $today)
                 ->exists();
 
+            if ($alreadyLoggedToday) {
+                // Sudah ada aktivitas tipe ini hari ini — tidak perlu membuat record baru
+                return;
+            }
+
+            // ── Kondisi A: Belum ada aktivitas tipe ini hari ini ────────────
             ActivityLog::create([
                 'user_id'       => $user->id,
                 'activity_type' => $type,
@@ -45,13 +62,10 @@ class StreakService
                 'description'   => $description,
             ]);
 
-            $anyActivityToday = ActivityLog::where('user_id', $user->id)
+            // Cek apakah ada aktivitas TIPE LAIN hari ini (untuk menentukan apakah streak sudah dihitung)
+            $anyOtherActivityToday = ActivityLog::where('user_id', $user->id)
                 ->where('activity_date', $today)
-                ->where('id', '!=', ActivityLog::where('user_id', $user->id)
-                    ->where('activity_type', $type)
-                    ->where('activity_date', $today)
-                    ->latest()
-                    ->value('id') ?? '00000000-0000-0000-0000-000000000000')
+                ->where('activity_type', '!=', $type)
                 ->exists();
 
             $streak = UserStreak::firstOrCreate(
@@ -66,7 +80,13 @@ class StreakService
 
             $lastDate = $streak->last_activity_date;
 
-            if ($lastDate === null || $lastDate->toDateString() !== $today) {
+            // Hanya update streak jika belum ada aktivitas apapun hari ini
+            if (! $anyOtherActivityToday &&
+                ($lastDate === null || $lastDate->toDateString() !== $today)
+            ) {
+                $this->updateStreakCounter($streak, $today, $lastDate);
+            } elseif ($lastDate === null || $lastDate->toDateString() !== $today) {
+                // Ada aktivitas tipe lain tapi last_activity_date belum di-update hari ini
                 $this->updateStreakCounter($streak, $today, $lastDate);
             }
 
