@@ -30,6 +30,7 @@ class MenteeSayaController extends Controller
                     'total' => 0,
                     'confirmed' => 0,
                     'rejected' => 0,
+                    'followers' => 0,
                 ],
                 'search' => '',
                 'filterStatus' => 'all',
