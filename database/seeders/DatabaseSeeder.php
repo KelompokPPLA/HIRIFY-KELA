@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             SkillTrainingSeeder::class,
             StreakBadgeSeeder::class,
             JobListingSeeder::class,
+            SelfAssessmentQuestionSeeder::class,
         ]);
     }
 }

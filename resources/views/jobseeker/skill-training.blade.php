@@ -100,6 +100,9 @@
                     <div class="bg-gradient-to-r from-sky-400 to-sky-600 h-full rounded-full transition-all duration-300" id="progressFill" style="width:0%"></div>
                 </div>
                 <div class="text-xs text-slate-400" id="progressDetail"></div>
+                <a href="{{ route('certificates.index') }}" id="certBtn" class="hidden mt-1 inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition w-fit">
+                    🏆 Unduh Sertifikat
+                </a>
             </div>
         </div>
 
@@ -375,6 +378,7 @@ async function openCourseDetail(id) {
                 activeCourse.course_completed
                     ? '🎉 Kamu telah menyelesaikan seluruh materi kursus ini!'
                     : `${activeCourse.completed_count} dari ${activeCourse.total_lessons} materi selesai`;
+            document.getElementById('certBtn').classList.toggle('hidden', !activeCourse.course_completed);
         } else {
             document.getElementById('enrollBtn').classList.remove('hidden');
         }
@@ -503,6 +507,7 @@ async function doCompleteLesson() {
             data.course_completed
                 ? '🎉 Kamu telah menyelesaikan seluruh materi kursus ini!'
                 : `${data.completed_count} dari ${activeCourse.total_lessons} materi selesai`;
+        document.getElementById('certBtn').classList.toggle('hidden', !data.course_completed);
 
         btn.textContent = '✓ Sudah Selesai';
         btn.className   = 'px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-xl text-xs cursor-not-allowed';

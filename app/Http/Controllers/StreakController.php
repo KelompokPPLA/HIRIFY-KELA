@@ -28,8 +28,10 @@ class StreakController extends Controller
             ->orderByDesc('activity_date')
             ->orderByDesc('created_at');
 
-        if ($type && in_array($type, ['training', 'assessment', 'mentorship'], true)) {
-            $query->where('activity_type', $type);
+        if ($type && in_array($type, ['training', 'self_assessment', 'assessment', 'mentorship', 'portofolio', 'cv'], true)) {
+            // 'assessment' masih didukung untuk backward compat
+            $filterType = $type === 'assessment' ? 'self_assessment' : $type;
+            $query->where('activity_type', $filterType);
         }
 
         $activities = $query->paginate($perPage)->withQueryString();
